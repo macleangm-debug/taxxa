@@ -260,6 +260,9 @@ const styles = StyleSheet.create({
   },
   footer: {
     padding: 16,
+    maxWidth: isWeb ? 400 : undefined,
+    alignSelf: isWeb ? 'center' : undefined,
+    width: isWeb ? '100%' : undefined,
   },
   tips: {
     flexDirection: 'row',
