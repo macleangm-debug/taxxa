@@ -285,6 +285,30 @@ backend:
         agent: "main"
         comment: "Generates valid test QR codes for development"
 
+  - task: "Country Management API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "CRUD endpoints for countries with currency, timezone, tax rate support. Tested via curl."
+
+  - task: "Platform Settings API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Settings for scan cooldown, max scans per day, entries per amount, active country. Tested via curl."
+
 frontend:
   - task: "Welcome Screen"
     implemented: true
