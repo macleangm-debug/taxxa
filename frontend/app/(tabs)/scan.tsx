@@ -282,6 +282,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
+    maxWidth: isWeb ? 400 : undefined,
+    alignSelf: isWeb ? 'center' : undefined,
   },
   permissionTitle: {
     fontSize: 20,
