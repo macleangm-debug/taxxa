@@ -15,7 +15,8 @@ import { scanAPI, testAPI } from '../../src/utils/api';
 import ScanResult from '../../src/components/ScanResult';
 
 const { width } = Dimensions.get('window');
-const SCAN_AREA_SIZE = width * 0.7;
+const isWeb = Platform.OS === 'web';
+const SCAN_AREA_SIZE = Math.min(width * 0.7, 300);
 
 interface ScanResultData {
   status: 'valid' | 'invalid' | 'duplicate' | 'expired';
