@@ -348,6 +348,23 @@ async def login(data: UserLogin):
     
     if user.get("status") == "blocked":
         raise HTTPException(status_code=403, detail="Account has been blocked")
+    
+    # Generate token
+    user_id = str(user["_id"])
+    token = create_jwt_token(user_id)
+    
+    return TokenResponse(
+        access_token=token,
+        user=UserResponse(
+            id=user_id,
+            phone_number=phone,
+            name=user.get("name"),
+            created_at=user.get("created_at", datetime.utcnow()),
+            total_scans=user.get("total_scans", 0),
+            valid_scans=user.get("valid_scans", 0),
+            total_entries=user.get("total_entries", 0)
+        )
+    )
 
 @api_router.post("/auth/forgot-password")
 async def forgot_password(data: UserRegister):
