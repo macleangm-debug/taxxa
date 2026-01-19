@@ -205,6 +205,11 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 16,
     paddingBottom: 100,
+    ...(isWeb && {
+      alignSelf: 'center',
+      width: '100%',
+      maxWidth: 480,
+    }),
   },
   header: {
     flexDirection: 'row',
