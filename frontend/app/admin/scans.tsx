@@ -41,7 +41,7 @@ export default function ScansManagement() {
       case 'valid': return { name: 'checkmark-circle', color: '#10B981' };
       case 'duplicate': return { name: 'copy', color: '#F59E0B' };
       case 'invalid': return { name: 'close-circle', color: '#EF4444' };
-      default: return { name: 'help-circle', color: '#64748B' };
+      default: return { name: 'help-circle', color: '#6B7280' };
     }
   };
 
@@ -50,8 +50,8 @@ export default function ScansManagement() {
     
     return (
       <View style={styles.scanCard}>
-        <View style={[styles.statusIcon, { backgroundColor: `${icon.color}20` }]}>
-          <Ionicons name={icon.name as any} size={24} color={icon.color} />
+        <View style={[styles.statusIcon, { backgroundColor: `${icon.color}15` }]}>
+          <Ionicons name={icon.name as any} size={22} color={icon.color} />
         </View>
         
         <View style={styles.scanInfo}>
@@ -67,9 +67,11 @@ export default function ScansManagement() {
           {item.status === 'valid' && (
             <Text style={styles.entries}>+{item.entries_earned} entries</Text>
           )}
-          <Text style={[styles.status, { color: icon.color }]}>
-            {item.status.toUpperCase()}
-          </Text>
+          <View style={[styles.statusBadge, { backgroundColor: `${icon.color}15` }]}>
+            <Text style={[styles.statusText, { color: icon.color }]}>
+              {item.status.toUpperCase()}
+            </Text>
+          </View>
         </View>
       </View>
     );
@@ -79,9 +81,12 @@ export default function ScansManagement() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#fff" />
+          <Ionicons name="arrow-back" size={24} color="#111827" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Scan Records</Text>
+        <View>
+          <Text style={styles.headerTitle}>Scans</Text>
+          <Text style={styles.headerSubtitle}>All scan records</Text>
+        </View>
       </View>
 
       {/* Status Filter */}
@@ -107,7 +112,7 @@ export default function ScansManagement() {
 
       {isLoading ? (
         <View style={styles.loading}>
-          <ActivityIndicator size="large" color="#3B82F6" />
+          <ActivityIndicator size="large" color="#2563EB" />
         </View>
       ) : (
         <FlatList
@@ -117,7 +122,7 @@ export default function ScansManagement() {
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={
             <View style={styles.emptyState}>
-              <Ionicons name="scan-outline" size={48} color="#64748B" />
+              <Ionicons name="scan-outline" size={48} color="#9CA3AF" />
               <Text style={styles.emptyText}>No scans found</Text>
             </View>
           }
@@ -132,7 +137,7 @@ export default function ScansManagement() {
             onPress={() => loadScans(pagination.page - 1)}
             disabled={pagination.page === 1}
           >
-            <Ionicons name="chevron-back" size={20} color="#fff" />
+            <Ionicons name="chevron-back" size={18} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.pageText}>Page {pagination.page} of {pagination.pages}</Text>
           <TouchableOpacity
@@ -140,7 +145,7 @@ export default function ScansManagement() {
             onPress={() => loadScans(pagination.page + 1)}
             disabled={pagination.page === pagination.pages}
           >
-            <Ionicons name="chevron-forward" size={20} color="#fff" />
+            <Ionicons name="chevron-forward" size={18} color="#fff" />
           </TouchableOpacity>
         </View>
       )}
@@ -149,31 +154,78 @@ export default function ScansManagement() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0F172A' },
-  header: { flexDirection: 'row', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: '#1E293B' },
-  backButton: { marginRight: 16 },
-  headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#fff' },
-  filterContainer: { flexDirection: 'row', padding: 16, gap: 8 },
-  filterButton: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: '#1E293B' },
-  filterActive: { backgroundColor: '#3B82F6' },
-  filterText: { color: '#94A3B8', fontSize: 14 },
+  container: { flex: 1, backgroundColor: '#F3F4F6' },
+  header: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    paddingHorizontal: 20, 
+    paddingVertical: 16, 
+    backgroundColor: '#fff',
+    borderBottomWidth: 1, 
+    borderBottomColor: '#E5E7EB' 
+  },
+  backButton: { 
+    width: 40, 
+    height: 40, 
+    borderRadius: 10, 
+    backgroundColor: '#F3F4F6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16 
+  },
+  headerTitle: { fontSize: 20, fontWeight: '700', color: '#111827' },
+  headerSubtitle: { fontSize: 13, color: '#6B7280', marginTop: 2 },
+  
+  filterContainer: { 
+    flexDirection: 'row', 
+    paddingHorizontal: 20, 
+    paddingVertical: 12, 
+    gap: 8,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  filterButton: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8, backgroundColor: '#F3F4F6' },
+  filterActive: { backgroundColor: '#2563EB' },
+  filterText: { color: '#6B7280', fontSize: 13, fontWeight: '500' },
   filterTextActive: { color: '#fff' },
+  
   loading: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  listContent: { padding: 16 },
-  scanCard: { backgroundColor: '#1E293B', borderRadius: 12, padding: 16, flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  statusIcon: { width: 48, height: 48, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+  listContent: { padding: 20 },
+  
+  scanCard: { 
+    backgroundColor: '#fff', 
+    borderRadius: 12, 
+    padding: 14, 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    marginBottom: 10 
+  },
+  statusIcon: { width: 44, height: 44, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
   scanInfo: { flex: 1, marginLeft: 12 },
-  merchantName: { fontSize: 16, fontWeight: '600', color: '#fff' },
-  receiptId: { fontSize: 12, color: '#64748B', marginTop: 2 },
-  timestamp: { fontSize: 12, color: '#94A3B8', marginTop: 2 },
+  merchantName: { fontSize: 15, fontWeight: '600', color: '#111827' },
+  receiptId: { fontSize: 11, color: '#9CA3AF', marginTop: 2 },
+  timestamp: { fontSize: 12, color: '#6B7280', marginTop: 2 },
   scanStats: { alignItems: 'flex-end' },
-  amount: { fontSize: 16, fontWeight: '600', color: '#fff' },
+  amount: { fontSize: 15, fontWeight: '600', color: '#111827' },
   entries: { fontSize: 12, color: '#10B981', marginTop: 2 },
-  status: { fontSize: 10, fontWeight: '600', marginTop: 4 },
+  statusBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, marginTop: 4 },
+  statusText: { fontSize: 10, fontWeight: '600' },
+  
   emptyState: { alignItems: 'center', paddingTop: 60 },
-  emptyText: { color: '#64748B', fontSize: 16, marginTop: 12 },
-  pagination: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 16, gap: 16 },
-  pageBtn: { backgroundColor: '#3B82F6', width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
-  pageBtnDisabled: { backgroundColor: '#374151' },
-  pageText: { color: '#94A3B8', fontSize: 14 },
+  emptyText: { color: '#6B7280', fontSize: 16, marginTop: 12 },
+  
+  pagination: { 
+    flexDirection: 'row', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    padding: 16, 
+    gap: 16,
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+  },
+  pageBtn: { backgroundColor: '#2563EB', width: 36, height: 36, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
+  pageBtnDisabled: { backgroundColor: '#D1D5DB' },
+  pageText: { color: '#6B7280', fontSize: 14 },
 });

@@ -49,7 +49,6 @@ const defaultCountry: Omit<Country, 'id'> = {
   is_active: true,
 };
 
-// Common timezones
 const TIMEZONES = [
   'UTC',
   'America/New_York',
@@ -66,7 +65,6 @@ const TIMEZONES = [
   'Australia/Sydney',
 ];
 
-// Common date formats
 const DATE_FORMATS = [
   'MM/DD/YYYY',
   'DD/MM/YYYY',
@@ -191,12 +189,12 @@ export default function SettingsScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#fff" />
+            <Ionicons name="arrow-back" size={24} color="#111827" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Settings</Text>
         </View>
         <View style={styles.loading}>
-          <ActivityIndicator size="large" color="#3B82F6" />
+          <ActivityIndicator size="large" color="#2563EB" />
         </View>
       </SafeAreaView>
     );
@@ -207,7 +205,7 @@ export default function SettingsScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#fff" />
+          <Ionicons name="arrow-back" size={24} color="#111827" />
         </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
           <Text style={styles.headerTitle}>Settings</Text>
@@ -219,7 +217,9 @@ export default function SettingsScreen() {
         {/* Active Country Selector */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="globe" size={22} color="#3B82F6" />
+            <View style={[styles.sectionIcon, { backgroundColor: '#EFF6FF' }]}>
+              <Ionicons name="globe" size={18} color="#2563EB" />
+            </View>
             <Text style={styles.sectionTitle}>Active Country</Text>
           </View>
           
@@ -231,16 +231,14 @@ export default function SettingsScreen() {
                   {activeCountry.currency_symbol} {activeCountry.currency_code} • {activeCountry.timezone}
                 </Text>
               </View>
-              <TouchableOpacity 
-                style={styles.changeButton}
-                onPress={() => Alert.alert('Change Country', 'Select a country from the list below')}
-              >
-                <Text style={styles.changeButtonText}>Change</Text>
-              </TouchableOpacity>
+              <View style={styles.activeBadge}>
+                <Ionicons name="checkmark-circle" size={16} color="#10B981" />
+                <Text style={styles.activeBadgeText}>Active</Text>
+              </View>
             </View>
           ) : (
             <View style={styles.noCountryCard}>
-              <Ionicons name="alert-circle" size={24} color="#F59E0B" />
+              <Ionicons name="alert-circle" size={20} color="#F59E0B" />
               <Text style={styles.noCountryText}>No country selected. Add and select a country below.</Text>
             </View>
           )}
@@ -249,17 +247,19 @@ export default function SettingsScreen() {
         {/* Countries List */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="flag" size={22} color="#10B981" />
+            <View style={[styles.sectionIcon, { backgroundColor: '#ECFDF5' }]}>
+              <Ionicons name="flag" size={18} color="#10B981" />
+            </View>
             <Text style={styles.sectionTitle}>Countries</Text>
             <TouchableOpacity style={styles.addButton} onPress={handleAddCountry}>
-              <Ionicons name="add" size={20} color="#fff" />
-              <Text style={styles.addButtonText}>Add Country</Text>
+              <Ionicons name="add" size={18} color="#fff" />
+              <Text style={styles.addButtonText}>Add</Text>
             </TouchableOpacity>
           </View>
 
           {countries.length === 0 ? (
             <View style={styles.emptyState}>
-              <Ionicons name="earth" size={48} color="#64748B" />
+              <Ionicons name="earth" size={40} color="#9CA3AF" />
               <Text style={styles.emptyText}>No countries configured</Text>
               <Text style={styles.emptySubtext}>Add countries where draws will take place</Text>
             </View>
@@ -288,15 +288,15 @@ export default function SettingsScreen() {
                     
                     <View style={styles.countryDetails}>
                       <View style={styles.countryDetail}>
-                        <Ionicons name="cash" size={14} color="#64748B" />
+                        <Ionicons name="cash" size={12} color="#6B7280" />
                         <Text style={styles.countryDetailText}>{country.currency_name}</Text>
                       </View>
                       <View style={styles.countryDetail}>
-                        <Ionicons name="time" size={14} color="#64748B" />
+                        <Ionicons name="time" size={12} color="#6B7280" />
                         <Text style={styles.countryDetailText}>{country.timezone}</Text>
                       </View>
                       <View style={styles.countryDetail}>
-                        <Ionicons name="receipt" size={14} color="#64748B" />
+                        <Ionicons name="receipt" size={12} color="#6B7280" />
                         <Text style={styles.countryDetailText}>{country.tax_rate}% tax</Text>
                       </View>
                     </View>
@@ -304,22 +304,22 @@ export default function SettingsScreen() {
                   
                   <View style={styles.countryActions}>
                     {activeCountry?.id === country.id && (
-                      <View style={styles.activeBadge}>
+                      <View style={styles.activeIndicator}>
                         <Ionicons name="checkmark-circle" size={14} color="#10B981" />
-                        <Text style={styles.activeBadgeText}>Active</Text>
+                        <Text style={styles.activeIndicatorText}>Active</Text>
                       </View>
                     )}
                     <TouchableOpacity 
                       style={styles.actionIcon}
                       onPress={() => handleEditCountry(country)}
                     >
-                      <Ionicons name="pencil" size={18} color="#3B82F6" />
+                      <Ionicons name="pencil" size={16} color="#2563EB" />
                     </TouchableOpacity>
                     <TouchableOpacity 
                       style={styles.actionIcon}
                       onPress={() => handleDeleteCountry(country)}
                     >
-                      <Ionicons name="trash" size={18} color="#EF4444" />
+                      <Ionicons name="trash" size={16} color="#EF4444" />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -331,7 +331,9 @@ export default function SettingsScreen() {
         {/* Platform Settings */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="settings" size={22} color="#8B5CF6" />
+            <View style={[styles.sectionIcon, { backgroundColor: '#F3E8FF' }]}>
+              <Ionicons name="settings" size={18} color="#8B5CF6" />
+            </View>
             <Text style={styles.sectionTitle}>Platform Settings</Text>
           </View>
 
@@ -360,7 +362,7 @@ export default function SettingsScreen() {
               <Text style={styles.settingValue}>{activeCountry?.currency_symbol || '$'}{settings?.entries_per_amount || 50}</Text>
             </View>
             
-            <View style={styles.settingRow}>
+            <View style={[styles.settingRow, { borderBottomWidth: 0 }]}>
               <View style={styles.settingInfo}>
                 <Text style={styles.settingLabel}>Receipt Expiry</Text>
                 <Text style={styles.settingDescription}>Days until receipts expire</Text>
@@ -380,7 +382,7 @@ export default function SettingsScreen() {
                 {editingCountry ? 'Edit Country' : 'Add Country'}
               </Text>
               <TouchableOpacity onPress={() => setShowCountryModal(false)}>
-                <Ionicons name="close" size={24} color="#94A3B8" />
+                <Ionicons name="close" size={24} color="#6B7280" />
               </TouchableOpacity>
             </View>
 
@@ -396,7 +398,7 @@ export default function SettingsScreen() {
                     value={countryForm.name}
                     onChangeText={(v) => setCountryForm({ ...countryForm, name: v })}
                     placeholder="e.g., Nigeria"
-                    placeholderTextColor="#64748B"
+                    placeholderTextColor="#9CA3AF"
                   />
                 </View>
                 <View style={[styles.formGroup, { flex: 1 }]}>
@@ -406,7 +408,7 @@ export default function SettingsScreen() {
                     value={countryForm.code}
                     onChangeText={(v) => setCountryForm({ ...countryForm, code: v.toUpperCase() })}
                     placeholder="NG"
-                    placeholderTextColor="#64748B"
+                    placeholderTextColor="#9CA3AF"
                     maxLength={3}
                     autoCapitalize="characters"
                   />
@@ -420,7 +422,7 @@ export default function SettingsScreen() {
                   value={countryForm.phone_code}
                   onChangeText={(v) => setCountryForm({ ...countryForm, phone_code: v })}
                   placeholder="+234"
-                  placeholderTextColor="#64748B"
+                  placeholderTextColor="#9CA3AF"
                 />
               </View>
 
@@ -435,7 +437,7 @@ export default function SettingsScreen() {
                     value={countryForm.currency_code}
                     onChangeText={(v) => setCountryForm({ ...countryForm, currency_code: v.toUpperCase() })}
                     placeholder="NGN"
-                    placeholderTextColor="#64748B"
+                    placeholderTextColor="#9CA3AF"
                     maxLength={3}
                     autoCapitalize="characters"
                   />
@@ -447,7 +449,7 @@ export default function SettingsScreen() {
                     value={countryForm.currency_symbol}
                     onChangeText={(v) => setCountryForm({ ...countryForm, currency_symbol: v })}
                     placeholder="₦"
-                    placeholderTextColor="#64748B"
+                    placeholderTextColor="#9CA3AF"
                     maxLength={5}
                   />
                 </View>
@@ -460,7 +462,7 @@ export default function SettingsScreen() {
                   value={countryForm.currency_name}
                   onChangeText={(v) => setCountryForm({ ...countryForm, currency_name: v })}
                   placeholder="Nigerian Naira"
-                  placeholderTextColor="#64748B"
+                  placeholderTextColor="#9CA3AF"
                 />
               </View>
 
@@ -476,7 +478,7 @@ export default function SettingsScreen() {
                   <Text style={countryForm.timezone ? styles.formSelectText : styles.formSelectPlaceholder}>
                     {countryForm.timezone || 'Select timezone'}
                   </Text>
-                  <Ionicons name="chevron-down" size={20} color="#64748B" />
+                  <Ionicons name="chevron-down" size={20} color="#6B7280" />
                 </TouchableOpacity>
                 {showTimezoneDropdown && (
                   <View style={styles.dropdown}>
@@ -505,7 +507,7 @@ export default function SettingsScreen() {
                   <Text style={countryForm.date_format ? styles.formSelectText : styles.formSelectPlaceholder}>
                     {countryForm.date_format || 'Select format'}
                   </Text>
-                  <Ionicons name="chevron-down" size={20} color="#64748B" />
+                  <Ionicons name="chevron-down" size={20} color="#6B7280" />
                 </TouchableOpacity>
                 {showDateFormatDropdown && (
                   <View style={styles.dropdown}>
@@ -532,17 +534,17 @@ export default function SettingsScreen() {
                   value={countryForm.tax_rate.toString()}
                   onChangeText={(v) => setCountryForm({ ...countryForm, tax_rate: parseFloat(v) || 0 })}
                   placeholder="7.5"
-                  placeholderTextColor="#64748B"
+                  placeholderTextColor="#9CA3AF"
                   keyboardType="decimal-pad"
                 />
               </View>
 
-              <View style={styles.formRow}>
+              <View style={[styles.formRow, { alignItems: 'center', marginTop: 8 }]}>
                 <Text style={styles.formLabel}>Active</Text>
                 <Switch
                   value={countryForm.is_active}
                   onValueChange={(v) => setCountryForm({ ...countryForm, is_active: v })}
-                  trackColor={{ false: '#374151', true: '#10B981' }}
+                  trackColor={{ false: '#D1D5DB', true: '#10B981' }}
                   thumbColor="#fff"
                 />
               </View>
@@ -553,14 +555,14 @@ export default function SettingsScreen() {
                 style={[styles.modalBtn, styles.modalCancelBtn]}
                 onPress={() => setShowCountryModal(false)}
               >
-                <Text style={styles.modalBtnText}>Cancel</Text>
+                <Text style={styles.modalCancelBtnText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalBtn, styles.modalSaveBtn]}
                 onPress={handleSaveCountry}
               >
                 <Ionicons name="checkmark" size={18} color="#fff" />
-                <Text style={styles.modalBtnText}>
+                <Text style={styles.modalSaveBtnText}>
                   {editingCountry ? 'Update' : 'Add Country'}
                 </Text>
               </TouchableOpacity>
@@ -573,91 +575,102 @@ export default function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0F172A' },
+  container: { flex: 1, backgroundColor: '#F3F4F6' },
   header: { 
     flexDirection: 'row', 
     alignItems: 'center', 
-    paddingHorizontal: 24, 
+    paddingHorizontal: 20, 
     paddingVertical: 16,
+    backgroundColor: '#fff',
     borderBottomWidth: 1, 
-    borderBottomColor: '#1E293B' 
+    borderBottomColor: '#E5E7EB' 
   },
   backButton: { 
     width: 40, 
     height: 40, 
     borderRadius: 10, 
-    backgroundColor: '#1E293B',
+    backgroundColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16 
   },
   headerTitleContainer: {},
-  headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#fff' },
-  headerSubtitle: { fontSize: 13, color: '#64748B', marginTop: 2 },
+  headerTitle: { fontSize: 20, fontWeight: '700', color: '#111827' },
+  headerSubtitle: { fontSize: 13, color: '#6B7280', marginTop: 2 },
   loading: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  scrollContent: { padding: 24, paddingBottom: 40 },
+  scrollContent: { padding: 20, paddingBottom: 40 },
   
   section: { marginBottom: 24 },
   sectionHeader: { 
     flexDirection: 'row', 
     alignItems: 'center', 
-    marginBottom: 16,
+    marginBottom: 12,
     gap: 10,
+  },
+  sectionIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   sectionTitle: { 
     fontSize: 16, 
     fontWeight: '600', 
-    color: '#fff',
+    color: '#111827',
     flex: 1,
   },
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#3B82F6',
-    paddingHorizontal: 14,
+    backgroundColor: '#2563EB',
+    paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
-    gap: 6,
+    gap: 4,
   },
   addButtonText: { color: '#fff', fontWeight: '600', fontSize: 13 },
   
   activeCountryCard: {
-    backgroundColor: '#1E293B',
+    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#3B82F6',
+    borderWidth: 2,
+    borderColor: '#10B981',
   },
   activeCountryInfo: { flex: 1 },
-  activeCountryName: { fontSize: 18, fontWeight: '600', color: '#fff' },
-  activeCountryDetails: { fontSize: 14, color: '#94A3B8', marginTop: 4 },
-  changeButton: {
-    backgroundColor: '#3B82F620',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+  activeCountryName: { fontSize: 16, fontWeight: '600', color: '#111827' },
+  activeCountryDetails: { fontSize: 13, color: '#6B7280', marginTop: 4 },
+  activeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     borderRadius: 8,
+    gap: 4,
   },
-  changeButtonText: { color: '#3B82F6', fontWeight: '600' },
+  activeBadgeText: { color: '#10B981', fontWeight: '600', fontSize: 12 },
   
   noCountryCard: {
-    backgroundColor: '#422006',
+    backgroundColor: '#FEF3C7',
     borderRadius: 12,
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
   },
-  noCountryText: { flex: 1, color: '#FCD34D', fontSize: 14 },
+  noCountryText: { flex: 1, color: '#92400E', fontSize: 14 },
   
-  emptyState: { alignItems: 'center', paddingVertical: 40 },
-  emptyText: { color: '#94A3B8', fontSize: 16, marginTop: 12 },
-  emptySubtext: { color: '#64748B', fontSize: 14, marginTop: 4 },
+  emptyState: { alignItems: 'center', paddingVertical: 40, backgroundColor: '#fff', borderRadius: 12 },
+  emptyText: { color: '#6B7280', fontSize: 16, marginTop: 12, fontWeight: '500' },
+  emptySubtext: { color: '#9CA3AF', fontSize: 14, marginTop: 4 },
   
-  countriesList: { gap: 12 },
+  countriesList: { gap: 10 },
   countryCard: {
-    backgroundColor: '#1E293B',
+    backgroundColor: '#fff',
     borderRadius: 12,
     overflow: 'hidden',
   },
@@ -668,51 +681,53 @@ const styles = StyleSheet.create({
   countryCardContent: { padding: 16 },
   countryMain: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
   countryFlag: {
-    width: 48,
-    height: 48,
-    borderRadius: 8,
-    backgroundColor: '#0F172A',
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    backgroundColor: '#EFF6FF',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  countryCode: { fontSize: 14, fontWeight: 'bold', color: '#3B82F6' },
+  countryCode: { fontSize: 13, fontWeight: '700', color: '#2563EB' },
   countryInfo: { marginLeft: 12, flex: 1 },
-  countryName: { fontSize: 16, fontWeight: '600', color: '#fff' },
-  countryMeta: { fontSize: 13, color: '#94A3B8', marginTop: 2 },
+  countryName: { fontSize: 15, fontWeight: '600', color: '#111827' },
+  countryMeta: { fontSize: 13, color: '#6B7280', marginTop: 2 },
   countryDetails: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   countryDetail: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  countryDetailText: { fontSize: 12, color: '#94A3B8' },
+  countryDetailText: { fontSize: 12, color: '#6B7280' },
   countryActions: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
     paddingHorizontal: 16,
     paddingVertical: 10,
-    backgroundColor: '#0F172A',
-    gap: 12,
+    backgroundColor: '#F9FAFB',
+    gap: 10,
   },
-  activeBadge: {
+  activeIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#10B98120',
+    backgroundColor: '#ECFDF5',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 6,
     gap: 4,
     marginRight: 'auto',
   },
-  activeBadgeText: { color: '#10B981', fontSize: 12, fontWeight: '500' },
+  activeIndicatorText: { color: '#10B981', fontSize: 12, fontWeight: '500' },
   actionIcon: {
-    width: 36,
-    height: 36,
+    width: 34,
+    height: 34,
     borderRadius: 8,
-    backgroundColor: '#1E293B',
+    backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   
   settingsCard: {
-    backgroundColor: '#1E293B',
+    backgroundColor: '#fff',
     borderRadius: 12,
     overflow: 'hidden',
   },
@@ -722,23 +737,23 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#334155',
+    borderBottomColor: '#F3F4F6',
   },
   settingInfo: { flex: 1 },
-  settingLabel: { fontSize: 14, fontWeight: '500', color: '#fff' },
-  settingDescription: { fontSize: 12, color: '#64748B', marginTop: 2 },
-  settingValue: { fontSize: 16, fontWeight: '600', color: '#3B82F6' },
+  settingLabel: { fontSize: 14, fontWeight: '500', color: '#111827' },
+  settingDescription: { fontSize: 12, color: '#6B7280', marginTop: 2 },
+  settingValue: { fontSize: 15, fontWeight: '600', color: '#2563EB' },
   
   modalOverlay: { 
     flex: 1, 
-    backgroundColor: 'rgba(0,0,0,0.8)', 
+    backgroundColor: 'rgba(0,0,0,0.4)', 
     justifyContent: 'center', 
     alignItems: 'center', 
     padding: 24 
   },
   modalContent: { 
-    backgroundColor: '#1E293B', 
-    borderRadius: 20, 
+    backgroundColor: '#fff', 
+    borderRadius: 16, 
     width: '100%', 
     maxWidth: 500,
     maxHeight: '90%',
@@ -749,16 +764,16 @@ const styles = StyleSheet.create({
     alignItems: 'center', 
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#334155',
+    borderBottomColor: '#E5E7EB',
   },
-  modalTitle: { fontSize: 18, fontWeight: 'bold', color: '#fff' },
+  modalTitle: { fontSize: 18, fontWeight: '600', color: '#111827' },
   modalBody: { padding: 20, maxHeight: 400 },
   modalFooter: { 
     flexDirection: 'row', 
     gap: 12, 
     padding: 20,
     borderTopWidth: 1,
-    borderTopColor: '#334155',
+    borderTopColor: '#E5E7EB',
   },
   modalBtn: { 
     flex: 1, 
@@ -769,52 +784,60 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     gap: 6,
   },
-  modalCancelBtn: { backgroundColor: '#374151' },
-  modalSaveBtn: { backgroundColor: '#3B82F6' },
-  modalBtnText: { color: '#fff', fontWeight: '600' },
+  modalCancelBtn: { backgroundColor: '#F3F4F6' },
+  modalSaveBtn: { backgroundColor: '#2563EB' },
+  modalCancelBtnText: { color: '#374151', fontWeight: '600' },
+  modalSaveBtnText: { color: '#fff', fontWeight: '600' },
   
   formSectionTitle: { 
-    fontSize: 13, 
+    fontSize: 12, 
     fontWeight: '600', 
-    color: '#94A3B8', 
+    color: '#6B7280', 
     marginTop: 16,
     marginBottom: 12,
     textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   formRow: { flexDirection: 'row', gap: 12 },
   formGroup: { marginBottom: 16 },
-  formLabel: { fontSize: 13, color: '#94A3B8', marginBottom: 6 },
+  formLabel: { fontSize: 13, color: '#374151', marginBottom: 6, fontWeight: '500' },
   formInput: {
-    backgroundColor: '#0F172A',
+    backgroundColor: '#F9FAFB',
     borderRadius: 8,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 14,
-    color: '#fff',
+    color: '#111827',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   formSelect: {
-    backgroundColor: '#0F172A',
+    backgroundColor: '#F9FAFB',
     borderRadius: 8,
     paddingHorizontal: 14,
     paddingVertical: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
-  formSelectText: { fontSize: 14, color: '#fff' },
-  formSelectPlaceholder: { fontSize: 14, color: '#64748B' },
+  formSelectText: { fontSize: 14, color: '#111827' },
+  formSelectPlaceholder: { fontSize: 14, color: '#9CA3AF' },
   dropdown: {
-    backgroundColor: '#0F172A',
+    backgroundColor: '#fff',
     borderRadius: 8,
     marginTop: 4,
     maxHeight: 150,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
     overflow: 'scroll',
   },
   dropdownItem: {
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#1E293B',
+    borderBottomColor: '#F3F4F6',
   },
-  dropdownItemText: { fontSize: 14, color: '#fff' },
+  dropdownItemText: { fontSize: 14, color: '#111827' },
 });

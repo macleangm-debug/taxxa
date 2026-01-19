@@ -91,14 +91,14 @@ export default function UsersManagement() {
       case 'active': return '#10B981';
       case 'flagged': return '#F59E0B';
       case 'blocked': return '#EF4444';
-      default: return '#64748B';
+      default: return '#6B7280';
     }
   };
 
   const renderUser = ({ item }: { item: any }) => (
     <TouchableOpacity style={styles.userCard} onPress={() => handleUserPress(item)}>
-      <View style={[styles.avatar, { backgroundColor: getStatusColor(item.status) + '20' }]}>
-        <Ionicons name="person" size={22} color={getStatusColor(item.status)} />
+      <View style={[styles.avatar, { backgroundColor: getStatusColor(item.status) + '15' }]}>
+        <Ionicons name="person" size={20} color={getStatusColor(item.status)} />
       </View>
       <View style={styles.userInfo}>
         <Text style={styles.userName}>{item.name || 'No Name'}</Text>
@@ -106,21 +106,21 @@ export default function UsersManagement() {
       </View>
       <View style={styles.userStatsContainer}>
         <View style={styles.userStat}>
-          <Ionicons name="scan" size={14} color="#64748B" />
-          <Text style={styles.userStatText}>{item.total_scans} scans</Text>
+          <Ionicons name="scan" size={14} color="#6B7280" />
+          <Text style={styles.userStatText}>{item.total_scans}</Text>
         </View>
         <View style={styles.userStat}>
-          <Ionicons name="ticket" size={14} color="#64748B" />
-          <Text style={styles.userStatText}>{item.total_entries} entries</Text>
+          <Ionicons name="ticket" size={14} color="#6B7280" />
+          <Text style={styles.userStatText}>{item.total_entries}</Text>
         </View>
       </View>
-      <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '20' }]}>
+      <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '15' }]}>
         <View style={[styles.statusDot, { backgroundColor: getStatusColor(item.status) }]} />
         <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
           {item.status}
         </Text>
       </View>
-      <Ionicons name="chevron-forward" size={20} color="#64748B" />
+      <Ionicons name="chevron-forward" size={18} color="#D1D5DB" />
     </TouchableOpacity>
   );
 
@@ -129,10 +129,10 @@ export default function UsersManagement() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#fff" />
+          <Ionicons name="arrow-back" size={24} color="#111827" />
         </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitle}>User Management</Text>
+          <Text style={styles.headerTitle}>Users</Text>
           <Text style={styles.headerSubtitle}>{pagination.total} total users</Text>
         </View>
       </View>
@@ -140,18 +140,18 @@ export default function UsersManagement() {
       {/* Search & Filter Bar */}
       <View style={styles.controlsBar}>
         <View style={styles.searchContainer}>
-          <Ionicons name="search" size={20} color="#64748B" />
+          <Ionicons name="search" size={18} color="#6B7280" />
           <TextInput
             style={styles.searchInput}
             placeholder="Search by phone or name..."
-            placeholderTextColor="#64748B"
+            placeholderTextColor="#9CA3AF"
             value={search}
             onChangeText={setSearch}
             onSubmitEditing={handleSearch}
           />
           {search.length > 0 && (
             <TouchableOpacity onPress={() => { setSearch(''); loadUsers(1); }}>
-              <Ionicons name="close-circle" size={20} color="#64748B" />
+              <Ionicons name="close-circle" size={18} color="#9CA3AF" />
             </TouchableOpacity>
           )}
         </View>
@@ -177,17 +177,9 @@ export default function UsersManagement() {
         </View>
       </View>
 
-      {/* Table Header */}
-      <View style={styles.tableHeader}>
-        <Text style={[styles.tableHeaderText, { flex: 2 }]}>User</Text>
-        <Text style={[styles.tableHeaderText, { flex: 1.5 }]}>Activity</Text>
-        <Text style={[styles.tableHeaderText, { flex: 1 }]}>Status</Text>
-        <Text style={[styles.tableHeaderText, { width: 30 }]}></Text>
-      </View>
-
       {isLoading ? (
         <View style={styles.loading}>
-          <ActivityIndicator size="large" color="#3B82F6" />
+          <ActivityIndicator size="large" color="#2563EB" />
         </View>
       ) : (
         <FlatList
@@ -197,7 +189,7 @@ export default function UsersManagement() {
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={
             <View style={styles.emptyState}>
-              <Ionicons name="people-outline" size={48} color="#64748B" />
+              <Ionicons name="people-outline" size={48} color="#9CA3AF" />
               <Text style={styles.emptyText}>No users found</Text>
             </View>
           }
@@ -212,7 +204,7 @@ export default function UsersManagement() {
             onPress={() => loadUsers(pagination.page - 1)}
             disabled={pagination.page === 1}
           >
-            <Ionicons name="chevron-back" size={20} color="#fff" />
+            <Ionicons name="chevron-back" size={18} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.pageText}>Page {pagination.page} of {pagination.pages}</Text>
           <TouchableOpacity
@@ -220,7 +212,7 @@ export default function UsersManagement() {
             onPress={() => loadUsers(pagination.page + 1)}
             disabled={pagination.page === pagination.pages}
           >
-            <Ionicons name="chevron-forward" size={20} color="#fff" />
+            <Ionicons name="chevron-forward" size={18} color="#fff" />
           </TouchableOpacity>
         </View>
       )}
@@ -232,7 +224,7 @@ export default function UsersManagement() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>User Details</Text>
               <TouchableOpacity onPress={() => { setShowModal(false); setUserDetails(null); }}>
-                <Ionicons name="close" size={24} color="#94A3B8" />
+                <Ionicons name="close" size={24} color="#6B7280" />
               </TouchableOpacity>
             </View>
 
@@ -240,13 +232,13 @@ export default function UsersManagement() {
               <View style={styles.modalBody}>
                 {/* User Info */}
                 <View style={styles.userInfoSection}>
-                  <View style={[styles.modalAvatar, { backgroundColor: getStatusColor(userDetails.user.status) + '20' }]}>
-                    <Ionicons name="person" size={32} color={getStatusColor(userDetails.user.status)} />
+                  <View style={[styles.modalAvatar, { backgroundColor: getStatusColor(userDetails.user.status) + '15' }]}>
+                    <Ionicons name="person" size={28} color={getStatusColor(userDetails.user.status)} />
                   </View>
                   <View style={styles.userInfoDetails}>
                     <Text style={styles.modalUserName}>{userDetails.user.name || 'Anonymous'}</Text>
                     <Text style={styles.modalUserPhone}>{userDetails.user.phone_number}</Text>
-                    <View style={[styles.statusBadge, { backgroundColor: getStatusColor(userDetails.user.status) + '20', marginTop: 8 }]}>
+                    <View style={[styles.statusBadge, { backgroundColor: getStatusColor(userDetails.user.status) + '15', marginTop: 8 }]}>
                       <View style={[styles.statusDot, { backgroundColor: getStatusColor(userDetails.user.status) }]} />
                       <Text style={[styles.statusText, { color: getStatusColor(userDetails.user.status) }]}>
                         {userDetails.user.status}
@@ -258,17 +250,17 @@ export default function UsersManagement() {
                 {/* Stats Grid */}
                 <View style={styles.statsGrid}>
                   <View style={styles.statBox}>
-                    <Ionicons name="scan" size={20} color="#3B82F6" />
+                    <Ionicons name="scan" size={18} color="#2563EB" />
                     <Text style={styles.statNumber}>{userDetails.user.total_scans}</Text>
                     <Text style={styles.statLabel}>Total Scans</Text>
                   </View>
                   <View style={styles.statBox}>
-                    <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+                    <Ionicons name="checkmark-circle" size={18} color="#10B981" />
                     <Text style={styles.statNumber}>{userDetails.user.valid_scans}</Text>
                     <Text style={styles.statLabel}>Valid Scans</Text>
                   </View>
                   <View style={styles.statBox}>
-                    <Ionicons name="ticket" size={20} color="#F59E0B" />
+                    <Ionicons name="ticket" size={18} color="#F59E0B" />
                     <Text style={styles.statNumber}>{userDetails.user.total_entries}</Text>
                     <Text style={styles.statLabel}>Entries</Text>
                   </View>
@@ -278,7 +270,7 @@ export default function UsersManagement() {
                 {userDetails.fraud_indicators && (
                   <View style={styles.fraudSection}>
                     <Text style={styles.fraudTitle}>
-                      <Ionicons name="warning" size={16} color="#F59E0B" /> Fraud Indicators
+                      <Ionicons name="warning" size={14} color="#F59E0B" /> Fraud Indicators
                     </Text>
                     <View style={styles.fraudGrid}>
                       <View style={styles.fraudItem}>
@@ -304,7 +296,7 @@ export default function UsersManagement() {
                       style={[styles.actionBtn, styles.activateBtn]}
                       onPress={() => handleStatusChange(userDetails.user.id, 'active')}
                     >
-                      <Ionicons name="checkmark-circle" size={18} color="#fff" />
+                      <Ionicons name="checkmark-circle" size={16} color="#fff" />
                       <Text style={styles.actionBtnText}>Activate</Text>
                     </TouchableOpacity>
                   )}
@@ -313,7 +305,7 @@ export default function UsersManagement() {
                       style={[styles.actionBtn, styles.flagBtn]}
                       onPress={() => handleStatusChange(userDetails.user.id, 'flagged')}
                     >
-                      <Ionicons name="flag" size={18} color="#fff" />
+                      <Ionicons name="flag" size={16} color="#fff" />
                       <Text style={styles.actionBtnText}>Flag</Text>
                     </TouchableOpacity>
                   )}
@@ -322,14 +314,14 @@ export default function UsersManagement() {
                       style={[styles.actionBtn, styles.blockBtn]}
                       onPress={() => handleStatusChange(userDetails.user.id, 'blocked')}
                     >
-                      <Ionicons name="ban" size={18} color="#fff" />
+                      <Ionicons name="ban" size={16} color="#fff" />
                       <Text style={styles.actionBtnText}>Block</Text>
                     </TouchableOpacity>
                   )}
                 </View>
               </View>
             ) : (
-              <ActivityIndicator size="large" color="#3B82F6" style={{ marginTop: 40, marginBottom: 40 }} />
+              <ActivityIndicator size="large" color="#2563EB" style={{ marginTop: 40, marginBottom: 40 }} />
             )}
           </View>
         </View>
@@ -339,86 +331,81 @@ export default function UsersManagement() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0F172A' },
+  container: { flex: 1, backgroundColor: '#F3F4F6' },
   header: { 
     flexDirection: 'row', 
     alignItems: 'center', 
-    paddingHorizontal: 24, 
+    paddingHorizontal: 20, 
     paddingVertical: 16,
+    backgroundColor: '#fff',
     borderBottomWidth: 1, 
-    borderBottomColor: '#1E293B' 
+    borderBottomColor: '#E5E7EB' 
   },
   backButton: { 
     width: 40, 
     height: 40, 
     borderRadius: 10, 
-    backgroundColor: '#1E293B',
+    backgroundColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16 
   },
   headerTitleContainer: {},
-  headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#fff' },
-  headerSubtitle: { fontSize: 13, color: '#64748B', marginTop: 2 },
+  headerTitle: { fontSize: 20, fontWeight: '700', color: '#111827' },
+  headerSubtitle: { fontSize: 13, color: '#6B7280', marginTop: 2 },
   
   controlsBar: { 
-    paddingHorizontal: 24, 
-    paddingVertical: 16,
+    paddingHorizontal: 20, 
+    paddingVertical: 12,
+    backgroundColor: '#fff',
     flexDirection: Platform.OS === 'web' && width > 768 ? 'row' : 'column',
     gap: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#1E293B',
+    borderBottomColor: '#E5E7EB',
   },
   searchContainer: { 
     flexDirection: 'row', 
     alignItems: 'center', 
-    backgroundColor: '#1E293B', 
+    backgroundColor: '#F9FAFB', 
     borderRadius: 10, 
     paddingHorizontal: 14,
     height: 44,
     flex: Platform.OS === 'web' && width > 768 ? 1 : undefined,
     maxWidth: Platform.OS === 'web' ? 400 : undefined,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
-  searchInput: { flex: 1, marginLeft: 10, fontSize: 14, color: '#fff' },
+  searchInput: { flex: 1, marginLeft: 10, fontSize: 14, color: '#111827' },
   filterContainer: { flexDirection: 'row', gap: 8 },
-  filterButton: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8, backgroundColor: '#1E293B' },
-  filterActive: { backgroundColor: '#3B82F6' },
-  filterText: { color: '#94A3B8', fontSize: 13, fontWeight: '500' },
+  filterButton: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8, backgroundColor: '#F3F4F6' },
+  filterActive: { backgroundColor: '#2563EB' },
+  filterText: { color: '#6B7280', fontSize: 13, fontWeight: '500' },
   filterTextActive: { color: '#fff' },
   
-  tableHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    backgroundColor: '#1E293B',
-  },
-  tableHeaderText: { fontSize: 12, color: '#64748B', fontWeight: '600', textTransform: 'uppercase' },
-  
   loading: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  listContent: { paddingHorizontal: 24, paddingVertical: 8 },
+  listContent: { padding: 20 },
   
   userCard: { 
     flexDirection: 'row', 
     alignItems: 'center', 
-    backgroundColor: '#1E293B',
+    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 14,
-    marginVertical: 4,
+    marginBottom: 8,
   },
   avatar: { 
-    width: 44, 
-    height: 44, 
+    width: 42, 
+    height: 42, 
     borderRadius: 10, 
     justifyContent: 'center', 
     alignItems: 'center' 
   },
   userInfo: { flex: 2, marginLeft: 12 },
-  userName: { fontSize: 15, fontWeight: '600', color: '#fff' },
-  userPhone: { fontSize: 13, color: '#94A3B8', marginTop: 2 },
+  userName: { fontSize: 15, fontWeight: '600', color: '#111827' },
+  userPhone: { fontSize: 13, color: '#6B7280', marginTop: 2 },
   userStatsContainer: { flex: 1.5, flexDirection: 'row', gap: 16 },
   userStat: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  userStatText: { fontSize: 13, color: '#94A3B8' },
+  userStatText: { fontSize: 13, color: '#6B7280' },
   statusBadge: { 
     flexDirection: 'row', 
     alignItems: 'center', 
@@ -432,7 +419,7 @@ const styles = StyleSheet.create({
   statusText: { fontSize: 12, fontWeight: '600', textTransform: 'capitalize' },
   
   emptyState: { alignItems: 'center', paddingTop: 60 },
-  emptyText: { color: '#64748B', fontSize: 16, marginTop: 12 },
+  emptyText: { color: '#6B7280', fontSize: 16, marginTop: 12 },
   
   pagination: { 
     flexDirection: 'row', 
@@ -440,17 +427,18 @@ const styles = StyleSheet.create({
     alignItems: 'center', 
     padding: 16, 
     gap: 16,
+    backgroundColor: '#fff',
     borderTopWidth: 1,
-    borderTopColor: '#1E293B',
+    borderTopColor: '#E5E7EB',
   },
-  pageBtn: { backgroundColor: '#3B82F6', width: 36, height: 36, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
-  pageBtnDisabled: { backgroundColor: '#374151' },
-  pageText: { color: '#94A3B8', fontSize: 14 },
+  pageBtn: { backgroundColor: '#2563EB', width: 36, height: 36, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
+  pageBtnDisabled: { backgroundColor: '#D1D5DB' },
+  pageText: { color: '#6B7280', fontSize: 14 },
   
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center', padding: 24 },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center', padding: 24 },
   modalContent: { 
-    backgroundColor: '#1E293B', 
-    borderRadius: 20, 
+    backgroundColor: '#fff', 
+    borderRadius: 16, 
     width: '100%', 
     maxWidth: 480,
     maxHeight: '90%',
@@ -461,39 +449,39 @@ const styles = StyleSheet.create({
     alignItems: 'center', 
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#334155',
+    borderBottomColor: '#E5E7EB',
   },
-  modalTitle: { fontSize: 18, fontWeight: 'bold', color: '#fff' },
+  modalTitle: { fontSize: 18, fontWeight: '600', color: '#111827' },
   modalBody: { padding: 20 },
   
   userInfoSection: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
-  modalAvatar: { width: 64, height: 64, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
+  modalAvatar: { width: 56, height: 56, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
   userInfoDetails: { marginLeft: 16, flex: 1 },
-  modalUserName: { fontSize: 18, fontWeight: '600', color: '#fff' },
-  modalUserPhone: { fontSize: 14, color: '#94A3B8', marginTop: 2 },
+  modalUserName: { fontSize: 18, fontWeight: '600', color: '#111827' },
+  modalUserPhone: { fontSize: 14, color: '#6B7280', marginTop: 2 },
   
   statsGrid: { 
     flexDirection: 'row', 
-    backgroundColor: '#0F172A', 
+    backgroundColor: '#F9FAFB', 
     borderRadius: 12, 
     padding: 16,
     marginBottom: 16,
   },
-  statBox: { flex: 1, alignItems: 'center', gap: 6 },
-  statNumber: { fontSize: 22, fontWeight: 'bold', color: '#fff' },
-  statLabel: { fontSize: 11, color: '#94A3B8' },
+  statBox: { flex: 1, alignItems: 'center', gap: 4 },
+  statNumber: { fontSize: 20, fontWeight: '700', color: '#111827' },
+  statLabel: { fontSize: 11, color: '#6B7280' },
   
   fraudSection: { 
-    backgroundColor: '#422006', 
+    backgroundColor: '#FEF3C7', 
     borderRadius: 12, 
     padding: 14, 
     marginBottom: 16 
   },
-  fraudTitle: { fontSize: 13, fontWeight: '600', color: '#FCD34D', marginBottom: 10 },
+  fraudTitle: { fontSize: 13, fontWeight: '600', color: '#92400E', marginBottom: 10 },
   fraudGrid: { flexDirection: 'row' },
   fraudItem: { flex: 1, alignItems: 'center' },
-  fraudValue: { fontSize: 18, fontWeight: 'bold', color: '#FEF3C7' },
-  fraudLabel: { fontSize: 11, color: '#FCD34D' },
+  fraudValue: { fontSize: 18, fontWeight: '700', color: '#92400E' },
+  fraudLabel: { fontSize: 11, color: '#B45309' },
   
   actionButtons: { flexDirection: 'row', gap: 10 },
   actionBtn: { 

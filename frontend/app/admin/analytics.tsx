@@ -55,12 +55,12 @@ export default function AnalyticsScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#fff" />
+            <Ionicons name="arrow-back" size={24} color="#111827" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Analytics</Text>
         </View>
         <View style={styles.loading}>
-          <ActivityIndicator size="large" color="#3B82F6" />
+          <ActivityIndicator size="large" color="#2563EB" />
         </View>
       </SafeAreaView>
     );
@@ -70,15 +70,23 @@ export default function AnalyticsScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#fff" />
+          <Ionicons name="arrow-back" size={24} color="#111827" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Analytics</Text>
+        <View>
+          <Text style={styles.headerTitle}>Analytics</Text>
+          <Text style={styles.headerSubtitle}>Performance overview</Text>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Scans Chart */}
         <View style={styles.chartCard}>
-          <Text style={styles.chartTitle}>Scans (Last 14 Days)</Text>
+          <View style={styles.cardHeader}>
+            <View style={[styles.cardIcon, { backgroundColor: '#ECFDF5' }]}>
+              <Ionicons name="bar-chart" size={18} color="#10B981" />
+            </View>
+            <Text style={styles.cardTitle}>Scans (Last 7 Days)</Text>
+          </View>
           <View style={styles.chart}>
             {scansByDay.slice(-7).map((day, index) => (
               <View key={index} style={styles.barContainer}>
@@ -116,7 +124,12 @@ export default function AnalyticsScreen() {
 
         {/* Summary Stats */}
         <View style={styles.summaryCard}>
-          <Text style={styles.chartTitle}>14-Day Summary</Text>
+          <View style={styles.cardHeader}>
+            <View style={[styles.cardIcon, { backgroundColor: '#EFF6FF' }]}>
+              <Ionicons name="stats-chart" size={18} color="#2563EB" />
+            </View>
+            <Text style={styles.cardTitle}>14-Day Summary</Text>
+          </View>
           <View style={styles.summaryRow}>
             <View style={styles.summaryItem}>
               <Text style={styles.summaryValue}>
@@ -131,7 +144,7 @@ export default function AnalyticsScreen() {
               <Text style={styles.summaryLabel}>Valid</Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={[styles.summaryValue, { color: '#3B82F6' }]}>
+              <Text style={[styles.summaryValue, { color: '#2563EB' }]}>
                 {usersByDay.reduce((sum, d) => sum + d.count, 0)}
               </Text>
               <Text style={styles.summaryLabel}>New Users</Text>
@@ -141,10 +154,15 @@ export default function AnalyticsScreen() {
 
         {/* Top Merchants */}
         <View style={styles.listCard}>
-          <Text style={styles.chartTitle}>Top Merchants</Text>
+          <View style={styles.cardHeader}>
+            <View style={[styles.cardIcon, { backgroundColor: '#FEF3C7' }]}>
+              <Ionicons name="storefront" size={18} color="#F59E0B" />
+            </View>
+            <Text style={styles.cardTitle}>Top Merchants</Text>
+          </View>
           {merchants.slice(0, 5).map((merchant, index) => (
             <View key={index} style={styles.listItem}>
-              <View style={styles.rankBadge}>
+              <View style={[styles.rankBadge, index < 3 && styles.topRank]}>
                 <Text style={styles.rankText}>{index + 1}</Text>
               </View>
               <View style={styles.listItemInfo}>
@@ -164,7 +182,12 @@ export default function AnalyticsScreen() {
 
         {/* Top Users */}
         <View style={styles.listCard}>
-          <Text style={styles.chartTitle}>Top Users (By Entries)</Text>
+          <View style={styles.cardHeader}>
+            <View style={[styles.cardIcon, { backgroundColor: '#F3E8FF' }]}>
+              <Ionicons name="trophy" size={18} color="#8B5CF6" />
+            </View>
+            <Text style={styles.cardTitle}>Top Users (By Entries)</Text>
+          </View>
           {topUsers.slice(0, 5).map((user, index) => (
             <View key={index} style={styles.listItem}>
               <View style={[styles.rankBadge, index < 3 && styles.topRank]}>
@@ -175,7 +198,7 @@ export default function AnalyticsScreen() {
                 <Text style={styles.listItemSubtitle}>{user.phone_number}</Text>
               </View>
               <View style={styles.listItemStats}>
-                <Text style={[styles.listItemValue, { color: '#3B82F6' }]}>
+                <Text style={[styles.listItemValue, { color: '#8B5CF6' }]}>
                   {user.total_entries}
                 </Text>
                 <Text style={styles.listItemLabel}>entries</Text>
@@ -192,40 +215,65 @@ export default function AnalyticsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0F172A' },
-  header: { flexDirection: 'row', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: '#1E293B' },
-  backButton: { marginRight: 16 },
-  headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#fff' },
+  container: { flex: 1, backgroundColor: '#F3F4F6' },
+  header: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    paddingHorizontal: 20, 
+    paddingVertical: 16, 
+    backgroundColor: '#fff',
+    borderBottomWidth: 1, 
+    borderBottomColor: '#E5E7EB' 
+  },
+  backButton: { 
+    width: 40, 
+    height: 40, 
+    borderRadius: 10, 
+    backgroundColor: '#F3F4F6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16 
+  },
+  headerTitle: { fontSize: 20, fontWeight: '700', color: '#111827' },
+  headerSubtitle: { fontSize: 13, color: '#6B7280', marginTop: 2 },
   loading: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  scrollContent: { padding: 16, paddingBottom: 40 },
-  chartCard: { backgroundColor: '#1E293B', borderRadius: 16, padding: 16, marginBottom: 16 },
-  chartTitle: { fontSize: 16, fontWeight: '600', color: '#fff', marginBottom: 16 },
-  chart: { flexDirection: 'row', justifyContent: 'space-between', height: 150, alignItems: 'flex-end' },
+  scrollContent: { padding: 20, paddingBottom: 40 },
+  
+  chartCard: { backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 16 },
+  summaryCard: { backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 16 },
+  listCard: { backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 16 },
+  
+  cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 16, gap: 10 },
+  cardIcon: { width: 32, height: 32, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
+  cardTitle: { fontSize: 15, fontWeight: '600', color: '#111827' },
+  
+  chart: { flexDirection: 'row', justifyContent: 'space-between', height: 140, alignItems: 'flex-end' },
   barContainer: { alignItems: 'center', flex: 1 },
-  barWrapper: { height: 120, width: 24, justifyContent: 'flex-end' },
+  barWrapper: { height: 110, width: 24, justifyContent: 'flex-end' },
   bar: { width: '100%', borderRadius: 4, minHeight: 4 },
   barValid: { backgroundColor: '#10B981' },
   barInvalid: { backgroundColor: '#EF4444', marginTop: 2 },
-  barLabel: { fontSize: 10, color: '#94A3B8', marginTop: 4 },
-  legend: { flexDirection: 'row', justifyContent: 'center', marginTop: 12, gap: 16 },
-  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  barLabel: { fontSize: 10, color: '#6B7280', marginTop: 6 },
+  
+  legend: { flexDirection: 'row', justifyContent: 'center', marginTop: 12, gap: 20 },
+  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   legendDot: { width: 8, height: 8, borderRadius: 4 },
-  legendText: { fontSize: 12, color: '#94A3B8' },
-  summaryCard: { backgroundColor: '#1E293B', borderRadius: 16, padding: 16, marginBottom: 16 },
+  legendText: { fontSize: 12, color: '#6B7280' },
+  
   summaryRow: { flexDirection: 'row', justifyContent: 'space-around' },
   summaryItem: { alignItems: 'center' },
-  summaryValue: { fontSize: 28, fontWeight: 'bold', color: '#fff' },
-  summaryLabel: { fontSize: 12, color: '#94A3B8', marginTop: 4 },
-  listCard: { backgroundColor: '#1E293B', borderRadius: 16, padding: 16, marginBottom: 16 },
-  listItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#334155' },
-  rankBadge: { width: 28, height: 28, borderRadius: 14, backgroundColor: '#374151', justifyContent: 'center', alignItems: 'center' },
-  topRank: { backgroundColor: '#F59E0B' },
-  rankText: { color: '#fff', fontWeight: '600', fontSize: 12 },
+  summaryValue: { fontSize: 26, fontWeight: '700', color: '#111827' },
+  summaryLabel: { fontSize: 12, color: '#6B7280', marginTop: 4 },
+  
+  listItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
+  rankBadge: { width: 28, height: 28, borderRadius: 8, backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center' },
+  topRank: { backgroundColor: '#FEF3C7' },
+  rankText: { color: '#111827', fontWeight: '600', fontSize: 12 },
   listItemInfo: { flex: 1, marginLeft: 12 },
-  listItemTitle: { fontSize: 14, fontWeight: '600', color: '#fff' },
-  listItemSubtitle: { fontSize: 12, color: '#94A3B8' },
+  listItemTitle: { fontSize: 14, fontWeight: '600', color: '#111827' },
+  listItemSubtitle: { fontSize: 12, color: '#6B7280', marginTop: 2 },
   listItemStats: { alignItems: 'flex-end' },
-  listItemValue: { fontSize: 16, fontWeight: 'bold', color: '#10B981' },
-  listItemLabel: { fontSize: 10, color: '#94A3B8' },
-  emptyText: { color: '#64748B', fontSize: 14, textAlign: 'center', paddingVertical: 20 },
+  listItemValue: { fontSize: 15, fontWeight: '700', color: '#10B981' },
+  listItemLabel: { fontSize: 10, color: '#6B7280', marginTop: 2 },
+  emptyText: { color: '#9CA3AF', fontSize: 14, textAlign: 'center', paddingVertical: 20 },
 });
