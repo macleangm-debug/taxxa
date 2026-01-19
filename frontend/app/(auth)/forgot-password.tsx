@@ -72,20 +72,17 @@ export default function ForgotPasswordScreen() {
 
     setIsLoading(true);
     try {
-      const response = await authAPI.register(phoneNumber);
+      // Use the forgot-password endpoint for existing users
+      const response = await authAPI.forgotPassword(phoneNumber);
       setTestOtp(response.data.otp_for_testing);
       setStep('otp');
       setCountdown(60);
     } catch (error: any) {
       const msg = error.response?.data?.detail || 'Failed to send OTP';
-      if (msg.toLowerCase().includes('already registered')) {
-        // Phone exists, which is good for forgot password
-        // For demo, we'll simulate OTP sent
-        setTestOtp('123456');
-        setStep('otp');
-        setCountdown(60);
+      if (msg.toLowerCase().includes('not registered') || msg.toLowerCase().includes('not found')) {
+        Alert.alert('Error', 'Phone number not registered. Please create an account first.');
       } else {
-        Alert.alert('Error', 'Phone number not found. Please register first.');
+        Alert.alert('Error', msg);
       }
     } finally {
       setIsLoading(false);
@@ -137,7 +134,7 @@ export default function ForgotPasswordScreen() {
 
     setIsLoading(true);
     try {
-      await authAPI.createPassword(phoneNumber, newPassword);
+      await authAPI.resetPassword(phoneNumber, newPassword);
       Alert.alert('Success', 'Password reset successfully!', [
         { text: 'OK', onPress: () => router.replace('/(auth)/login') }
       ]);
@@ -151,15 +148,13 @@ export default function ForgotPasswordScreen() {
   const handleResendOTP = async () => {
     setIsLoading(true);
     try {
-      const response = await authAPI.register(phoneNumber);
+      const response = await authAPI.forgotPassword(phoneNumber);
       setTestOtp(response.data.otp_for_testing);
       setOtp(['', '', '', '', '', '']);
       setCountdown(60);
       Alert.alert('Success', 'OTP resent successfully');
-    } catch {
-      setTestOtp('123456');
-      setOtp(['', '', '', '', '', '']);
-      setCountdown(60);
+    } catch (error: any) {
+      Alert.alert('Error', 'Failed to resend OTP');
     } finally {
       setIsLoading(false);
     }
@@ -230,6 +225,7 @@ export default function ForgotPasswordScreen() {
                         <Text style={styles.errorText}>{phoneError}</Text>
                       </View>
                     )}
+                    <Text style={styles.hintText}>Format: 0XXXXXXXXX (10 digits)</Text>
                   </View>
 
                   <TouchableOpacity
@@ -318,7 +314,7 @@ export default function ForgotPasswordScreen() {
                     </View>
 
                     {newPassword && newPassword.length < 6 && (
-                      <Text style={styles.hintText}>Password must be at least 6 characters</Text>
+                      <Text style={styles.hintTextSmall}>Password must be at least 6 characters</Text>
                     )}
                     {confirmPassword && newPassword !== confirmPassword && (
                       <Text style={styles.errorTextSmall}>Passwords do not match</Text>
@@ -373,11 +369,12 @@ const styles = StyleSheet.create({
   input: { flex: 1, marginLeft: 12, fontSize: 16, color: '#fff' },
   errorContainer: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: -8 },
   errorText: { color: '#EF4444', fontSize: 13 },
-  errorTextSmall: { color: '#EF4444', fontSize: 13, marginTop: -8 },
-  hintText: { color: '#94A3B8', fontSize: 13, marginTop: -8 },
+  errorTextSmall: { color: '#EF4444', fontSize: 13 },
+  hintText: { color: '#64748B', fontSize: 12, marginTop: -8 },
+  hintTextSmall: { color: '#94A3B8', fontSize: 13 },
   otpContainer: { flexDirection: 'row', justifyContent: 'center', gap: 8, marginBottom: 32 },
   otpInput: { width: 48, height: 56, backgroundColor: isWeb ? '#0F172A' : '#1E293B', borderRadius: 12, textAlign: 'center', fontSize: 22, color: '#fff', fontWeight: '600' },
-  otpInputFilled: { backgroundColor: '#3B82F6' },
+  otpInputFilled: { backgroundColor: '#F59E0B' },
   button: { backgroundColor: '#F59E0B', paddingVertical: 16, borderRadius: 12, alignItems: 'center' },
   buttonDisabled: { backgroundColor: '#374151' },
   buttonText: { color: '#fff', fontSize: 18, fontWeight: '600' },
