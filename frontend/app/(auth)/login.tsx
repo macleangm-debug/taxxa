@@ -20,6 +20,29 @@ import { useAuthStore } from '../../src/store/authStore';
 const { width } = Dimensions.get('window');
 const isWeb = Platform.OS === 'web';
 
+// Phone validation: must be 0XXXXXXXXX (10 digits starting with 0)
+const validatePhone = (phone: string): { valid: boolean; error?: string } => {
+  const cleaned = phone.replace(/[\s-]/g, '');
+  
+  if (cleaned.length === 0) {
+    return { valid: false };
+  }
+  
+  if (!/^\d+$/.test(cleaned)) {
+    return { valid: false, error: 'Phone number must contain only digits' };
+  }
+  
+  if (!cleaned.startsWith('0')) {
+    return { valid: false, error: 'Phone number must start with 0' };
+  }
+  
+  if (cleaned.length !== 10) {
+    return { valid: false, error: 'Phone number must be 10 digits (0XXXXXXXXX)' };
+  }
+  
+  return { valid: true };
+};
+
 export default function LoginScreen() {
   const router = useRouter();
   const { login } = useAuthStore();
@@ -28,12 +51,22 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+
+  const handlePhoneChange = (text: string) => {
+    const cleaned = text.replace(/[^0-9]/g, '');
+    setPhoneNumber(cleaned);
+    if (phoneError) setPhoneError(null);
+  };
 
   const handleLogin = async () => {
-    if (phoneNumber.length < 10) {
-      Alert.alert('Error', 'Please enter a valid phone number');
+    const validation = validatePhone(phoneNumber);
+    
+    if (!validation.valid) {
+      setPhoneError(validation.error || 'Invalid phone number');
       return;
     }
+    
     if (password.length < 6) {
       Alert.alert('Error', 'Please enter your password');
       return;
@@ -53,6 +86,8 @@ export default function LoginScreen() {
     }
   };
 
+  const isValidPhone = validatePhone(phoneNumber).valid;
+
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
@@ -65,7 +100,6 @@ export default function LoginScreen() {
         >
           <View style={styles.centerContainer}>
             <View style={styles.card}>
-              {/* Back button */}
               <TouchableOpacity
                 style={styles.backButton}
                 onPress={() => router.back()}
@@ -85,18 +119,24 @@ export default function LoginScreen() {
               </View>
 
               <View style={styles.inputContainer}>
-                <View style={styles.inputWrapper}>
+                <View style={[styles.inputWrapper, phoneError && styles.inputError]}>
                   <Ionicons name="call" size={20} color="#64748B" />
                   <TextInput
                     style={styles.input}
-                    placeholder="Phone Number"
+                    placeholder="0XXXXXXXXX"
                     placeholderTextColor="#64748B"
-                    keyboardType="phone-pad"
+                    keyboardType="number-pad"
                     value={phoneNumber}
-                    onChangeText={setPhoneNumber}
-                    maxLength={15}
+                    onChangeText={handlePhoneChange}
+                    maxLength={10}
                   />
                 </View>
+                {phoneError && (
+                  <View style={styles.errorContainer}>
+                    <Ionicons name="alert-circle" size={16} color="#EF4444" />
+                    <Text style={styles.errorText}>{phoneError}</Text>
+                  </View>
+                )}
 
                 <View style={styles.inputWrapper}>
                   <Ionicons name="lock-closed" size={20} color="#64748B" />
@@ -119,12 +159,19 @@ export default function LoginScreen() {
               </View>
 
               <TouchableOpacity
+                style={styles.forgotPassword}
+                onPress={() => router.push('/(auth)/forgot-password')}
+              >
+                <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
                 style={[
                   styles.button,
-                  (phoneNumber.length < 10 || password.length < 6) && styles.buttonDisabled,
+                  (!isValidPhone || password.length < 6) && styles.buttonDisabled,
                 ]}
                 onPress={handleLogin}
-                disabled={isLoading || phoneNumber.length < 10 || password.length < 6}
+                disabled={isLoading || !isValidPhone || password.length < 6}
               >
                 {isLoading ? (
                   <ActivityIndicator color="#fff" />
@@ -211,7 +258,7 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     gap: 16,
-    marginBottom: 24,
+    marginBottom: 16,
   },
   inputWrapper: {
     flexDirection: 'row',
@@ -220,12 +267,36 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 16,
     height: 56,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  inputError: {
+    borderColor: '#EF4444',
   },
   input: {
     flex: 1,
     marginLeft: 12,
     fontSize: 16,
     color: '#fff',
+  },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: -8,
+  },
+  errorText: {
+    color: '#EF4444',
+    fontSize: 13,
+  },
+  forgotPassword: {
+    alignSelf: 'flex-end',
+    marginBottom: 24,
+  },
+  forgotPasswordText: {
+    color: '#3B82F6',
+    fontSize: 14,
+    fontWeight: '500',
   },
   button: {
     backgroundColor: '#3B82F6',

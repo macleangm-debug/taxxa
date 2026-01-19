@@ -20,23 +20,60 @@ import { useAuthStore } from '../../src/store/authStore';
 const { width } = Dimensions.get('window');
 const isWeb = Platform.OS === 'web';
 
+// Phone validation: must be 0XXXXXXXXX (10 digits starting with 0)
+const validatePhone = (phone: string): { valid: boolean; error?: string } => {
+  // Remove any spaces or dashes
+  const cleaned = phone.replace(/[\s-]/g, '');
+  
+  if (cleaned.length === 0) {
+    return { valid: false };
+  }
+  
+  if (!/^\d+$/.test(cleaned)) {
+    return { valid: false, error: 'Phone number must contain only digits' };
+  }
+  
+  if (!cleaned.startsWith('0')) {
+    return { valid: false, error: 'Phone number must start with 0' };
+  }
+  
+  if (cleaned.length !== 10) {
+    return { valid: false, error: 'Phone number must be 10 digits (0XXXXXXXXX)' };
+  }
+  
+  return { valid: true };
+};
+
 export default function RegisterScreen() {
   const router = useRouter();
   const { register } = useAuthStore();
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showExistsModal, setShowExistsModal] = useState(false);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+
+  const handlePhoneChange = (text: string) => {
+    // Only allow digits
+    const cleaned = text.replace(/[^0-9]/g, '');
+    setPhoneNumber(cleaned);
+    
+    // Clear error when typing
+    if (phoneError) {
+      setPhoneError(null);
+    }
+  };
 
   const handleRegister = async () => {
-    if (phoneNumber.length < 10) {
-      Alert.alert('Error', 'Please enter a valid phone number');
+    const validation = validatePhone(phoneNumber);
+    
+    if (!validation.valid) {
+      setPhoneError(validation.error || 'Invalid phone number');
       return;
     }
 
     setIsLoading(true);
     try {
       const result = await register(phoneNumber);
-      // Navigate to OTP verification with phone number
       router.push({
         pathname: '/(auth)/verify-otp',
         params: { phone: phoneNumber, testOtp: result.otp },
@@ -44,7 +81,6 @@ export default function RegisterScreen() {
     } catch (error: any) {
       const errorMessage = error.response?.data?.detail || 'Failed to send OTP';
       
-      // Check if phone already exists
       if (errorMessage.toLowerCase().includes('already registered') || 
           errorMessage.toLowerCase().includes('already exists')) {
         setShowExistsModal(true);
@@ -61,6 +97,8 @@ export default function RegisterScreen() {
     router.push('/(auth)/login');
   };
 
+  const isValidPhone = validatePhone(phoneNumber).valid;
+
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
@@ -73,7 +111,6 @@ export default function RegisterScreen() {
         >
           <View style={styles.centerContainer}>
             <View style={styles.card}>
-              {/* Back button */}
               <TouchableOpacity
                 style={styles.backButton}
                 onPress={() => router.back()}
@@ -93,27 +130,34 @@ export default function RegisterScreen() {
               </View>
 
               <View style={styles.inputContainer}>
-                <View style={styles.inputWrapper}>
+                <View style={[styles.inputWrapper, phoneError && styles.inputError]}>
                   <Ionicons name="call" size={20} color="#64748B" />
                   <TextInput
                     style={styles.input}
-                    placeholder="Phone Number"
+                    placeholder="0XXXXXXXXX"
                     placeholderTextColor="#64748B"
-                    keyboardType="phone-pad"
+                    keyboardType="number-pad"
                     value={phoneNumber}
-                    onChangeText={setPhoneNumber}
-                    maxLength={15}
+                    onChangeText={handlePhoneChange}
+                    maxLength={10}
                   />
                 </View>
+                {phoneError && (
+                  <View style={styles.errorContainer}>
+                    <Ionicons name="alert-circle" size={16} color="#EF4444" />
+                    <Text style={styles.errorText}>{phoneError}</Text>
+                  </View>
+                )}
+                <Text style={styles.formatHint}>Format: 0XXXXXXXXX (10 digits)</Text>
               </View>
 
               <TouchableOpacity
                 style={[
                   styles.button,
-                  phoneNumber.length < 10 && styles.buttonDisabled,
+                  !isValidPhone && styles.buttonDisabled,
                 ]}
                 onPress={handleRegister}
-                disabled={isLoading || phoneNumber.length < 10}
+                disabled={isLoading || !isValidPhone}
               >
                 {isLoading ? (
                   <ActivityIndicator color="#fff" />
@@ -135,7 +179,6 @@ export default function RegisterScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* Phone Exists Modal */}
       {showExistsModal && (
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
@@ -238,12 +281,32 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 16,
     height: 56,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  inputError: {
+    borderColor: '#EF4444',
   },
   input: {
     flex: 1,
     marginLeft: 12,
     fontSize: 16,
     color: '#fff',
+  },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 8,
+  },
+  errorText: {
+    color: '#EF4444',
+    fontSize: 13,
+  },
+  formatHint: {
+    color: '#64748B',
+    fontSize: 12,
+    marginTop: 8,
   },
   button: {
     backgroundColor: '#3B82F6',
@@ -271,7 +334,6 @@ const styles = StyleSheet.create({
     color: '#3B82F6',
     fontWeight: '600',
   },
-  // Modal styles
   modalOverlay: {
     position: 'absolute',
     top: 0,

@@ -5,11 +5,16 @@ import {
   StyleSheet,
   FlatList,
   RefreshControl,
+  Platform,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { scanAPI } from '../../src/utils/api';
 import { format } from 'date-fns';
+
+const { width } = Dimensions.get('window');
+const isWeb = Platform.OS === 'web';
 
 interface ScanHistoryItem {
   id: string;
@@ -48,15 +53,11 @@ export default function HistoryScreen() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'valid':
-        return { name: 'checkmark-circle', color: '#10B981' };
-      case 'duplicate':
-        return { name: 'copy', color: '#F59E0B' };
+      case 'valid': return { name: 'checkmark-circle', color: '#10B981' };
+      case 'duplicate': return { name: 'copy', color: '#F59E0B' };
       case 'invalid':
-      case 'expired':
-        return { name: 'close-circle', color: '#EF4444' };
-      default:
-        return { name: 'help-circle', color: '#64748B' };
+      case 'expired': return { name: 'close-circle', color: '#EF4444' };
+      default: return { name: 'help-circle', color: '#64748B' };
     }
   };
 
@@ -70,15 +71,9 @@ export default function HistoryScreen() {
         </View>
         
         <View style={styles.itemDetails}>
-          <Text style={styles.merchantName}>
-            {item.merchant_name || 'Unknown Merchant'}
-          </Text>
-          <Text style={styles.timestamp}>
-            {format(new Date(item.timestamp), 'MMM d, yyyy h:mm a')}
-          </Text>
-          {item.amount && (
-            <Text style={styles.amount}>${item.amount.toFixed(2)}</Text>
-          )}
+          <Text style={styles.merchantName}>{item.merchant_name || 'Unknown Merchant'}</Text>
+          <Text style={styles.timestamp}>{format(new Date(item.timestamp), 'MMM d, yyyy h:mm a')}</Text>
+          {item.amount && <Text style={styles.amount}>${item.amount.toFixed(2)}</Text>}
         </View>
         
         <View style={styles.entriesContainer}>
@@ -99,128 +94,52 @@ export default function HistoryScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Scan History</Text>
-        <Text style={styles.subtitle}>
-          {history.length} total scans
-        </Text>
-      </View>
-
-      {history.length === 0 && !isLoading ? (
-        <View style={styles.emptyState}>
-          <Ionicons name="receipt-outline" size={64} color="#64748B" />
-          <Text style={styles.emptyTitle}>No scans yet</Text>
-          <Text style={styles.emptyText}>
-            Start scanning receipts to earn draw entries!
-          </Text>
+      <View style={styles.contentWrapper}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Scan History</Text>
+          <Text style={styles.subtitle}>{history.length} total scans</Text>
         </View>
-      ) : (
-        <FlatList
-          data={history}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefreshing}
-              onRefresh={onRefresh}
-              tintColor="#3B82F6"
-            />
-          }
-        />
-      )}
+
+        {history.length === 0 && !isLoading ? (
+          <View style={styles.emptyState}>
+            <Ionicons name="receipt-outline" size={64} color="#64748B" />
+            <Text style={styles.emptyTitle}>No scans yet</Text>
+            <Text style={styles.emptyText}>Start scanning receipts to earn draw entries!</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={history}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.listContent}
+            refreshControl={
+              <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor="#3B82F6" />
+            }
+          />
+        )}
+      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0F172A',
-  },
-  header: {
-    padding: 16,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#94A3B8',
-    marginTop: 4,
-  },
-  listContent: {
-    padding: 16,
-    paddingTop: 0,
-  },
-  historyItem: {
-    backgroundColor: '#1E293B',
-    borderRadius: 16,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  statusIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  itemDetails: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  merchantName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  timestamp: {
-    fontSize: 12,
-    color: '#94A3B8',
-    marginTop: 2,
-  },
-  amount: {
-    fontSize: 14,
-    color: '#64748B',
-    marginTop: 2,
-  },
-  entriesContainer: {
-    alignItems: 'center',
-  },
-  entriesValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#10B981',
-  },
-  entriesLabel: {
-    fontSize: 12,
-    color: '#94A3B8',
-  },
-  statusText: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  emptyState: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#fff',
-    marginTop: 16,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#94A3B8',
-    textAlign: 'center',
-    marginTop: 8,
-  },
+  container: { flex: 1, backgroundColor: '#0F172A' },
+  contentWrapper: { flex: 1, width: '100%', maxWidth: isWeb ? 480 : undefined, alignSelf: 'center' },
+  header: { padding: 16 },
+  title: { fontSize: 24, fontWeight: 'bold', color: '#fff' },
+  subtitle: { fontSize: 14, color: '#94A3B8', marginTop: 4 },
+  listContent: { padding: 16, paddingTop: 0 },
+  historyItem: { backgroundColor: '#1E293B', borderRadius: 16, padding: 16, flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  statusIcon: { width: 48, height: 48, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+  itemDetails: { flex: 1, marginLeft: 12 },
+  merchantName: { fontSize: 16, fontWeight: '600', color: '#fff' },
+  timestamp: { fontSize: 12, color: '#94A3B8', marginTop: 2 },
+  amount: { fontSize: 14, color: '#64748B', marginTop: 2 },
+  entriesContainer: { alignItems: 'center' },
+  entriesValue: { fontSize: 18, fontWeight: 'bold', color: '#10B981' },
+  entriesLabel: { fontSize: 12, color: '#94A3B8' },
+  statusText: { fontSize: 14, fontWeight: '500' },
+  emptyState: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
+  emptyTitle: { fontSize: 20, fontWeight: '600', color: '#fff', marginTop: 16 },
+  emptyText: { fontSize: 16, color: '#94A3B8', textAlign: 'center', marginTop: 8 },
 });
