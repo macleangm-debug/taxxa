@@ -103,10 +103,21 @@ class DrawConfig(BaseModel):
     draw_type: str  # weekly, monthly, quarterly
     start_date: datetime
     end_date: datetime
+    draw_date: Optional[datetime] = None  # Specific draw date/time
     status: str  # active, completed, upcoming
     prize_tiers: List[Dict[str, Any]]
     total_entries: int = 0
     winners: List[Dict[str, Any]] = []
+
+class PrizeTier(BaseModel):
+    tier: int
+    name: str
+    prize_type: str = "money"  # money, item
+    amount: Optional[float] = None  # For money prizes
+    item_name: Optional[str] = None  # For item prizes (e.g., "Toyota Corolla")
+    item_description: Optional[str] = None
+    image_url: Optional[str] = None
+    winners: int = 1
 
 class DrawEntry(BaseModel):
     user_id: str
