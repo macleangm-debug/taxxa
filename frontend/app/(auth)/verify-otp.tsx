@@ -9,11 +9,16 @@ import {
   Platform,
   Alert,
   ActivityIndicator,
+  ScrollView,
+  Dimensions,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '../../src/store/authStore';
+
+const { width } = Dimensions.get('window');
+const isWeb = Platform.OS === 'web';
 
 export default function VerifyOTPScreen() {
   const router = useRouter();
@@ -103,64 +108,75 @@ export default function VerifyOTPScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
         >
-          <Ionicons name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
-
-        <View style={styles.content}>
-          <View style={styles.header}>
-            <Ionicons name="shield-checkmark" size={48} color="#10B981" />
-            <Text style={styles.title}>Verify OTP</Text>
-            <Text style={styles.subtitle}>
-              Enter the 6-digit code sent to{'\n'}{phone}
-            </Text>
-          </View>
-
-          <View style={styles.otpContainer}>
-            {otp.map((digit, index) => (
-              <TextInput
-                key={index}
-                ref={(ref) => (inputRefs.current[index] = ref!)}
-                style={[styles.otpInput, digit && styles.otpInputFilled]}
-                keyboardType="number-pad"
-                maxLength={1}
-                value={digit}
-                onChangeText={(value) => handleOtpChange(value, index)}
-                onKeyPress={(e) => handleKeyPress(e, index)}
-              />
-            ))}
-          </View>
-
-          <TouchableOpacity
-            style={[
-              styles.button,
-              otp.join('').length !== 6 && styles.buttonDisabled,
-            ]}
-            onPress={handleVerify}
-            disabled={isLoading || otp.join('').length !== 6}
-          >
-            {isLoading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>Verify</Text>
-            )}
-          </TouchableOpacity>
-
-          <View style={styles.resendContainer}>
-            {countdown > 0 ? (
-              <Text style={styles.countdownText}>
-                Resend OTP in {countdown}s
-              </Text>
-            ) : (
-              <TouchableOpacity onPress={handleResend}>
-                <Text style={styles.resendText}>Resend OTP</Text>
+          <View style={styles.centerContainer}>
+            <View style={styles.card}>
+              {/* Back button */}
+              <TouchableOpacity
+                style={styles.backButton}
+                onPress={() => router.back()}
+              >
+                <Ionicons name="arrow-back" size={20} color="#94A3B8" />
+                <Text style={styles.backButtonText}>Back</Text>
               </TouchableOpacity>
-            )}
+
+              <View style={styles.header}>
+                <View style={styles.iconContainer}>
+                  <Ionicons name="shield-checkmark" size={48} color="#10B981" />
+                </View>
+                <Text style={styles.title}>Verify OTP</Text>
+                <Text style={styles.subtitle}>
+                  Enter the 6-digit code sent to{' '}\n{phone}
+                </Text>
+              </View>
+
+              <View style={styles.otpContainer}>
+                {otp.map((digit, index) => (
+                  <TextInput
+                    key={index}
+                    ref={(ref) => (inputRefs.current[index] = ref!)}
+                    style={[styles.otpInput, digit && styles.otpInputFilled]}
+                    keyboardType="number-pad"
+                    maxLength={1}
+                    value={digit}
+                    onChangeText={(value) => handleOtpChange(value, index)}
+                    onKeyPress={(e) => handleKeyPress(e, index)}
+                  />
+                ))}
+              </View>
+
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  otp.join('').length !== 6 && styles.buttonDisabled,
+                ]}
+                onPress={handleVerify}
+                disabled={isLoading || otp.join('').length !== 6}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.buttonText}>Verify</Text>
+                )}
+              </TouchableOpacity>
+
+              <View style={styles.resendContainer}>
+                {countdown > 0 ? (
+                  <Text style={styles.countdownText}>
+                    Resend OTP in {countdown}s
+                  </Text>
+                ) : (
+                  <TouchableOpacity onPress={handleResend}>
+                    <Text style={styles.resendText}>Resend OTP</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
           </View>
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -174,42 +190,72 @@ const styles = StyleSheet.create({
   keyboardView: {
     flex: 1,
   },
-  backButton: {
-    padding: 16,
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
   },
-  content: {
+  centerContainer: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingHorizontal: 24,
+    paddingVertical: 40,
+  },
+  card: {
+    width: '100%',
+    maxWidth: 400,
+    backgroundColor: isWeb ? '#1E293B' : 'transparent',
+    borderRadius: isWeb ? 24 : 0,
+    padding: isWeb ? 32 : 0,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 24,
+  },
+  backButtonText: {
+    color: '#94A3B8',
+    fontSize: 14,
   },
   header: {
     alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 40,
+    marginBottom: 32,
+  },
+  iconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 20,
+    backgroundColor: isWeb ? '#0F172A' : '#1E293B',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#fff',
-    marginTop: 16,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#94A3B8',
     marginTop: 8,
     textAlign: 'center',
+    lineHeight: 22,
   },
   otpContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    gap: 8,
     marginBottom: 32,
   },
   otpInput: {
-    width: 50,
+    width: 48,
     height: 56,
-    backgroundColor: '#1E293B',
+    backgroundColor: isWeb ? '#0F172A' : '#1E293B',
     borderRadius: 12,
     textAlign: 'center',
-    fontSize: 24,
+    fontSize: 22,
     color: '#fff',
     fontWeight: '600',
   },
@@ -236,11 +282,11 @@ const styles = StyleSheet.create({
   },
   countdownText: {
     color: '#94A3B8',
-    fontSize: 16,
+    fontSize: 15,
   },
   resendText: {
     color: '#3B82F6',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
   },
 });
