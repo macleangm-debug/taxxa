@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Dimensions,
   Platform,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,20 +20,37 @@ const isDesktop = Platform.OS === 'web' && width > 768;
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const { dashboard, fetchDashboard, logout } = useAdminStore();
+  const { 
+    dashboard, 
+    fetchDashboard, 
+    logout,
+    countries,
+    activeCountry,
+    fetchCountries,
+    setActiveCountry,
+  } = useAdminStore();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showCountryPicker, setShowCountryPicker] = useState(false);
 
   const loadData = useCallback(async () => {
     try {
+      await fetchCountries();
       await fetchDashboard();
     } catch (error) {
       console.error('Error loading dashboard:', error);
     }
-  }, [fetchDashboard]);
+  }, [fetchDashboard, fetchCountries]);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // Reload dashboard when country changes
+  useEffect(() => {
+    if (activeCountry) {
+      fetchDashboard();
+    }
+  }, [activeCountry, fetchDashboard]);
 
   const onRefresh = async () => {
     setIsRefreshing(true);
@@ -44,6 +62,18 @@ export default function AdminDashboard() {
     await logout();
     router.replace('/admin/login');
   };
+
+  const handleCountryChange = async (countryId: string) => {
+    try {
+      await setActiveCountry(countryId);
+      setShowCountryPicker(false);
+    } catch (error) {
+      console.error('Error changing country:', error);
+    }
+  };
+
+  // Get currency symbol for display
+  const currencySymbol = activeCountry?.currency_symbol || '$';
 
   const StatCard = ({ title, value, icon, color, subtitle }: any) => (
     <View style={styles.statCard}>
@@ -92,6 +122,26 @@ export default function AdminDashboard() {
             <Text style={styles.headerSubtitle}>TaxDraw Management System</Text>
           </View>
         </View>
+        
+        {/* Country Switcher */}
+        <TouchableOpacity 
+          style={styles.countrySwitcher}
+          onPress={() => setShowCountryPicker(true)}
+        >
+          <Ionicons name="globe" size={20} color="#3B82F6" />
+          <View style={styles.countryInfo}>
+            <Text style={styles.countryName}>
+              {activeCountry?.name || 'All Countries'}
+            </Text>
+            {activeCountry && (
+              <Text style={styles.currencyCode}>
+                {activeCountry.currency_symbol} {activeCountry.currency_code}
+              </Text>
+            )}
+          </View>
+          <Ionicons name="chevron-down" size={16} color="#64748B" />
+        </TouchableOpacity>
+
         <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
           <Ionicons name="log-out-outline" size={22} color="#EF4444" />
           <Text style={styles.logoutText}>Logout</Text>
@@ -104,13 +154,40 @@ export default function AdminDashboard() {
           <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor="#3B82F6" />
         }
       >
+        {/* Country Banner */}
+        {activeCountry && (
+          <View style={styles.countryBanner}>
+            <View style={styles.countryBannerLeft}>
+              <View style={styles.countryFlag}>
+                <Text style={styles.countryFlagText}>{activeCountry.code}</Text>
+              </View>
+              <View>
+                <Text style={styles.countryBannerTitle}>
+                  Viewing data for {activeCountry.name}
+                </Text>
+                <Text style={styles.countryBannerSubtitle}>
+                  Currency: {activeCountry.currency_symbol} {activeCountry.currency_code} • Timezone: {activeCountry.timezone}
+                </Text>
+              </View>
+            </View>
+            <TouchableOpacity 
+              style={styles.changeCountryBtn}
+              onPress={() => setShowCountryPicker(true)}
+            >
+              <Text style={styles.changeCountryBtnText}>Change</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         {/* Main Content Container */}
         <View style={styles.mainContainer}>
           {/* Left Column - Stats */}
           <View style={styles.leftColumn}>
             {/* Overview Section */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Platform Overview</Text>
+              <Text style={styles.sectionTitle}>
+                {activeCountry ? `${activeCountry.name} Overview` : 'Platform Overview'}
+              </Text>
               <View style={styles.statsGrid}>
                 <StatCard
                   title="Total Users"
@@ -146,7 +223,7 @@ export default function AdminDashboard() {
                 />
                 <StatCard
                   title="Prize Pool"
-                  value={`$${(dashboard?.overview?.total_prize_pool || 0).toLocaleString()}`}
+                  value={`${currencySymbol}${(dashboard?.overview?.total_prize_pool || 0).toLocaleString()}`}
                   icon="cash"
                   color="#8B5CF6"
                 />
@@ -283,6 +360,68 @@ export default function AdminDashboard() {
           </View>
         </View>
       </ScrollView>
+
+      {/* Country Picker Modal */}
+      <Modal 
+        visible={showCountryPicker} 
+        animationType="fade" 
+        transparent
+        onRequestClose={() => setShowCountryPicker(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select Country</Text>
+              <TouchableOpacity onPress={() => setShowCountryPicker(false)}>
+                <Ionicons name="close" size={24} color="#94A3B8" />
+              </TouchableOpacity>
+            </View>
+            
+            <ScrollView style={styles.countryList}>
+              {countries.length === 0 ? (
+                <View style={styles.emptyCountries}>
+                  <Ionicons name="globe" size={48} color="#64748B" />
+                  <Text style={styles.emptyText}>No countries configured</Text>
+                  <TouchableOpacity 
+                    style={styles.addCountryBtn}
+                    onPress={() => {
+                      setShowCountryPicker(false);
+                      router.push('/admin/settings');
+                    }}
+                  >
+                    <Ionicons name="add" size={20} color="#fff" />
+                    <Text style={styles.addCountryBtnText}>Add Country</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                countries.map((country) => (
+                  <TouchableOpacity
+                    key={country.id}
+                    style={[
+                      styles.countryOption,
+                      activeCountry?.id === country.id && styles.countryOptionActive
+                    ]}
+                    onPress={() => handleCountryChange(country.id)}
+                  >
+                    <View style={styles.countryOptionFlag}>
+                      <Text style={styles.countryOptionCode}>{country.code}</Text>
+                    </View>
+                    <View style={styles.countryOptionInfo}>
+                      <Text style={styles.countryOptionName}>{country.name}</Text>
+                      <Text style={styles.countryOptionCurrency}>
+                        {country.currency_symbol} {country.currency_code} • {country.timezone}
+                      </Text>
+                    </View>
+                    {activeCountry?.id === country.id && (
+                      <Ionicons name="checkmark-circle" size={24} color="#10B981" />
+                    )}
+                  </TouchableOpacity>
+                ))
+              )}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -301,6 +440,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#1E293B',
     backgroundColor: '#0F172A',
+    flexWrap: 'wrap',
+    gap: 12,
   },
   headerLeft: {
     flexDirection: 'row',
@@ -324,6 +465,29 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#64748B',
   },
+  countrySwitcher: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1E293B',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    gap: 10,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  countryInfo: {
+    alignItems: 'flex-start',
+  },
+  countryName: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  currencyCode: {
+    color: '#64748B',
+    fontSize: 12,
+  },
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -341,6 +505,56 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 24,
     paddingBottom: 40,
+  },
+  countryBanner: {
+    backgroundColor: '#1E3A5F',
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#3B82F6',
+  },
+  countryBannerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  countryFlag: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    backgroundColor: '#0F172A',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  countryFlagText: {
+    color: '#3B82F6',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  countryBannerTitle: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  countryBannerSubtitle: {
+    color: '#94A3B8',
+    fontSize: 13,
+    marginTop: 2,
+  },
+  changeCountryBtn: {
+    backgroundColor: '#3B82F620',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  changeCountryBtnText: {
+    color: '#3B82F6',
+    fontWeight: '600',
   },
   mainContainer: {
     flexDirection: Platform.OS === 'web' && width > 1024 ? 'row' : 'column',
@@ -534,5 +748,99 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 13,
     fontWeight: '600',
+  },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalContent: {
+    backgroundColor: '#1E293B',
+    borderRadius: 20,
+    width: '100%',
+    maxWidth: 400,
+    maxHeight: '80%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#334155',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  countryList: {
+    padding: 16,
+  },
+  emptyCountries: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyText: {
+    color: '#94A3B8',
+    fontSize: 16,
+    marginTop: 12,
+    marginBottom: 20,
+  },
+  addCountryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#3B82F6',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 10,
+    gap: 8,
+  },
+  addCountryBtnText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  countryOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+    backgroundColor: '#0F172A',
+  },
+  countryOptionActive: {
+    backgroundColor: '#1E3A5F',
+    borderWidth: 1,
+    borderColor: '#3B82F6',
+  },
+  countryOptionFlag: {
+    width: 44,
+    height: 44,
+    borderRadius: 8,
+    backgroundColor: '#1E293B',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  countryOptionCode: {
+    color: '#3B82F6',
+    fontWeight: 'bold',
+    fontSize: 12,
+  },
+  countryOptionInfo: {
+    flex: 1,
+  },
+  countryOptionName: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  countryOptionCurrency: {
+    color: '#94A3B8',
+    fontSize: 13,
+    marginTop: 2,
   },
 });
