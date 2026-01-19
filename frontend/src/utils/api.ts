@@ -32,6 +32,12 @@ export const authAPI = {
   
   login: (phone_number: string, password: string) =>
     api.post('/auth/login', { phone_number, password }),
+  
+  forgotPassword: (phone_number: string) =>
+    api.post('/auth/forgot-password', { phone_number }),
+  
+  resetPassword: (phone_number: string, password: string) =>
+    api.post('/auth/reset-password', { phone_number, password }),
 };
 
 // Scan API
