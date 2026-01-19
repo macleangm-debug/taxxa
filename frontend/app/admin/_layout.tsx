@@ -46,6 +46,7 @@ export default function AdminLayout() {
       <Stack.Screen name="scans" />
       <Stack.Screen name="analytics" />
       <Stack.Screen name="fraud" />
+      <Stack.Screen name="settings" />
     </Stack>
   );
 }
