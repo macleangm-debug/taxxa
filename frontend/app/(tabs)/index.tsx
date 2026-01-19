@@ -6,6 +6,8 @@ import {
   ScrollView,
   RefreshControl,
   TouchableOpacity,
+  Platform,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,6 +15,9 @@ import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../src/store/authStore';
 import { userAPI, drawAPI } from '../../src/utils/api';
 import { format, formatDistanceToNow } from 'date-fns';
+
+const { width } = Dimensions.get('window');
+const isWeb = Platform.OS === 'web';
 
 interface Stats {
   total_scans: number;
