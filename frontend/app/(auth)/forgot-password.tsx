@@ -136,14 +136,17 @@ export default function ForgotPasswordScreen() {
     setIsLoading(true);
     try {
       await authAPI.resetPassword(phoneNumber, newPassword);
-      Alert.alert('Success', 'Password reset successfully!', [
-        { text: 'OK', onPress: () => router.replace('/(auth)/login') }
-      ]);
+      setShowSuccessModal(true);
     } catch (error: any) {
       Alert.alert('Error', error.response?.data?.detail || 'Failed to reset password');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleGoToLogin = () => {
+    setShowSuccessModal(false);
+    router.replace('/(auth)/login');
   };
 
   const handleResendOTP = async () => {
