@@ -42,6 +42,7 @@ export default function ForgotPasswordScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [testOtp, setTestOtp] = useState<string | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const inputRefs = useRef<TextInput[]>([]);
 
   useEffect(() => {
