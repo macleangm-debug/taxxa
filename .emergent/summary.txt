@@ -2,203 +2,199 @@
 <original_problem_statement>
 The user wants to build a mobile application with a backend system to increase tax compliance. Consumers scan QR codes on tax receipts to earn entries into prize draws.
 
-**PRODUCT REQUIREMENTS:**
+**PRODUCT REQUIREMENTS (as of last interaction):**
 
-**1. Mobile Application:**
-*   **User Auth:** Phone number &amp; OTP verification, then create a password. (User specified JWT).
-*   **Receipt Scanning:** Use the camera to scan QR codes from tax receipts.
-*   **Scan Feedback:** Instant validation (valid, invalid, duplicate).
-*   **User Dashboard:** Show stats like total scans, valid scans, entries earned, and scan history.
-*   **Draws &amp; Rewards:** Display draw periods, user's chances, and past winnings.
-*   **Push Notifications:** For scans, draws, and winners.
-*   **Education Section:** Information on tax compliance.
+**1. Mobile &amp; User Web Application:**
+*   **User Auth:** Phone number &amp; OTP verification.
+    *   Must use  format for phone numbers.
+    *   Provide feedback if the number is already registered, with an option to go to the login/forgot password page.
+    *   Implement a full Forgot Password flow (OTP -> Reset Password -> Success Confirmation -> Redirect to Login).
+*   **UI/UX:**
+    *   All user-facing web pages (login, register, dashboard, etc.) must be mobile-friendly, with content constrained to a centered, card-like view, not spanning the full screen.
+    *   Ensure proper spacing on the mobile app's welcome screen.
+*   **Draws &amp; Rewards:**
+    *   Display draw periods with specific dates and times.
+    *   Display prizes, including images for item-based prizes (e.g., Cars, Motorbikes).
+    *   Pages for viewing Draws and History must also be mobile-friendly on the web.
 
-**2. Backend System:**
-*   **Scan Management:** Store and validate all scan attempts, preventing duplicates.
-*   **Revenue Authority Integration:** A (currently mocked) API to verify QR codes.
-*   **Draw Engine:** Configurable draw rules and randomized winner selection.
-*   **Admin Dashboard:** Real-time statistics, user management, and draw management.
-*   **Fraud Prevention:** Detect and flag suspicious behavior.
-
-**3. Admin Portal:**
-*   A web-based UI for admins to manage the platform.
-*   Features: Dashboard, User Management, Draw Management, Analytics, Scan Records, Fraud Detection.
-*   **Settings:** Admins should be able to add/manage countries where draws take place, including currency and other related settings.
+**2. Admin Portal (Web):**
+*   **UI/UX:**
+    *   Redesign the entire admin portal with a lighter color scheme and simpler process flows.
+    *   All forms (e.g., login) should use a card-based layout on the web.
+*   **Dashboard:**
+    *   Admins must be able to switch between countries using a dropdown.
+    *   All dashboard data (stats, prize pools, etc.) must update to reflect the selected country, including showing the correct currency symbol.
+*   **Draw Management:**
+    *   Admins must be able to configure prizes as either money or items (e.g., Car, Motorbike).
+    *   For item prizes, admins must be able to add an image URL to be displayed in the user app.
+    *   Admins must be able to set a specific date and time for each draw.
+*   **Settings:**
+    *   Admins should be able to add/manage countries where draws take place.
 </original_problem_statement>
-<User's_preferred_language>
-English
-</User's_preferred_language>
-<what_currently_exists?>
-A full-stack application has been built using Expo for the frontend and FastAPI/MongoDB for the backend.
 
--   **Backend:** A robust API is in place, covering user authentication (phone/OTP/JWT), receipt scanning (with mocked validation), user profiles, draws, and a comprehensive suite of admin functions (dashboard stats, user/draw management, analytics, fraud detection). All backend endpoints have been tested successfully with .
--   **Frontend (User App):** The mobile app MVP is complete. This includes the authentication flow (registration, login), and a tab-based interface for the Dashboard, Scanner, History, Draws, and an educational Learn section.
--   **Frontend (Admin Portal):** A complete admin web dashboard has been implemented. It includes a login page and sections for a main dashboard, user management, draw management, scan records, analytics, and fraud detection. The UI and layout for these pages have been refined for better usability.
+**User's preferred language**: English
 
-</what_currently_exists?>
-<Last_working_item>
--   **Last item agent was working:** Implementing a new Settings page in the admin portal. This feature allows admins to manage countries and their associated settings (like currency). The agent had created the backend API endpoints, updated the frontend state management store (), and created the new  file. The work was paused just before modifying the admin layout to add a navigation link to this new page.
--   **Status:** IN PROGRESS
--   **Agent Testing Done:** N
--   **Which testing method agent to use?** backend testing agent
--   **User Testing Done:** N
-</Last_working_item>
-<All_Pending/In_progress_Issue_list>
-  Issue 1: Frontend authentication token persistence on web preview (P1)
+**what currently exists?**
+A full-stack application with a FastAPI/MongoDB backend and an Expo (React Native) frontend.
+- **Backend:** The API is highly functional, covering a complete authentication lifecycle (register, login, forgot password), multi-country settings, and an enhanced draw management system that supports both monetary and item-based prizes with images and specific draw times. All endpoints have been tested.
+- **Frontend (User App &amp; Web):** The auth flow is complete, including number validation, user exists checks, and a working forgot password process. All user-facing web pages (login, register, OTP, draws, history) have been made mobile-responsive with a centered card layout.
+- **Frontend (Admin Portal):** A feature-rich admin portal exists for managing users, settings, and draws. A country-switcher has been implemented on the dashboard to filter data. A UI redesign to a lighter theme has been started but is not complete.
+
+**Last working item**:
+    - Last item agent was working: A major redesign of the admin portal to use a lighter color scheme and simpler process flows as requested by the user. The agent had already updated the files for the admin login (), main layout (), and the dashboard (). The work was paused before applying the new lighter theme to the remaining admin pages (, , etc.).
+    - Status: IN PROGRESS
+    - Agent Testing Done: N
+    - Which testing method agent to use? screenshot tool
+    - User Testing Done: N
+
+**All Pending/In progress Issue list**:
+  Issue 1: Inconsistent UI in Admin Portal (P0)
 
   Issues Detail:
-  -   **Issue 1:**
-      -   **Description:** When testing the frontend web preview, authenticated API calls (like scanning a receipt or viewing draws) often fail with a  error. This also affects navigating directly to admin pages, which forces a redirect to the login screen. The agent suspects this is due to how  (or its web equivalent) handles session/token persistence in the browser environment, as the token is not consistently sent in API request headers.
-      -   **Attempted fixes:** The agent identified the issue but did not attempt a direct fix, assuming it would work correctly on a native mobile device. The workaround during testing was to re-login to establish a fresh session before testing protected features.
-      -   **Next debug checklist:**
-          1.  Review  to confirm how the  header is being set from .
-          2.  Add  statements in the  interceptor to check if the token is being retrieved correctly before each request.
-          3.  Investigate if a different storage library (like  with a web adapter or a cookie-based approach for web) is needed to ensure session persistence in the web preview.
-      -   **Why fix this issue and what will be achieved with the fix?** Fixing this will make testing on the web preview reliable and allow for seamless navigation between protected screens without repeated logins, which is crucial for efficient development and testing of both user and admin flows.
-      -   **Status:** NOT STARTED
-      -   **Is recurring issue?** Y
-      -   **Should Test frontend/backend/both after fix?** both
-      -   **Blocked on other issue:** None
+  - **Issue 1:**
+     - **Description**: The admin portal UI is currently in an inconsistent state. The login, layout, and dashboard pages have a new lighter theme, but other pages like Settings, Draws, Users, etc., still have the old, darker theme. This creates a jarring user experience.
+     - **Attempted fixes**: The agent started the redesign but did not complete it for all pages.
+     - **Next debug checklist**:
+         1.  Identify all remaining admin pages that need the UI update: , , , , , .
+         2.  Apply the new lighter color scheme and simplified layout consistently across all these files.
+         3.  Ensure all functionality (buttons, modals, forms) remains intact after the style changes.
+     - **Why fix this issue and what will be achieved with the fix?**: This will fulfill the user's explicit request for a complete UI overhaul of the admin portal, resulting in a consistent, modern, and more user-friendly interface for administrators.
+     - **Status**: IN PROGRESS
+     - **Is recurring issue?**: N
+     - **Should Test frontend/backend/both after fix?**: frontend
+     - **Blocked on other issue**: None
 
-</All_Pending/In_progress_Issue_list>
-<In_progress_Task_List>
-  Task 1: Complete the Admin Settings Page for Country Management (P0)
+**In progress Task List**:
+  Task 1: Complete the Admin Portal UI Redesign (P0)
 
-  Task Detail:
-  -   **Task 1:**
-      -   **Where to resume:**
-          1.  Edit  to add a Settings link to the sidebar/navigation menu.
-          2.  Edit  to add Settings to the Quick Actions menu.
-          3.  Implement the UI within  to allow admins to view, add, and update country settings by calling the functions already added to .
-          4.  Restart the backend service (backend: ERROR (not running)
-backend: ERROR (abnormal termination)) to ensure the new country API endpoints are active.
-          5.  Test the full flow: navigate to settings, add a new country, and verify it's persisted.
-      -   **What will be achieved with this?** This will complete the user-requested feature for multi-country and multi-currency configuration from the admin panel.
-      -   **Status:** IN PROGRESS
-      -   **Should Test frontend/backend/both after fix?** both
-      -   **Blocked on something:** None
+ Task Detail:
+  - **Task 1:**
+     - **Where to resume**: The agent was about to edit . The next step is to apply the new lighter theme to this file and all other remaining admin pages to ensure a consistent look and feel.
+     - **What will be achieved with this?**: A complete and consistent UI redesign of the admin portal as requested by the user.
+     - **Status**: IN PROGRESS
+     - **Should Test frontend/backend/both after fix?**: frontend
+     - **Blocked on something**: None
 
-</In_progress_Task_List>
-<Upcoming_and_Future_Tasks>
-**Upcoming Tasks:**
+**Upcoming and Future Tasks**
+Upcoming Tasks:
 -   **P1: Integrate with a real Revenue Authority API:** The current API for QR code validation in  is a mock. This needs to be replaced with a real integration.
 -   **P2: Implement Push Notifications:** Set up and configure  for both user and admin alerts (e.g., successful scan, winner announcements).
 
-**Future Tasks:**
+Future Tasks:
 -   Implement geo-location tracking for scan analytics.
 -   Add more advanced fraud detection rules.
 -   Implement a system for tracking prize payouts to winners.
--   Add an SMS fallback for non-smartphone users.
-</Upcoming_and_Future_Tasks>
-<Completed_work_in_this_session>
--   **Full-Stack Backend API (DONE):**
-    -   User authentication (phone/OTP, JWT) in .
-    -   CRUD operations for Users, Draws, and Scans.
-    -   Comprehensive Admin API for management and analytics in .
--   **User-Facing Mobile App (DONE):**
-    -   Complete authentication flow in .
-    -   Tab navigation and main screens (Dashboard, Scan, History, Draws, Learn) in .
-    -   Global state management for auth using Zustand context in .
--   **Admin Web Dashboard (DONE):**
-    -   Admin login and protected routes in .
-    -   Screens for Dashboard, User Management, Draw Management, Analytics, Scans, and Fraud Detection.
-    -   Refined UI/UX with responsive grid layouts for all admin pages (, , ).
 
-</Completed_work_in_this_session>
-<Earlier_issues_found/mentioned_but_not_fixed>
--   **Issue 1: Frontend Auth Token Persistence.**
-    -   **Debug checklist:** See All Pending/In progress Issue list section above.
-    -   **Why to solve this issue and what will be achieved with this?** To enable stable testing and a correct user experience on the web preview.
-    -   **Should Test frontend/backend/both after fix:** both
-    -   **Is recurring issue?** Y
+**Completed work in this session**
+- **Admin Features:**
+    - Admin Settings page for country management ().
+    - Country switcher on the admin dashboard with backend data filtering (, ).
+    - Enhanced Draw Creation: Admins can now create draws with specific date/times and define prizes as money or items with images. (, ).
+- **Auth Flow Overhaul:**
+    - Fixed critical 500 Internal Server Error on login endpoint ().
+    - Implemented a complete Forgot Password flow with new backend endpoints and frontend UI (, ).
+    - Added phone number validation for format () and for existing accounts, with a modal redirecting to login. ().
+    - Added a custom success modal for the password reset flow that works on web and mobile.
+- **UI/UX Improvements:**
+    - Applied a mobile-friendly card layout to all user-facing auth pages (, , , , ) and admin login on the web.
+    - Made user-facing tab pages (, , , ) mobile-responsive for the web preview.
+    - Fixed spacing on the mobile app's welcome screen ().
 
-</Earlier_issues_found/mentioned_but_not_fixed>
-<Known_issue_recurrence_from_previous_fork>
--   None.
-</Known_issue_recurrence_from_previous_fork>
-<Code_Architecture>
+**Earlier issues found/mentioned but not fixed**
+   - **Issue 1: Frontend Auth Token Persistence on Web Preview.**
+     - **Debug checklist**:
+         1. Review  to confirm how the  header is being set.
+         2. Use  in the  interceptor to check if the token is retrieved from  before each request on the web.
+         3. Investigate alternative storage for web like  or cookies.
+     - **Why to solve this issue and what will be achieved with this?**: While the agent worked around this by re-logging in for each test, a proper fix would streamline development and testing significantly. It would prevent  errors and stop forcing redirects to the login page when navigating directly to protected routes.
+     - **Should Test frontend/backend/both after fix:** frontend
+     - **Is recurring issue?**: Y
 
-</Code_Architecture>
-<Key_Technical_Concepts>
--   **Backend:** FastAPI, Motor (async MongoDB driver), Pydantic, JWT for authentication.
--   **Frontend:** React Native, Expo, Expo Router (file-based routing), TypeScript.
--   **State Management:** Zustand for client-side state.
--   **Styling:** React Native .
--   **API Communication:** Axios with interceptors for token handling.
-</Key_Technical_Concepts>
-<key_DB_schema>
-(Implicitly defined by Pydantic models in )
+**Known issue recurrence from previous fork**
+  - None.
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+-   **Backend:** FastAPI, Motor (async MongoDB), Pydantic, JWT.
+-   **Frontend:** React Native, Expo, Expo Router, TypeScript.
+-   **State Management:** Zustand ( for user state,  for admin data).
+-   **Styling:** React Native , with platform-specific logic () for mobile-responsive web layouts.
+-   **API Communication:** Axios with interceptors.
+
+**key DB schema**
 -   **users:** 
--   **scans:** 
+-   **otps:** 
 -   **draws:** 
--   **settings:**  (e.g., key='countries', value=[{...}])
-</key_DB_schema>
-<changes_in_tech_stack>
--   None.
-</changes_in_tech_stack>
-<All_files_of_reference>
--   **/app/backend/server.py**: Contains the entire backend logic for both user and admin APIs.
--   **/app/frontend/app/admin/settings.tsx**: (Newly created) The file for the country settings UI. Needs implementation.
--   **/app/frontend/src/store/adminStore.ts**: (Recently updated) Zustand store for admin state, now includes country settings logic.
--   **/app/frontend/app/admin/_layout.tsx**: Defines the layout for the admin section. Needs to be updated with a link to the new Settings page.
--   **/app/frontend/src/utils/api.ts**: Axios configuration with interceptors. Central to debugging the auth token issue.
--   **/app/frontend/app/_layout.tsx**: The root layout file that handles the routing logic between authentication and the main app.
-</All_files_of_reference>
-<Areas_that_need_refactoring>
--   The  file is becoming very large. It could be beneficial to split the API logic into multiple routers/files (e.g., , , ) to improve maintainability.
-</Areas_that_need_refactoring>
-<key_api_endpoints>
--   **User Auth:** , , 
--   **User Actions:** , , 
--   **Admin Auth:** 
--   **Admin Management:** , , , 
--   **Admin Settings:** , 
-</key_api_endpoints>
-<Critical_Info_for_New_Agent>
--   The current task is to complete the **Admin Settings page** for country management. You need to implement the frontend UI and link it in the admin layout.
--   A recurring issue is the **403 Forbidden error** on authenticated frontend routes in the web preview. This is a high-priority bug to investigate as it hinders testing. The likely cause is improper auth token handling by the web-based  equivalent.
--   The **Revenue Authority API is mocked** in the backend. Any real-world QR validation will require replacing this mock logic.
--   Admin credentials for testing are **username: **, **password: **.
-</Critical_Info_for_New_Agent>
-<documents_created_in_this_job>
--   **/app/test_result.md**: Has been updated with testing notes from the previous session.
-</documents_created_in_this_job>
-<Last_10_User_Messages>
-1.  **User:** Add a settings page to the admin portal for managing countries and currencies for draws. The admin should be able to switch between countries. (IN PROGRESS)
-2.  **Agent:** Provides a summary of the improved admin dashboard UI.
-3.  **User:** Can you arrange the elements properly within the dashboard portal (COMPLETED)
-4.  **Agent:** Provides a summary of the completed admin dashboard.
-5.  **User:** Yes the admin should proceed to the admin web dashboard - the one you shared is for the players (COMPLETED)
-6.  **Agent:** Asks if the user wants an admin web dashboard UI built.
-7.  **User:** Share the web preview URL (COMPLETED)
-8.  **Agent:** Provides a summary of the completed admin backend.
-9.  **User:** Implement and admin back end for draw management and overall platform management (COMPLETED)
-10. **Agent:** Provides a summary of the completed user-facing mobile app MVP.
-</Last_10_User_Messages>
-<Project_Health_Check>
--   **Broken:**
-    -   Authentication token persistence in the web preview is unreliable, causing  errors on protected routes.
--   **Mocked:**
-    -   The entire Revenue Authority API for validating receipt QR codes is mocked in .
-</Project_Health_Check>
-<3rd_Party_Integrations>
--   **Emergent LLM Key:** Available, but not currently used in the application.
-</3rd_Party_Integrations>
-<Testing_status>
--   **Testing agent used after significant changes:** NO
--   **Troubleshoot agent used after agent stuck in loop:** NO
--   **Test files created:** None.
--   **Known regressions:** None.
-</Testing_status>
-<Credentials_to_test_flow>
+-   **settings:**  (e.g., key='countries', key='active_country_id')
+
+**changes in tech stack**
+  - None.
+
+**All files of reference**
+-   **/app/backend/server.py**: Heavily modified to add forgot password flow, country-based data filtering, and the enhanced draw/prize system. The login endpoint was also fixed here.
+-   **/app/frontend/app/admin/**: All files in this directory are part of the ongoing UI redesign. , , and  have been updated. The rest need to be updated.  was completely rewritten to support new prize types.
+-   **/app/frontend/app/(auth)/**: All files were created or heavily modified to implement the full auth lifecycle, phone validation, and mobile-friendly web UI.  is a new addition.
+-   **/app/frontend/src/store/authStore.ts**: Updated to handle new auth flows like user exists check and forgot password.
+-   **/app/frontend/src/store/adminStore.ts**: Updated with new  logic and country management functions.
+-   **/app/frontend/app/(tabs)/**: All files updated for mobile-responsive web layout.  was also updated to display item prizes and images.
+
+**Areas that need refactoring**:
+- The  file has grown even larger and more complex. It now contains logic for auth, users, draws, scans, settings, and admin analytics. Splitting this into multiple FastAPI routers is highly recommended for maintainability.
+
+**key api endpoints**
+-   **Auth:** , , , , 
+-   **Admin Draws:**  (now accepts complex prize tiers), 
+-   **Admin Dashboard:**  (now accepts optional  query param)
+-   **Admin Settings:** , , 
+
+**Critical Info for New Agent**
+-   Your immediate and highest priority task is to **complete the UI redesign of the admin portal**. You must update all remaining admin pages (, , , etc.) to match the new lighter theme that has already been applied to the dashboard and login pages.
+-   The backend has been significantly enhanced. The  endpoint now supports a  array with objects that can be of type  or  (with  and ). The  field has also been added.
+-   The authentication flow is now very robust, but you should verify it remains fully functional after your UI changes. A user with phone  and password  was created for testing the login flow.
+-   The Revenue Authority API for QR code validation remains a mock.
+
+**documents created in this job**
+-  was updated several times but should be reviewed for stale information.
+
+**Last 10 User Messages and any pending HUMAN messages**
+1.  **User:** In the admin portal - allow the settings for the draws to be money or items such as Cars, Motoebike etc and also add image to be displayed on the user mobile app and web url. Also on the user the draws should have specific dates and time when they happen as oer tge setting (COMPLETED)
+2.  **User:** Can you make the admin portal view more lighter in colot and have simpler process flows (IN PROGRESS)
+3.  **User:** Reset Password needs to have a confirmation model which redirects the user to login page - currenylr it is not doing anything (COMPLETED)
+4.  **User:** After clicking Login - it does not respons (COMPLETED)
+5.  **User:** Verify OTP not going through (COMPLETED)
+6.  **User:** A feedback if the user enters the wrong number format, Implement mobile optimization for Biew Daws and History page, Implement a Forgot Password flow, The number format allowed should be 0XXXXXXXXX - all digits (COMPLETED)
+7.  **User:** Gove feednack if phone number exist and redirect the to forgot password, Optimize all the pages on the web preview for use to not span across the whole screen (COMPLETED)
+8.  **User:** Still not working [regarding OTP] (COMPLETED)
+9.  **User:** The send OTP button is not going through for the mobile app and the user we app (COMPLETED)
+10. **User:** On mobile app - put appropriate saocung between Win Draw and Get Started, On the web preview for user make the interface mobile compatible (COMPLETED)
+
+**Project Health Check:**
+- **Broken**:
+  - The Admin Portal UI is in an inconsistent state, with some pages using a new theme and others using the old one. This makes it partially broken from a UX perspective.
+- **Mocked**:
+  - The Revenue Authority API for validating receipt QR codes is still mocked in .
+
+**3rd Party Integrations**
+- **Emergent LLM Key:** Available, but not currently used in the application.
+
+**Testing status**
+  - Testing agent used after significant changes: NO
+  - Troubleshoot agent used after agent stuck in loop: NO
+  - Test files created: None.
+  - Known regressions: None identified, but the partial admin UI redesign could be considered a regression until it's completed.
+
+**Credentials to test flow:**
 -   **Admin User:**
     -   Username: 
     -   Password: 
--   **Mobile App User:**
-    -   Register a new user via the app. Phone numbers can be arbitrary (e.g., 1234567890), and the OTP will be auto-filled for testing purposes.
-</Credentials_to_test_flow>
-<What_agent_forgot_to_execute>
--   The agent did not fully debug and resolve the recurring  authentication issue on the web preview, instead assuming it would work on a real device. This leaves a significant bug in the testing workflow.
--   The agent did not restart the backend service after adding the new country setting API endpoints, which is a necessary step before the frontend can successfully call them.
-</What_agent_forgot_to_execute>
+-   **Mobile App User (for login testing):**
+    -   Phone: 
+    -   Password: 
+-   **Mobile App User (for forgot password testing):**
+    -   Phone:  or 
+
+**What agent forgot to execute**
+-   The agent did not finish the admin portal UI redesign task. It updated some core files but left the majority of the admin pages with the old theme, leading to an inconsistent UI.
 </analysis>
