@@ -17,8 +17,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAdminStore } from '../../src/store/adminStore';
 
 const { width } = Dimensions.get('window');
-const isWeb = Platform.OS === 'web';
-const isDesktop = isWeb && width > 768;
 
 export default function AdminLoginScreen() {
   const router = useRouter();
@@ -40,10 +38,7 @@ export default function AdminLoginScreen() {
       await login(username, password);
       router.replace('/admin/dashboard');
     } catch (error: any) {
-      Alert.alert(
-        'Login Failed',
-        error.response?.data?.detail || 'Invalid credentials'
-      );
+      Alert.alert('Login Failed', error.response?.data?.detail || 'Invalid credentials');
     } finally {
       setIsLoading(false);
     }
@@ -56,44 +51,42 @@ export default function AdminLoginScreen() {
         style={styles.keyboardView}
       >
         <View style={styles.centerContainer}>
-          <View style={[styles.card, isDesktop && styles.cardDesktop]}>
+          <View style={styles.card}>
             <View style={styles.header}>
               <View style={styles.iconContainer}>
-                <Ionicons name="shield-checkmark" size={48} color="#3B82F6" />
+                <Ionicons name="shield-checkmark" size={40} color="#2563EB" />
               </View>
               <Text style={styles.title}>Admin Portal</Text>
-              <Text style={styles.subtitle}>TaxDraw Management System</Text>
+              <Text style={styles.subtitle}>TaxDraw Management</Text>
             </View>
 
             <View style={styles.form}>
+              <Text style={styles.label}>Username</Text>
               <View style={styles.inputWrapper}>
-                <Ionicons name="person" size={20} color="#64748B" />
+                <Ionicons name="person-outline" size={20} color="#6B7280" />
                 <TextInput
                   style={styles.input}
-                  placeholder="Username"
-                  placeholderTextColor="#64748B"
+                  placeholder="Enter username"
+                  placeholderTextColor="#9CA3AF"
                   value={username}
                   onChangeText={setUsername}
                   autoCapitalize="none"
                 />
               </View>
 
+              <Text style={styles.label}>Password</Text>
               <View style={styles.inputWrapper}>
-                <Ionicons name="lock-closed" size={20} color="#64748B" />
+                <Ionicons name="lock-closed-outline" size={20} color="#6B7280" />
                 <TextInput
                   style={styles.input}
-                  placeholder="Password"
-                  placeholderTextColor="#64748B"
+                  placeholder="Enter password"
+                  placeholderTextColor="#9CA3AF"
                   secureTextEntry={!showPassword}
                   value={password}
                   onChangeText={setPassword}
                 />
                 <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                  <Ionicons
-                    name={showPassword ? 'eye-off' : 'eye'}
-                    size={20}
-                    color="#64748B"
-                  />
+                  <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color="#6B7280" />
                 </TouchableOpacity>
               </View>
 
@@ -105,16 +98,13 @@ export default function AdminLoginScreen() {
                 {isLoading ? (
                   <ActivityIndicator color="#fff" />
                 ) : (
-                  <Text style={styles.buttonText}>Login to Admin</Text>
+                  <Text style={styles.buttonText}>Sign In</Text>
                 )}
               </TouchableOpacity>
             </View>
 
-            <TouchableOpacity
-              style={styles.backLink}
-              onPress={() => router.replace('/')}
-            >
-              <Ionicons name="arrow-back" size={16} color="#64748B" />
+            <TouchableOpacity style={styles.backLink} onPress={() => router.replace('/')}>
+              <Ionicons name="arrow-back" size={16} color="#6B7280" />
               <Text style={styles.backText}>Back to User App</Text>
             </TouchableOpacity>
           </View>
@@ -127,7 +117,7 @@ export default function AdminLoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F172A',
+    backgroundColor: '#F3F4F6',
   },
   keyboardView: {
     flex: 1,
@@ -140,81 +130,89 @@ const styles = StyleSheet.create({
   },
   card: {
     width: '100%',
-    maxWidth: 440,
-    backgroundColor: isWeb ? '#1E293B' : 'transparent',
-    borderRadius: isWeb ? 24 : 0,
-    padding: isWeb ? 40 : 0,
-  },
-  cardDesktop: {
+    maxWidth: 400,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 32,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   header: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 32,
   },
   iconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 20,
-    backgroundColor: isWeb ? '#0F172A' : '#1E293B',
+    width: 72,
+    height: 72,
+    borderRadius: 16,
+    backgroundColor: '#EFF6FF',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#111827',
   },
   subtitle: {
-    fontSize: 16,
-    color: '#94A3B8',
+    fontSize: 14,
+    color: '#6B7280',
     marginTop: 4,
   },
   form: {
-    gap: 16,
+    gap: 4,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#374151',
+    marginBottom: 6,
+    marginTop: 12,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: isWeb ? '#0F172A' : '#1E293B',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    height: 56,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    paddingHorizontal: 14,
+    height: 48,
   },
   input: {
     flex: 1,
-    marginLeft: 12,
-    fontSize: 16,
-    color: '#fff',
+    marginLeft: 10,
+    fontSize: 15,
+    color: '#111827',
   },
   button: {
-    backgroundColor: '#3B82F6',
-    paddingVertical: 16,
-    borderRadius: 12,
+    backgroundColor: '#2563EB',
+    paddingVertical: 14,
+    borderRadius: 10,
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 24,
   },
   buttonDisabled: {
-    backgroundColor: '#374151',
+    backgroundColor: '#93C5FD',
   },
   buttonText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
   },
   backLink: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 32,
-    gap: 8,
+    marginTop: 24,
+    gap: 6,
   },
   backText: {
-    color: '#64748B',
+    color: '#6B7280',
     fontSize: 14,
   },
 });
