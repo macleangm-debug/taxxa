@@ -430,6 +430,18 @@ frontend:
         agent: "main"
         comment: "5-tab navigation with scan button prominently displayed"
 
+  - task: "Admin Settings Page"
+    implemented: true
+    working: true
+    file: "/app/frontend/app/admin/settings.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Full country management UI with add/edit/delete/select active country. Shows platform settings. Tested via screenshots."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
