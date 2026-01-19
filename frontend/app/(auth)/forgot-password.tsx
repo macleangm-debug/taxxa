@@ -351,6 +351,27 @@ export default function ForgotPasswordScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.successIcon}>
+              <Ionicons name="checkmark-circle" size={64} color="#10B981" />
+            </View>
+            <Text style={styles.modalTitle}>Password Reset Successful!</Text>
+            <Text style={styles.modalText}>
+              Your password has been reset successfully. You can now login with your new password.
+            </Text>
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={handleGoToLogin}
+            >
+              <Text style={styles.modalButtonText}>Go to Login</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
