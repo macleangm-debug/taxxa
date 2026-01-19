@@ -1519,6 +1519,262 @@ async def get_admin_stats():
     }
 
 
+# ============== COUNTRY SETTINGS ==============
+
+class CountryCreate(BaseModel):
+    name: str
+    code: str  # ISO country code (e.g., "US", "NG", "KE")
+    currency_code: str  # ISO currency code (e.g., "USD", "NGN", "KES")
+    currency_symbol: str  # Currency symbol (e.g., "$", "₦", "KSh")
+    currency_name: str  # Full currency name
+    timezone: str  # Timezone (e.g., "America/New_York", "Africa/Lagos")
+    tax_rate: float  # Default tax rate percentage
+    phone_code: str  # International dialing code (e.g., "+1", "+234")
+    language: str = "en"  # Primary language
+    date_format: str = "MM/DD/YYYY"  # Date format preference
+    is_active: bool = True
+
+class CountryUpdate(BaseModel):
+    name: Optional[str] = None
+    currency_code: Optional[str] = None
+    currency_symbol: Optional[str] = None
+    currency_name: Optional[str] = None
+    timezone: Optional[str] = None
+    tax_rate: Optional[float] = None
+    phone_code: Optional[str] = None
+    language: Optional[str] = None
+    date_format: Optional[str] = None
+    is_active: Optional[bool] = None
+
+@api_router.get("/admin/countries")
+async def get_all_countries(admin: dict = Depends(get_current_admin)):
+    """Get all countries"""
+    countries = await db.countries.find().sort("name", 1).to_list(100)
+    return [
+        {
+            "id": str(country["_id"]),
+            "name": country["name"],
+            "code": country["code"],
+            "currency_code": country["currency_code"],
+            "currency_symbol": country["currency_symbol"],
+            "currency_name": country.get("currency_name", ""),
+            "timezone": country["timezone"],
+            "tax_rate": country["tax_rate"],
+            "phone_code": country["phone_code"],
+            "language": country.get("language", "en"),
+            "date_format": country.get("date_format", "MM/DD/YYYY"),
+            "is_active": country.get("is_active", True),
+            "created_at": country["created_at"].isoformat() if "created_at" in country else None,
+        }
+        for country in countries
+    ]
+
+@api_router.post("/admin/countries")
+async def create_country(data: CountryCreate, admin: dict = Depends(get_current_admin)):
+    """Create a new country"""
+    # Check if country code already exists
+    existing = await db.countries.find_one({"code": data.code.upper()})
+    if existing:
+        raise HTTPException(status_code=400, detail="Country with this code already exists")
+    
+    country_data = {
+        "name": data.name,
+        "code": data.code.upper(),
+        "currency_code": data.currency_code.upper(),
+        "currency_symbol": data.currency_symbol,
+        "currency_name": data.currency_name,
+        "timezone": data.timezone,
+        "tax_rate": data.tax_rate,
+        "phone_code": data.phone_code,
+        "language": data.language,
+        "date_format": data.date_format,
+        "is_active": data.is_active,
+        "created_at": datetime.utcnow(),
+        "created_by": admin.get("username")
+    }
+    
+    result = await db.countries.insert_one(country_data)
+    
+    # Log the action
+    await db.admin_logs.insert_one({
+        "action": "country_created",
+        "country_id": str(result.inserted_id),
+        "country_code": data.code.upper(),
+        "admin": admin.get("username"),
+        "timestamp": datetime.utcnow()
+    })
+    
+    return {"id": str(result.inserted_id), "message": "Country created successfully"}
+
+@api_router.get("/admin/countries/{country_id}")
+async def get_country(country_id: str, admin: dict = Depends(get_current_admin)):
+    """Get a specific country by ID"""
+    try:
+        country = await db.countries.find_one({"_id": ObjectId(country_id)})
+        if not country:
+            raise HTTPException(status_code=404, detail="Country not found")
+        
+        return {
+            "id": str(country["_id"]),
+            "name": country["name"],
+            "code": country["code"],
+            "currency_code": country["currency_code"],
+            "currency_symbol": country["currency_symbol"],
+            "currency_name": country.get("currency_name", ""),
+            "timezone": country["timezone"],
+            "tax_rate": country["tax_rate"],
+            "phone_code": country["phone_code"],
+            "language": country.get("language", "en"),
+            "date_format": country.get("date_format", "MM/DD/YYYY"),
+            "is_active": country.get("is_active", True),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@api_router.put("/admin/countries/{country_id}")
+async def update_country(country_id: str, data: CountryUpdate, admin: dict = Depends(get_current_admin)):
+    """Update a country"""
+    try:
+        update_data = {k: v for k, v in data.dict().items() if v is not None}
+        if not update_data:
+            raise HTTPException(status_code=400, detail="No update data provided")
+        
+        update_data["updated_at"] = datetime.utcnow()
+        update_data["updated_by"] = admin.get("username")
+        
+        result = await db.countries.update_one(
+            {"_id": ObjectId(country_id)},
+            {"$set": update_data}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Country not found")
+        
+        # Log the action
+        await db.admin_logs.insert_one({
+            "action": "country_updated",
+            "country_id": country_id,
+            "updates": update_data,
+            "admin": admin.get("username"),
+            "timestamp": datetime.utcnow()
+        })
+        
+        return {"message": "Country updated successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@api_router.delete("/admin/countries/{country_id}")
+async def delete_country(country_id: str, admin: dict = Depends(get_current_admin)):
+    """Delete a country"""
+    try:
+        country = await db.countries.find_one({"_id": ObjectId(country_id)})
+        if not country:
+            raise HTTPException(status_code=404, detail="Country not found")
+        
+        await db.countries.delete_one({"_id": ObjectId(country_id)})
+        
+        # Log the action
+        await db.admin_logs.insert_one({
+            "action": "country_deleted",
+            "country_id": country_id,
+            "country_code": country["code"],
+            "admin": admin.get("username"),
+            "timestamp": datetime.utcnow()
+        })
+        
+        return {"message": "Country deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# ============== PLATFORM SETTINGS ==============
+
+@api_router.get("/admin/settings")
+async def get_platform_settings(admin: dict = Depends(get_current_admin)):
+    """Get platform settings"""
+    settings = await db.settings.find_one({"type": "platform"})
+    if not settings:
+        # Return default settings
+        return {
+            "active_country": None,
+            "default_draw_types": ["weekly", "monthly", "quarterly"],
+            "default_prize_tiers": [
+                {"tier": 1, "name": "Grand Prize", "amount": 10000, "winners": 1},
+                {"tier": 2, "name": "Second Prize", "amount": 5000, "winners": 3},
+                {"tier": 3, "name": "Third Prize", "amount": 1000, "winners": 10},
+            ],
+            "scan_cooldown_seconds": 60,
+            "max_scans_per_day": 100,
+            "entries_per_amount": 50,  # 1 entry per this amount spent
+            "min_entries_per_scan": 1,
+            "receipt_expiry_days": 30,
+        }
+    
+    return {
+        "active_country": settings.get("active_country"),
+        "default_draw_types": settings.get("default_draw_types", ["weekly", "monthly", "quarterly"]),
+        "default_prize_tiers": settings.get("default_prize_tiers", []),
+        "scan_cooldown_seconds": settings.get("scan_cooldown_seconds", 60),
+        "max_scans_per_day": settings.get("max_scans_per_day", 100),
+        "entries_per_amount": settings.get("entries_per_amount", 50),
+        "min_entries_per_scan": settings.get("min_entries_per_scan", 1),
+        "receipt_expiry_days": settings.get("receipt_expiry_days", 30),
+    }
+
+@api_router.put("/admin/settings")
+async def update_platform_settings(
+    settings_data: Dict[str, Any],
+    admin: dict = Depends(get_current_admin)
+):
+    """Update platform settings"""
+    settings_data["updated_at"] = datetime.utcnow()
+    settings_data["updated_by"] = admin.get("username")
+    
+    await db.settings.update_one(
+        {"type": "platform"},
+        {"$set": settings_data},
+        upsert=True
+    )
+    
+    # Log the action
+    await db.admin_logs.insert_one({
+        "action": "settings_updated",
+        "updates": list(settings_data.keys()),
+        "admin": admin.get("username"),
+        "timestamp": datetime.utcnow()
+    })
+    
+    return {"message": "Settings updated successfully"}
+
+@api_router.put("/admin/settings/active-country")
+async def set_active_country(
+    country_id: Optional[str] = None,
+    admin: dict = Depends(get_current_admin)
+):
+    """Set the active country for the admin"""
+    if country_id:
+        # Verify country exists
+        country = await db.countries.find_one({"_id": ObjectId(country_id)})
+        if not country:
+            raise HTTPException(status_code=404, detail="Country not found")
+    
+    await db.settings.update_one(
+        {"type": "platform"},
+        {"$set": {
+            "active_country": country_id,
+            "updated_at": datetime.utcnow(),
+            "updated_by": admin.get("username")
+        }},
+        upsert=True
+    )
+    
+    return {"message": "Active country updated successfully"}
+
+
 # ============== EDUCATION CONTENT ==============
 
 @api_router.get("/education")
