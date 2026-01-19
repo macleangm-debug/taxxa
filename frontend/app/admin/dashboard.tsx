@@ -271,6 +271,13 @@ export default function AdminDashboard() {
                   route="/admin/fraud"
                   description="Monitor suspicious activity"
                 />
+                <MenuCard
+                  title="Settings"
+                  icon="settings"
+                  color="#64748B"
+                  route="/admin/settings"
+                  description="Manage countries and platform settings"
+                />
               </View>
             </View>
           </View>
