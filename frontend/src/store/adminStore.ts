@@ -76,7 +76,7 @@ interface AdminState {
   
   // Draws
   fetchDraws: (status?: string) => Promise<void>;
-  createDraw: (drawType: string, days: number) => Promise<void>;
+  createDraw: (drawType: string, days: number, prizeTiers?: any[], drawDate?: string) => Promise<void>;
   completeDraw: (drawId: string) => Promise<any>;
   cancelDraw: (drawId: string) => Promise<void>;
   
