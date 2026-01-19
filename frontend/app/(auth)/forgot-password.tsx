@@ -409,4 +409,54 @@ const styles = StyleSheet.create({
   loginLink: { marginTop: 24, alignItems: 'center' },
   loginText: { color: '#94A3B8', fontSize: 15 },
   loginBold: { color: '#3B82F6', fontWeight: '600' },
+  // Modal styles
+  modalOverlay: { 
+    position: 'absolute', 
+    top: 0, 
+    left: 0, 
+    right: 0, 
+    bottom: 0, 
+    backgroundColor: 'rgba(0,0,0,0.85)', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    padding: 24 
+  },
+  modalContent: { 
+    backgroundColor: '#1E293B', 
+    borderRadius: 24, 
+    padding: 32, 
+    width: '100%', 
+    maxWidth: 360, 
+    alignItems: 'center' 
+  },
+  successIcon: { 
+    marginBottom: 20 
+  },
+  modalTitle: { 
+    fontSize: 22, 
+    fontWeight: 'bold', 
+    color: '#fff', 
+    marginBottom: 12,
+    textAlign: 'center'
+  },
+  modalText: { 
+    fontSize: 15, 
+    color: '#94A3B8', 
+    textAlign: 'center', 
+    marginBottom: 28, 
+    lineHeight: 22 
+  },
+  modalButton: { 
+    backgroundColor: '#10B981', 
+    paddingVertical: 16, 
+    paddingHorizontal: 32,
+    borderRadius: 12, 
+    alignItems: 'center',
+    width: '100%'
+  },
+  modalButtonText: { 
+    color: '#fff', 
+    fontSize: 18, 
+    fontWeight: '600' 
+  },
 });
