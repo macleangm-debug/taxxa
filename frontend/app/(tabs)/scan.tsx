@@ -203,6 +203,10 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderRadius: 24,
     marginHorizontal: 16,
+    maxWidth: isWeb ? 400 : undefined,
+    maxHeight: isWeb ? 400 : undefined,
+    alignSelf: 'center',
+    width: isWeb ? '100%' : undefined,
   },
   camera: {
     flex: 1,
