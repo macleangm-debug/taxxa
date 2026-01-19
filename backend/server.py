@@ -348,6 +348,68 @@ async def login(data: UserLogin):
     
     if user.get("status") == "blocked":
         raise HTTPException(status_code=403, detail="Account has been blocked")
+
+@api_router.post("/auth/forgot-password")
+async def forgot_password(data: UserRegister):
+    """Request OTP for password reset (existing users only)"""
+    phone = data.phone_number.strip()
+    
+    # Check if user exists
+    user = await db.users.find_one({"phone_number": phone, "is_verified": True})
+    if not user:
+        raise HTTPException(status_code=404, detail="Phone number not registered. Please create an account first.")
+    
+    # Generate OTP
+    otp = generate_otp()
+    
+    # Store OTP
+    await db.otps.update_one(
+        {"phone_number": phone},
+        {
+            "$set": {
+                "otp": otp,
+                "created_at": datetime.utcnow(),
+                "expires_at": datetime.utcnow() + timedelta(minutes=10),
+                "verified": False,
+                "purpose": "password_reset"
+            }
+        },
+        upsert=True
+    )
+    
+    logger.info(f"Password reset OTP for {phone}: {otp}")
+    
+    return {
+        "message": "OTP sent successfully",
+        "phone_number": phone,
+        "otp_for_testing": otp
+    }
+
+@api_router.post("/auth/reset-password")
+async def reset_password(data: PasswordCreate):
+    """Reset password after OTP verification"""
+    phone = data.phone_number.strip()
+    
+    # Check OTP was verified
+    otp_record = await db.otps.find_one({"phone_number": phone, "verified": True})
+    if not otp_record:
+        raise HTTPException(status_code=400, detail="Please verify OTP first")
+    
+    # Find the user
+    user = await db.users.find_one({"phone_number": phone, "is_verified": True})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Update password
+    await db.users.update_one(
+        {"phone_number": phone},
+        {"$set": {"password_hash": hash_password(data.password)}}
+    )
+    
+    # Clean up OTP
+    await db.otps.delete_one({"phone_number": phone})
+    
+    return {"message": "Password reset successfully"}
     
     token = create_jwt_token(str(user["_id"]))
     
