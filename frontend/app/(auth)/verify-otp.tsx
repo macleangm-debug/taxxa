@@ -115,7 +115,7 @@ export default function VerifyOTPScreen() {
             <Ionicons name="shield-checkmark" size={48} color="#10B981" />
             <Text style={styles.title}>Verify OTP</Text>
             <Text style={styles.subtitle}>
-              Enter the 6-digit code sent to{' '}\n{phone}
+              Enter the 6-digit code sent to{'\n'}{phone}
             </Text>
           </View>
 
