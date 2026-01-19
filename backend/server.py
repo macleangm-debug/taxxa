@@ -1110,23 +1110,56 @@ async def get_all_draws(
 async def create_draw(
     draw_type: str = "weekly",
     days_duration: int = 7,
+    draw_date: Optional[str] = None,  # Specific draw date/time ISO format
     prize_tiers: Optional[List[Dict]] = None,
     admin: dict = Depends(get_current_admin)
 ):
-    """Create a new draw"""
+    """Create a new draw with enhanced prize configuration"""
     if prize_tiers is None:
         prize_tiers = [
-            {"tier": 1, "name": "Grand Prize", "amount": 10000, "winners": 1},
-            {"tier": 2, "name": "Second Prize", "amount": 5000, "winners": 3},
-            {"tier": 3, "name": "Third Prize", "amount": 1000, "winners": 10},
+            {
+                "tier": 1, 
+                "name": "Grand Prize", 
+                "prize_type": "money",
+                "amount": 10000, 
+                "winners": 1,
+                "image_url": None
+            },
+            {
+                "tier": 2, 
+                "name": "Second Prize", 
+                "prize_type": "money",
+                "amount": 5000, 
+                "winners": 3,
+                "image_url": None
+            },
+            {
+                "tier": 3, 
+                "name": "Third Prize", 
+                "prize_type": "money",
+                "amount": 1000, 
+                "winners": 10,
+                "image_url": None
+            },
         ]
     
     now = datetime.utcnow()
+    end_date = now + timedelta(days=days_duration)
+    
+    # Parse draw_date if provided, otherwise set it to end_date
+    if draw_date:
+        try:
+            parsed_draw_date = datetime.fromisoformat(draw_date.replace('Z', '+00:00'))
+        except:
+            parsed_draw_date = end_date
+    else:
+        parsed_draw_date = end_date
     
     draw_data = {
         "draw_type": draw_type,
         "start_date": now,
-        "end_date": now + timedelta(days=days_duration),
+        "end_date": end_date,
+        "draw_date": parsed_draw_date,  # When the actual draw happens
         "status": "active",
         "prize_tiers": prize_tiers,
         "total_entries": 0,
