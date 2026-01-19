@@ -188,8 +188,16 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     set({ draws: response.data });
   },
 
-  createDraw: async (drawType: string, days: number) => {
-    await adminApi.post(`/admin/draws?draw_type=${drawType}&days_duration=${days}`);
+  createDraw: async (drawType: string, days: number, prizeTiers?: any[], drawDate?: string) => {
+    let url = `/admin/draws?draw_type=${drawType}&days_duration=${days}`;
+    if (drawDate) url += `&draw_date=${encodeURIComponent(drawDate)}`;
+    
+    // Send prize tiers in request body
+    if (prizeTiers) {
+      await adminApi.post(url, { prize_tiers: prizeTiers });
+    } else {
+      await adminApi.post(url);
+    }
     await get().fetchDraws();
   },
 
