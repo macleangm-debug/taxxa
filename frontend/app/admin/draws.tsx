@@ -16,7 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAdminStore } from '../../src/store/adminStore';
 import AdminLayout from '../../src/components/AdminLayout';
 import AdminHeader from '../../src/components/AdminHeader';
-import { format, addDays } from 'date-fns';
+import { format } from 'date-fns';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 const isWeb = Platform.OS === 'web';
@@ -45,10 +45,17 @@ interface Draw {
 export default function DrawsManagement() {
   const { draws, fetchDraws, createDraw, updateDraw, deleteDraw, completeDraw, activeCountry } = useAdminStore();
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Modals
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddPrizeModal, setShowAddPrizeModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showCompleteConfirm, setShowCompleteConfirm] = useState(false);
+  const [showCreateConfirm, setShowCreateConfirm] = useState(false);
+  const [showUpdateConfirm, setShowUpdateConfirm] = useState(false);
+  
   const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
   
   // For create/edit
@@ -70,8 +77,8 @@ export default function DrawsManagement() {
   const [newPrizeImage, setNewPrizeImage] = useState('');
   const [newPrizeWinners, setNewPrizeWinners] = useState('1');
   
-  // For delete
-  const [drawToDelete, setDrawToDelete] = useState<Draw | null>(null);
+  // For delete/complete
+  const [selectedDraw, setSelectedDraw] = useState<Draw | null>(null);
 
   const currencySymbol = activeCountry?.currency_symbol || '$';
 
@@ -105,16 +112,18 @@ export default function DrawsManagement() {
     setEditingDraw(null);
   };
 
-  const handleOpenCreate = () => {
+  // Open Create Modal
+  const openCreateModal = () => {
+    console.log('Opening create modal');
     resetForm();
     setShowCreateModal(true);
   };
 
-  const handleOpenEdit = (draw: Draw) => {
+  // Open Edit Modal
+  const openEditModal = (draw: Draw) => {
     setEditingDraw(draw);
     setDrawType(draw.draw_type);
     
-    // Set draw date from existing draw
     if (draw.draw_date) {
       const existingDate = new Date(draw.draw_date);
       setDrawDate(existingDate);
@@ -124,7 +133,6 @@ export default function DrawsManagement() {
       setDrawTime(new Date());
     }
     
-    // Set prizes
     if (draw.prize_tiers && draw.prize_tiers.length > 0) {
       setPrizes(draw.prize_tiers);
     } else {
@@ -134,7 +142,14 @@ export default function DrawsManagement() {
     setShowEditModal(true);
   };
 
-  const handleCreate = async () => {
+  // Show Create Confirmation
+  const confirmCreate = () => {
+    setShowCreateConfirm(true);
+  };
+
+  // Execute Create
+  const executeCreate = async () => {
+    setIsSubmitting(true);
     const period = getDrawPeriod();
     const combinedDateTime = new Date(drawDate);
     combinedDateTime.setHours(drawTime.getHours(), drawTime.getMinutes(), 0, 0);
@@ -142,16 +157,26 @@ export default function DrawsManagement() {
     
     try {
       await createDraw(drawType, period.days > 0 ? period.days : 7, prizes, fullDrawDate);
+      setShowCreateConfirm(false);
       setShowCreateModal(false);
       resetForm();
       Alert.alert('Success', 'Draw created successfully!');
     } catch (error) {
       Alert.alert('Error', 'Failed to create draw');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleUpdate = async () => {
+  // Show Update Confirmation
+  const confirmUpdate = () => {
+    setShowUpdateConfirm(true);
+  };
+
+  // Execute Update
+  const executeUpdate = async () => {
     if (!editingDraw) return;
+    setIsSubmitting(true);
     
     const combinedDateTime = new Date(drawDate);
     combinedDateTime.setHours(drawTime.getHours(), drawTime.getMinutes(), 0, 0);
@@ -159,29 +184,60 @@ export default function DrawsManagement() {
     
     try {
       await updateDraw(editingDraw.id, drawType, fullDrawDate, prizes);
+      setShowUpdateConfirm(false);
       setShowEditModal(false);
       resetForm();
       Alert.alert('Success', 'Draw updated successfully!');
     } catch (error) {
       Alert.alert('Error', 'Failed to update draw');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleDeleteConfirm = (draw: Draw) => {
-    setDrawToDelete(draw);
+  // Show Delete Confirmation
+  const confirmDelete = (draw: Draw) => {
+    setSelectedDraw(draw);
     setShowDeleteConfirm(true);
   };
 
-  const handleDelete = async () => {
-    if (!drawToDelete) return;
+  // Execute Delete
+  const executeDelete = async () => {
+    if (!selectedDraw) return;
+    setIsSubmitting(true);
     
     try {
-      await deleteDraw(drawToDelete.id);
+      await deleteDraw(selectedDraw.id);
       setShowDeleteConfirm(false);
-      setDrawToDelete(null);
+      setSelectedDraw(null);
       Alert.alert('Success', 'Draw deleted successfully!');
     } catch (error) {
       Alert.alert('Error', 'Failed to delete draw');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Show Complete Confirmation
+  const confirmComplete = (draw: Draw) => {
+    setSelectedDraw(draw);
+    setShowCompleteConfirm(true);
+  };
+
+  // Execute Complete
+  const executeComplete = async () => {
+    if (!selectedDraw) return;
+    setIsSubmitting(true);
+    
+    try {
+      const result = await completeDraw(selectedDraw.id);
+      setShowCompleteConfirm(false);
+      setSelectedDraw(null);
+      Alert.alert('Success', `Draw completed! ${result.winners?.length || 0} winner(s) selected.`);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to complete draw');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -212,20 +268,6 @@ export default function DrawsManagement() {
 
   const removePrize = (index: number) => {
     setPrizes(prizes.filter((_, i) => i !== index));
-  };
-
-  const handleComplete = (draw: Draw) => {
-    Alert.alert('Complete Draw', `Complete "${draw.draw_type}" draw and select winners?`, [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Yes, Complete', onPress: async () => {
-        try {
-          const result = await completeDraw(draw.id);
-          Alert.alert('Success', `Draw completed! ${result.winners?.length || 0} winner(s) selected.`);
-        } catch (error) {
-          Alert.alert('Error', 'Failed to complete draw');
-        }
-      }},
-    ]);
   };
 
   const getStatusColor = (status: string) => {
@@ -347,13 +389,13 @@ export default function DrawsManagement() {
         <View style={styles.actionButtons}>
           {item.status === 'active' && (
             <>
-              <TouchableOpacity style={[styles.actionIconBtn, styles.editBtn]} onPress={() => handleOpenEdit(item)}>
+              <TouchableOpacity style={[styles.actionIconBtn, styles.editBtn]} onPress={() => openEditModal(item)}>
                 <Ionicons name="pencil" size={16} color="#2563EB" />
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.actionIconBtn, styles.completeBtn]} onPress={() => handleComplete(item)}>
+              <TouchableOpacity style={[styles.actionIconBtn, styles.completeBtn]} onPress={() => confirmComplete(item)}>
                 <Ionicons name="checkmark-circle" size={16} color="#10B981" />
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.actionIconBtn, styles.deleteBtn]} onPress={() => handleDeleteConfirm(item)}>
+              <TouchableOpacity style={[styles.actionIconBtn, styles.deleteBtn]} onPress={() => confirmDelete(item)}>
                 <Ionicons name="trash" size={16} color="#EF4444" />
               </TouchableOpacity>
             </>
@@ -371,7 +413,7 @@ export default function DrawsManagement() {
 
   const period = getDrawPeriod();
 
-  // Shared form content for create/edit
+  // Draw Form Content (shared between create/edit)
   const DrawFormContent = ({ isEdit }: { isEdit: boolean }) => (
     <ScrollView style={styles.modalBody}>
       <Text style={styles.label}>Type</Text>
@@ -425,10 +467,64 @@ export default function DrawsManagement() {
         </View>
       ))}
 
-      <TouchableOpacity style={styles.submitBtn} onPress={isEdit ? handleUpdate : handleCreate}>
+      <TouchableOpacity style={styles.submitBtn} onPress={isEdit ? confirmUpdate : confirmCreate}>
         <Text style={styles.submitBtnText}>{isEdit ? 'Update Draw' : 'Create Draw'}</Text>
       </TouchableOpacity>
     </ScrollView>
+  );
+
+  // Confirmation Modal Component
+  const ConfirmationModal = ({ 
+    visible, 
+    onClose, 
+    onConfirm, 
+    title, 
+    message, 
+    confirmText, 
+    confirmColor,
+    icon,
+    iconColor
+  }: {
+    visible: boolean;
+    onClose: () => void;
+    onConfirm: () => void;
+    title: string;
+    message: string;
+    confirmText: string;
+    confirmColor: string;
+    icon: string;
+    iconColor: string;
+  }) => (
+    <Modal visible={visible} animationType="fade" transparent>
+      <View style={styles.modalOverlay}>
+        <View style={styles.confirmModal}>
+          <View style={[styles.confirmIconContainer, { backgroundColor: `${iconColor}15` }]}>
+            <Ionicons name={icon as any} size={48} color={iconColor} />
+          </View>
+          <Text style={styles.confirmTitle}>{title}</Text>
+          <Text style={styles.confirmText}>{message}</Text>
+          <View style={styles.confirmButtons}>
+            <TouchableOpacity style={styles.cancelBtn} onPress={onClose} disabled={isSubmitting}>
+              <Text style={styles.cancelBtnText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.confirmActionBtn, { backgroundColor: confirmColor }]} 
+              onPress={onConfirm}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <>
+                  <Ionicons name={icon as any} size={18} color="#fff" />
+                  <Text style={styles.confirmActionBtnText}>{confirmText}</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
   );
 
   return (
@@ -437,7 +533,7 @@ export default function DrawsManagement() {
         title="Draws" 
         subtitle={`${draws.length} total draws`}
         rightContent={
-          <TouchableOpacity style={styles.createBtn} onPress={handleOpenCreate}>
+          <TouchableOpacity style={styles.createBtn} onPress={openCreateModal} activeOpacity={0.7}>
             <Ionicons name="add" size={18} color="#fff" />
             <Text style={styles.createBtnText}>New Draw</Text>
           </TouchableOpacity>
@@ -504,7 +600,7 @@ export default function DrawsManagement() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Create Draw</Text>
+              <Text style={styles.modalTitle}>Create New Draw</Text>
               <TouchableOpacity onPress={() => { setShowCreateModal(false); resetForm(); }}>
                 <Ionicons name="close" size={24} color="#64748B" />
               </TouchableOpacity>
@@ -532,29 +628,57 @@ export default function DrawsManagement() {
         </View>
       </Modal>
 
+      {/* Create Confirmation Modal */}
+      <ConfirmationModal
+        visible={showCreateConfirm}
+        onClose={() => setShowCreateConfirm(false)}
+        onConfirm={executeCreate}
+        title="Create Draw?"
+        message={`Create a new ${drawType} draw scheduled for ${format(drawDate, 'MMM d, yyyy')} at ${format(drawTime, 'h:mm a')} with ${prizes.length} prize tier(s)?`}
+        confirmText="Create"
+        confirmColor="#2563EB"
+        icon="add-circle"
+        iconColor="#2563EB"
+      />
+
+      {/* Update Confirmation Modal */}
+      <ConfirmationModal
+        visible={showUpdateConfirm}
+        onClose={() => setShowUpdateConfirm(false)}
+        onConfirm={executeUpdate}
+        title="Update Draw?"
+        message={`Save changes to this ${drawType} draw? The draw will be updated with the new date, time, and prizes.`}
+        confirmText="Update"
+        confirmColor="#2563EB"
+        icon="save"
+        iconColor="#2563EB"
+      />
+
       {/* Delete Confirmation Modal */}
-      <Modal visible={showDeleteConfirm} animationType="fade" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.deleteModal}>
-            <View style={styles.deleteIconContainer}>
-              <Ionicons name="warning" size={48} color="#EF4444" />
-            </View>
-            <Text style={styles.deleteTitle}>Delete Draw?</Text>
-            <Text style={styles.deleteText}>
-              Are you sure you want to delete the "{drawToDelete?.draw_type}" draw? This action cannot be undone.
-            </Text>
-            <View style={styles.deleteButtons}>
-              <TouchableOpacity style={styles.cancelBtn} onPress={() => { setShowDeleteConfirm(false); setDrawToDelete(null); }}>
-                <Text style={styles.cancelBtnText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.confirmDeleteBtn} onPress={handleDelete}>
-                <Ionicons name="trash" size={18} color="#fff" />
-                <Text style={styles.confirmDeleteBtnText}>Delete</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      <ConfirmationModal
+        visible={showDeleteConfirm}
+        onClose={() => { setShowDeleteConfirm(false); setSelectedDraw(null); }}
+        onConfirm={executeDelete}
+        title="Delete Draw?"
+        message={`Are you sure you want to delete the "${selectedDraw?.draw_type}" draw? This action cannot be undone and all entries will be lost.`}
+        confirmText="Delete"
+        confirmColor="#EF4444"
+        icon="trash"
+        iconColor="#EF4444"
+      />
+
+      {/* Complete Confirmation Modal */}
+      <ConfirmationModal
+        visible={showCompleteConfirm}
+        onClose={() => { setShowCompleteConfirm(false); setSelectedDraw(null); }}
+        onConfirm={executeComplete}
+        title="Complete Draw?"
+        message={`Complete the "${selectedDraw?.draw_type}" draw and randomly select winners? This will end the draw and notify winners.`}
+        confirmText="Complete"
+        confirmColor="#10B981"
+        icon="checkmark-circle"
+        iconColor="#10B981"
+      />
 
       {/* Add Prize Modal */}
       <Modal visible={showAddPrizeModal} animationType="fade" transparent>
@@ -992,7 +1116,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  deleteModal: {
+  confirmModal: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
     width: '100%',
@@ -1000,29 +1124,28 @@ const styles = StyleSheet.create({
     padding: 32,
     alignItems: 'center',
   },
-  deleteIconContainer: {
+  confirmIconContainer: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#FEF2F2',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
   },
-  deleteTitle: {
+  confirmTitle: {
     fontSize: 20,
     fontWeight: '600',
     color: '#1E293B',
     marginBottom: 8,
   },
-  deleteText: {
+  confirmText: {
     fontSize: 14,
     color: '#64748B',
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 24,
   },
-  deleteButtons: {
+  confirmButtons: {
     flexDirection: 'row',
     gap: 12,
     width: '100%',
@@ -1038,17 +1161,16 @@ const styles = StyleSheet.create({
     color: '#475569',
     fontWeight: '600',
   },
-  confirmDeleteBtn: {
+  confirmActionBtn: {
     flex: 1,
     flexDirection: 'row',
     paddingVertical: 14,
     borderRadius: 10,
-    backgroundColor: '#EF4444',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
   },
-  confirmDeleteBtnText: {
+  confirmActionBtnText: {
     color: '#fff',
     fontWeight: '600',
   },
