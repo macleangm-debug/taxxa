@@ -304,6 +304,55 @@ export default function DrawsManagement() {
     }
   };
 
+  // Open Audit Modal
+  const openAuditModal = async (draw: Draw) => {
+    setSelectedDraw(draw);
+    setIsLoadingAudit(true);
+    setShowAuditModal(true);
+    
+    try {
+      const data = await fetchDrawAudit(draw.id);
+      setAuditData(data);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to load audit data');
+      setShowAuditModal(false);
+    } finally {
+      setIsLoadingAudit(false);
+    }
+  };
+
+  // Export Audit Report
+  const handleExportAudit = async () => {
+    if (!selectedDraw) return;
+    
+    try {
+      const exportData = await exportDrawAudit(selectedDraw.id);
+      const jsonString = JSON.stringify(exportData, null, 2);
+      
+      if (Platform.OS === 'web') {
+        // Web: Download as file
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `audit_report_${selectedDraw.id}_${format(new Date(), 'yyyy-MM-dd')}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        Alert.alert('Success', 'Audit report downloaded!');
+      } else {
+        // Mobile: Share
+        await Share.share({
+          message: jsonString,
+          title: `Audit Report - ${selectedDraw.draw_type} Draw`
+        });
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to export audit report');
+    }
+  };
+
   // Show Complete Confirmation
   const confirmComplete = (draw: Draw) => {
     setSelectedDraw(draw);
