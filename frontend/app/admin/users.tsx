@@ -145,28 +145,49 @@ export default function UsersManagement() {
 
   const renderTableRow = ({ item }: { item: any }) => (
     <TouchableOpacity style={styles.tableRow} onPress={() => handleUserPress(item)}>
-      <View style={[styles.tableCell, { flex: 2 }]}>
-        <Text style={styles.tableCellName}>{item.name || 'No Name'}</Text>
-        <Text style={styles.tableCellPhone}>{item.phone_number}</Text>
+      <View style={{ flex: 3, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <View style={[styles.avatar, { backgroundColor: getStatusColor(item.status) + '15' }]}>
+          <Ionicons name="person" size={18} color={getStatusColor(item.status)} />
+        </View>
+        <View>
+          <Text style={styles.tableCellName}>{item.name || 'No Name'}</Text>
+          <Text style={styles.tableCellPhone}>{item.phone_number}</Text>
+        </View>
       </View>
-      <Text style={[styles.tableCell, { flex: 1, textAlign: 'center' }]}>{item.total_scans}</Text>
-      <Text style={[styles.tableCell, { flex: 1, textAlign: 'center' }]}>{item.total_entries}</Text>
-      <View style={[styles.tableCell, { flex: 1, alignItems: 'center' }]}>
+      <View style={{ flex: 1.5 }}>
+        <Text style={styles.tableCellValue}>{item.total_scans}</Text>
+      </View>
+      <View style={{ flex: 1.5 }}>
+        <Text style={styles.tableCellValue}>{item.total_entries}</Text>
+      </View>
+      <View style={{ flex: 1.5, alignItems: 'center' }}>
         <View style={[styles.statusBadgeSmall, { backgroundColor: getStatusColor(item.status) + '15' }]}>
           <Text style={[styles.statusTextSmall, { color: getStatusColor(item.status) }]}>
             {item.status}
           </Text>
         </View>
       </View>
+      <View style={{ flex: 0.5, alignItems: 'flex-end' }}>
+        <Ionicons name="chevron-forward" size={18} color="#D1D5DB" />
+      </View>
     </TouchableOpacity>
   );
 
   const TableHeader = () => (
     <View style={styles.tableHeader}>
-      <Text style={[styles.tableHeaderCell, { flex: 2 }]}>User</Text>
-      <Text style={[styles.tableHeaderCell, { flex: 1, textAlign: 'center' }]}>Scans</Text>
-      <Text style={[styles.tableHeaderCell, { flex: 1, textAlign: 'center' }]}>Entries</Text>
-      <Text style={[styles.tableHeaderCell, { flex: 1, textAlign: 'center' }]}>Status</Text>
+      <View style={{ flex: 3 }}>
+        <Text style={styles.tableHeaderCell}>User</Text>
+      </View>
+      <View style={{ flex: 1.5 }}>
+        <Text style={styles.tableHeaderCell}>Scans</Text>
+      </View>
+      <View style={{ flex: 1.5 }}>
+        <Text style={styles.tableHeaderCell}>Entries</Text>
+      </View>
+      <View style={{ flex: 1.5 }}>
+        <Text style={[styles.tableHeaderCell, { textAlign: 'center' }]}>Status</Text>
+      </View>
+      <View style={{ flex: 0.5 }} />
     </View>
   );
 
