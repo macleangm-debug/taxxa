@@ -674,6 +674,30 @@ async def get_user_stats(user: dict = Depends(get_current_user)):
     """Get user statistics"""
     user_id = str(user["_id"])
     
+    # Get active country currency info
+    settings = await db.settings.find_one({"key": "platform_settings"})
+    active_country_id = settings.get("active_country") if settings else None
+    
+    currency_info = {
+        "currency_code": "USD",
+        "currency_symbol": "$",
+        "currency_name": "US Dollar",
+        "country_name": "Default"
+    }
+    
+    if active_country_id:
+        try:
+            country = await db.countries.find_one({"_id": ObjectId(active_country_id)})
+            if country:
+                currency_info = {
+                    "currency_code": country.get("currency_code", "USD"),
+                    "currency_symbol": country.get("currency_symbol", "$"),
+                    "currency_name": country.get("currency_name", "US Dollar"),
+                    "country_name": country.get("name", "Unknown")
+                }
+        except:
+            pass
+    
     # Get active draw entries
     active_draws = await db.draws.find({"status": "active"}).to_list(100)
     current_entries = 0
@@ -714,7 +738,38 @@ async def get_user_stats(user: dict = Depends(get_current_user)):
         "total_entries": user.get("total_entries", 0),
         "current_draw_entries": current_entries,
         "upcoming_draws": upcoming_draws,
-        "past_winnings": past_winnings
+        "past_winnings": past_winnings,
+        "currency": currency_info
+    }
+
+@api_router.get("/app/config")
+async def get_app_config():
+    """Get app configuration including active country currency (public endpoint)"""
+    settings = await db.settings.find_one({"key": "platform_settings"})
+    active_country_id = settings.get("active_country") if settings else None
+    
+    currency_info = {
+        "currency_code": "USD",
+        "currency_symbol": "$",
+        "currency_name": "US Dollar",
+        "country_name": "Default"
+    }
+    
+    if active_country_id:
+        try:
+            country = await db.countries.find_one({"_id": ObjectId(active_country_id)})
+            if country:
+                currency_info = {
+                    "currency_code": country.get("currency_code", "USD"),
+                    "currency_symbol": country.get("currency_symbol", "$"),
+                    "currency_name": country.get("currency_name", "US Dollar"),
+                    "country_name": country.get("name", "Unknown")
+                }
+        except:
+            pass
+    
+    return {
+        "currency": currency_info
     }
 
 @api_router.get("/user/profile")
