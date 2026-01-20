@@ -1189,26 +1189,29 @@ async def create_draw(
     
     return {"id": str(result.inserted_id), "message": "Draw created successfully"}
 
+class UpdateDrawRequest(BaseModel):
+    draw_type: Optional[str] = None
+    end_date: Optional[str] = None
+    draw_date: Optional[str] = None
+    prize_tiers: Optional[List[Dict]] = None
+
 @api_router.put("/admin/draws/{draw_id}")
 async def update_draw(
     draw_id: str,
-    draw_type: Optional[str] = None,
-    end_date: Optional[str] = None,
-    draw_date: Optional[str] = None,
-    prize_tiers: Optional[List[Dict]] = None,
+    request: UpdateDrawRequest,
     admin: dict = Depends(get_current_admin)
 ):
     """Update draw details including prize types and images"""
     try:
         update_data = {}
-        if draw_type:
-            update_data["draw_type"] = draw_type
-        if end_date:
-            update_data["end_date"] = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
-        if draw_date:
-            update_data["draw_date"] = datetime.fromisoformat(draw_date.replace('Z', '+00:00'))
-        if prize_tiers:
-            update_data["prize_tiers"] = prize_tiers
+        if request.draw_type:
+            update_data["draw_type"] = request.draw_type
+        if request.end_date:
+            update_data["end_date"] = datetime.fromisoformat(request.end_date.replace('Z', '+00:00'))
+        if request.draw_date:
+            update_data["draw_date"] = datetime.fromisoformat(request.draw_date.replace('Z', '+00:00'))
+        if request.prize_tiers:
+            update_data["prize_tiers"] = request.prize_tiers
         
         if not update_data:
             raise HTTPException(status_code=400, detail="No update data provided")
