@@ -75,6 +75,6 @@ export const useAppConfigStore = create<AppConfigState>((set, get) => ({
 
   formatCurrency: (amount: number) => {
     const { currency } = get();
-    return `${currency.currency_symbol}${amount.toLocaleString()}`;
+    return `${currency.currency_symbol} ${amount.toLocaleString()}`;
   },
 }));
