@@ -10,13 +10,16 @@ import {
   ActivityIndicator,
   TextInput,
   ScrollView,
-  Image,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAdminStore } from '../../src/store/adminStore';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
+
+const isWeb = Platform.OS === 'web';
+const MAX_WIDTH = 1200;
 
 interface PrizeTier {
   tier: number;
@@ -35,8 +38,8 @@ export default function DrawsManagement() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAddPrizeModal, setShowAddPrizeModal] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   
-  // Simple form state
   const [drawType, setDrawType] = useState('weekly');
   const [drawDate, setDrawDate] = useState('');
   const [drawTime, setDrawTime] = useState('');
@@ -44,7 +47,6 @@ export default function DrawsManagement() {
     { tier: 1, name: 'Grand Prize', prize_type: 'money', amount: 10000, winners: 1 },
   ]);
   
-  // Add prize form
   const [newPrizeName, setNewPrizeName] = useState('');
   const [newPrizeType, setNewPrizeType] = useState<'money' | 'item'>('money');
   const [newPrizeAmount, setNewPrizeAmount] = useState('');
@@ -140,7 +142,24 @@ export default function DrawsManagement() {
     }
   };
 
-  const renderDraw = ({ item }: any) => (
+  const ViewToggle = () => (
+    <View style={styles.viewToggle}>
+      <TouchableOpacity
+        style={[styles.toggleBtn, viewMode === 'cards' && styles.toggleBtnActive]}
+        onPress={() => setViewMode('cards')}
+      >
+        <Ionicons name="grid" size={16} color={viewMode === 'cards' ? '#fff' : '#6B7280'} />
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.toggleBtn, viewMode === 'table' && styles.toggleBtnActive]}
+        onPress={() => setViewMode('table')}
+      >
+        <Ionicons name="list" size={16} color={viewMode === 'table' ? '#fff' : '#6B7280'} />
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderDrawCard = ({ item }: any) => (
     <View style={styles.drawCard}>
       <View style={styles.drawHeader}>
         <View style={styles.drawInfo}>
@@ -170,7 +189,6 @@ export default function DrawsManagement() {
         </View>
       </View>
 
-      {/* Prizes */}
       <View style={styles.prizesList}>
         {item.prize_tiers?.map((tier: any, i: number) => (
           <View key={i} style={styles.prizeRow}>
@@ -197,44 +215,89 @@ export default function DrawsManagement() {
     </View>
   );
 
+  const renderTableRow = ({ item }: any) => (
+    <View style={styles.tableRow}>
+      <View style={[styles.tableCell, { flex: 2 }]}>
+        <Text style={styles.tableCellTitle}>{item.draw_type.charAt(0).toUpperCase() + item.draw_type.slice(1)} Draw</Text>
+        <Text style={styles.tableCellSubtitle}>{format(new Date(item.start_date), 'MMM d')} - {format(new Date(item.end_date), 'MMM d')}</Text>
+      </View>
+      <Text style={[styles.tableCell, { flex: 1, textAlign: 'center' }]}>{item.total_entries}</Text>
+      <Text style={[styles.tableCell, { flex: 1, textAlign: 'center' }]}>{item.prize_tiers?.length || 0}</Text>
+      <View style={[styles.tableCell, { flex: 1, alignItems: 'center' }]}>
+        <View style={[styles.statusBadgeSmall, { backgroundColor: `${getStatusColor(item.status)}15` }]}>
+          <Text style={[styles.statusTextSmall, { color: getStatusColor(item.status) }]}>{item.status}</Text>
+        </View>
+      </View>
+      {item.status === 'active' && (
+        <View style={[styles.tableCell, { flex: 1, flexDirection: 'row', gap: 8, justifyContent: 'flex-end' }]}>
+          <TouchableOpacity onPress={() => handleComplete(item.id)}>
+            <Ionicons name="checkmark-circle" size={22} color="#10B981" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => handleCancel(item.id)}>
+            <Ionicons name="close-circle" size={22} color="#EF4444" />
+          </TouchableOpacity>
+        </View>
+      )}
+    </View>
+  );
+
+  const TableHeader = () => (
+    <View style={styles.tableHeader}>
+      <Text style={[styles.tableHeaderCell, { flex: 2 }]}>Draw</Text>
+      <Text style={[styles.tableHeaderCell, { flex: 1, textAlign: 'center' }]}>Entries</Text>
+      <Text style={[styles.tableHeaderCell, { flex: 1, textAlign: 'center' }]}>Prizes</Text>
+      <Text style={[styles.tableHeaderCell, { flex: 1, textAlign: 'center' }]}>Status</Text>
+      <Text style={[styles.tableHeaderCell, { flex: 1, textAlign: 'right' }]}>Actions</Text>
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color="#111827" />
-        </TouchableOpacity>
-        <Text style={styles.title}>Draws</Text>
-        <TouchableOpacity style={styles.addBtn} onPress={() => setShowCreateModal(true)}>
-          <Ionicons name="add" size={20} color="#fff" />
-          <Text style={styles.addBtnText}>New</Text>
-        </TouchableOpacity>
+        <View style={styles.headerInner}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+            <Ionicons name="arrow-back" size={24} color="#111827" />
+          </TouchableOpacity>
+          <Text style={styles.title}>Draws</Text>
+          <View style={{ flex: 1 }} />
+          <ViewToggle />
+          <TouchableOpacity style={styles.addBtn} onPress={() => setShowCreateModal(true)}>
+            <Ionicons name="add" size={20} color="#fff" />
+            <Text style={styles.addBtnText}>New</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Filters */}
-      <View style={styles.filters}>
-        {['all', 'active', 'completed'].map((s) => (
-          <TouchableOpacity
-            key={s}
-            style={[styles.filterBtn, (statusFilter === s || (s === 'all' && !statusFilter)) && styles.filterActive]}
-            onPress={() => setStatusFilter(s === 'all' ? undefined : s)}
-          >
-            <Text style={[styles.filterText, (statusFilter === s || (s === 'all' && !statusFilter)) && styles.filterTextActive]}>
-              {s.charAt(0).toUpperCase() + s.slice(1)}
-            </Text>
-          </TouchableOpacity>
-        ))}
+      <View style={styles.filterWrapper}>
+        <View style={styles.filters}>
+          {['all', 'active', 'completed'].map((s) => (
+            <TouchableOpacity
+              key={s}
+              style={[styles.filterBtn, (statusFilter === s || (s === 'all' && !statusFilter)) && styles.filterActive]}
+              onPress={() => setStatusFilter(s === 'all' ? undefined : s)}
+            >
+              <Text style={[styles.filterText, (statusFilter === s || (s === 'all' && !statusFilter)) && styles.filterTextActive]}>
+                {s.charAt(0).toUpperCase() + s.slice(1)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
       </View>
 
       {isLoading ? (
         <ActivityIndicator size="large" color="#2563EB" style={{ marginTop: 40 }} />
       ) : (
-        <FlatList
-          data={draws}
-          renderItem={renderDraw}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.list}
-          ListEmptyComponent={<Text style={styles.emptyText}>No draws found</Text>}
-        />
+        <View style={styles.listWrapper}>
+          {viewMode === 'table' && <TableHeader />}
+          <FlatList
+            data={draws}
+            renderItem={viewMode === 'cards' ? renderDrawCard : renderTableRow}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.list}
+            ListEmptyComponent={<Text style={styles.emptyText}>No draws found</Text>}
+          />
+        </View>
       )}
 
       {/* Create Modal */}
@@ -249,7 +312,6 @@ export default function DrawsManagement() {
             </View>
 
             <ScrollView style={styles.modalBody}>
-              {/* Draw Type */}
               <Text style={styles.label}>Type</Text>
               <View style={styles.typeRow}>
                 {['weekly', 'monthly', 'quarterly'].map((t) => (
@@ -265,24 +327,12 @@ export default function DrawsManagement() {
                 ))}
               </View>
 
-              {/* Draw Date */}
               <Text style={styles.label}>Draw Date & Time</Text>
               <View style={styles.dateRow}>
-                <TextInput
-                  style={[styles.input, { flex: 1 }]}
-                  placeholder="YYYY-MM-DD"
-                  value={drawDate}
-                  onChangeText={setDrawDate}
-                />
-                <TextInput
-                  style={[styles.input, { width: 80 }]}
-                  placeholder="HH:MM"
-                  value={drawTime}
-                  onChangeText={setDrawTime}
-                />
+                <TextInput style={[styles.input, { flex: 1 }]} placeholder="YYYY-MM-DD" value={drawDate} onChangeText={setDrawDate} />
+                <TextInput style={[styles.input, { width: 80 }]} placeholder="HH:MM" value={drawTime} onChangeText={setDrawTime} />
               </View>
 
-              {/* Prizes */}
               <View style={styles.prizesHeader}>
                 <Text style={styles.label}>Prizes</Text>
                 <TouchableOpacity onPress={() => setShowAddPrizeModal(true)}>
@@ -326,26 +376,15 @@ export default function DrawsManagement() {
 
             <ScrollView style={styles.modalBody}>
               <Text style={styles.label}>Prize Name</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="e.g. Grand Prize"
-                value={newPrizeName}
-                onChangeText={setNewPrizeName}
-              />
+              <TextInput style={styles.input} placeholder="e.g. Grand Prize" value={newPrizeName} onChangeText={setNewPrizeName} />
 
               <Text style={styles.label}>Type</Text>
               <View style={styles.typeRow}>
-                <TouchableOpacity
-                  style={[styles.typeBtn, newPrizeType === 'money' && styles.typeBtnActive]}
-                  onPress={() => setNewPrizeType('money')}
-                >
+                <TouchableOpacity style={[styles.typeBtn, newPrizeType === 'money' && styles.typeBtnActive]} onPress={() => setNewPrizeType('money')}>
                   <Ionicons name="cash" size={18} color={newPrizeType === 'money' ? '#fff' : '#10B981'} />
                   <Text style={[styles.typeBtnText, newPrizeType === 'money' && styles.typeBtnTextActive]}>Money</Text>
                 </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.typeBtn, newPrizeType === 'item' && styles.typeBtnActive]}
-                  onPress={() => setNewPrizeType('item')}
-                >
+                <TouchableOpacity style={[styles.typeBtn, newPrizeType === 'item' && styles.typeBtnActive]} onPress={() => setNewPrizeType('item')}>
                   <Ionicons name="gift" size={18} color={newPrizeType === 'item' ? '#fff' : '#F59E0B'} />
                   <Text style={[styles.typeBtnText, newPrizeType === 'item' && styles.typeBtnTextActive]}>Item</Text>
                 </TouchableOpacity>
@@ -354,41 +393,19 @@ export default function DrawsManagement() {
               {newPrizeType === 'money' ? (
                 <>
                   <Text style={styles.label}>Amount ({currencySymbol})</Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="10000"
-                    keyboardType="numeric"
-                    value={newPrizeAmount}
-                    onChangeText={setNewPrizeAmount}
-                  />
+                  <TextInput style={styles.input} placeholder="10000" keyboardType="numeric" value={newPrizeAmount} onChangeText={setNewPrizeAmount} />
                 </>
               ) : (
                 <>
                   <Text style={styles.label}>Item Name</Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="e.g. Toyota Corolla"
-                    value={newPrizeItem}
-                    onChangeText={setNewPrizeItem}
-                  />
+                  <TextInput style={styles.input} placeholder="e.g. Toyota Corolla" value={newPrizeItem} onChangeText={setNewPrizeItem} />
                   <Text style={styles.label}>Image URL (optional)</Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="https://..."
-                    value={newPrizeImage}
-                    onChangeText={setNewPrizeImage}
-                  />
+                  <TextInput style={styles.input} placeholder="https://..." value={newPrizeImage} onChangeText={setNewPrizeImage} />
                 </>
               )}
 
               <Text style={styles.label}>Number of Winners</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="1"
-                keyboardType="numeric"
-                value={newPrizeWinners}
-                onChangeText={setNewPrizeWinners}
-              />
+              <TextInput style={styles.input} placeholder="1" keyboardType="numeric" value={newPrizeWinners} onChangeText={setNewPrizeWinners} />
 
               <TouchableOpacity style={styles.createBtn} onPress={addPrize}>
                 <Text style={styles.createBtnText}>Add Prize</Text>
@@ -403,19 +420,42 @@ export default function DrawsManagement() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F3F4F6' },
-  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 16, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
-  backBtn: { marginRight: 16 },
-  title: { flex: 1, fontSize: 20, fontWeight: '700', color: '#111827' },
+  header: { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
+  headerInner: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    paddingHorizontal: 20, 
+    paddingVertical: 16,
+    maxWidth: MAX_WIDTH,
+    alignSelf: 'center',
+    width: '100%',
+    gap: 12,
+  },
+  backBtn: { marginRight: 8 },
+  title: { fontSize: 20, fontWeight: '700', color: '#111827' },
+  viewToggle: { flexDirection: 'row', backgroundColor: '#E5E7EB', borderRadius: 8, padding: 2 },
+  toggleBtn: { padding: 8, borderRadius: 6 },
+  toggleBtnActive: { backgroundColor: '#2563EB' },
   addBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#2563EB', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8, gap: 4 },
   addBtnText: { color: '#fff', fontWeight: '600' },
   
-  filters: { flexDirection: 'row', paddingHorizontal: 20, paddingVertical: 12, backgroundColor: '#fff', gap: 8 },
+  filterWrapper: { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
+  filters: { 
+    flexDirection: 'row', 
+    paddingHorizontal: 20, 
+    paddingVertical: 12, 
+    gap: 8,
+    maxWidth: MAX_WIDTH,
+    alignSelf: 'center',
+    width: '100%',
+  },
   filterBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8, backgroundColor: '#F3F4F6' },
   filterActive: { backgroundColor: '#2563EB' },
   filterText: { color: '#6B7280', fontWeight: '500' },
   filterTextActive: { color: '#fff' },
   
-  list: { padding: 20 },
+  listWrapper: { flex: 1, alignItems: isWeb ? 'center' : undefined },
+  list: { padding: 20, width: '100%', maxWidth: MAX_WIDTH },
   emptyText: { textAlign: 'center', color: '#6B7280', marginTop: 40 },
   
   drawCard: { backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 12 },
@@ -445,6 +485,32 @@ const styles = StyleSheet.create({
   completeBtn: { backgroundColor: '#10B981' },
   cancelBtn: { backgroundColor: '#FEE2E2' },
   actionBtnText: { color: '#fff', fontWeight: '600' },
+  
+  tableHeader: { 
+    flexDirection: 'row', 
+    backgroundColor: '#fff', 
+    paddingHorizontal: 16, 
+    paddingVertical: 12, 
+    borderBottomWidth: 1, 
+    borderBottomColor: '#E5E7EB',
+    maxWidth: MAX_WIDTH,
+    width: '100%',
+  },
+  tableHeaderCell: { fontSize: 12, fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' },
+  tableRow: { 
+    flexDirection: 'row', 
+    backgroundColor: '#fff', 
+    paddingHorizontal: 16, 
+    paddingVertical: 14, 
+    borderBottomWidth: 1, 
+    borderBottomColor: '#F3F4F6',
+    alignItems: 'center',
+  },
+  tableCell: { fontSize: 14, color: '#111827' },
+  tableCellTitle: { fontSize: 14, fontWeight: '500', color: '#111827' },
+  tableCellSubtitle: { fontSize: 12, color: '#6B7280', marginTop: 2 },
+  statusBadgeSmall: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
+  statusTextSmall: { fontSize: 11, fontWeight: '600', textTransform: 'capitalize' },
   
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
   modal: { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '90%' },

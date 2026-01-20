@@ -18,7 +18,8 @@ import { useRouter } from 'expo-router';
 import { useAdminStore } from '../../src/store/adminStore';
 
 const { width } = Dimensions.get('window');
-const isDesktop = Platform.OS === 'web' && width > 768;
+const isWeb = Platform.OS === 'web';
+const MAX_WIDTH = 1200;
 
 export default function UsersManagement() {
   const router = useRouter();
@@ -30,6 +31,7 @@ export default function UsersManagement() {
   const [userDetails, setUserDetails] = useState<any>(null);
   const [showModal, setShowModal] = useState(false);
   const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
 
   const loadUsers = useCallback(async (page = 1) => {
     setIsLoading(true);
@@ -95,7 +97,24 @@ export default function UsersManagement() {
     }
   };
 
-  const renderUser = ({ item }: { item: any }) => (
+  const ViewToggle = () => (
+    <View style={styles.viewToggle}>
+      <TouchableOpacity
+        style={[styles.toggleBtn, viewMode === 'cards' && styles.toggleBtnActive]}
+        onPress={() => setViewMode('cards')}
+      >
+        <Ionicons name="grid" size={16} color={viewMode === 'cards' ? '#fff' : '#6B7280'} />
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.toggleBtn, viewMode === 'table' && styles.toggleBtnActive]}
+        onPress={() => setViewMode('table')}
+      >
+        <Ionicons name="list" size={16} color={viewMode === 'table' ? '#fff' : '#6B7280'} />
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderUserCard = ({ item }: { item: any }) => (
     <TouchableOpacity style={styles.userCard} onPress={() => handleUserPress(item)}>
       <View style={[styles.avatar, { backgroundColor: getStatusColor(item.status) + '15' }]}>
         <Ionicons name="person" size={20} color={getStatusColor(item.status)} />
@@ -124,56 +143,88 @@ export default function UsersManagement() {
     </TouchableOpacity>
   );
 
+  const renderTableRow = ({ item }: { item: any }) => (
+    <TouchableOpacity style={styles.tableRow} onPress={() => handleUserPress(item)}>
+      <View style={[styles.tableCell, { flex: 2 }]}>
+        <Text style={styles.tableCellName}>{item.name || 'No Name'}</Text>
+        <Text style={styles.tableCellPhone}>{item.phone_number}</Text>
+      </View>
+      <Text style={[styles.tableCell, { flex: 1, textAlign: 'center' }]}>{item.total_scans}</Text>
+      <Text style={[styles.tableCell, { flex: 1, textAlign: 'center' }]}>{item.total_entries}</Text>
+      <View style={[styles.tableCell, { flex: 1, alignItems: 'center' }]}>
+        <View style={[styles.statusBadgeSmall, { backgroundColor: getStatusColor(item.status) + '15' }]}>
+          <Text style={[styles.statusTextSmall, { color: getStatusColor(item.status) }]}>
+            {item.status}
+          </Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+
+  const TableHeader = () => (
+    <View style={styles.tableHeader}>
+      <Text style={[styles.tableHeaderCell, { flex: 2 }]}>User</Text>
+      <Text style={[styles.tableHeaderCell, { flex: 1, textAlign: 'center' }]}>Scans</Text>
+      <Text style={[styles.tableHeaderCell, { flex: 1, textAlign: 'center' }]}>Entries</Text>
+      <Text style={[styles.tableHeaderCell, { flex: 1, textAlign: 'center' }]}>Status</Text>
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#111827" />
-        </TouchableOpacity>
-        <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitle}>Users</Text>
-          <Text style={styles.headerSubtitle}>{pagination.total} total users</Text>
+        <View style={styles.headerInner}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color="#111827" />
+          </TouchableOpacity>
+          <View style={styles.headerTitleContainer}>
+            <Text style={styles.headerTitle}>Users</Text>
+            <Text style={styles.headerSubtitle}>{pagination.total} total users</Text>
+          </View>
+          <ViewToggle />
         </View>
       </View>
 
       {/* Search & Filter Bar */}
-      <View style={styles.controlsBar}>
-        <View style={styles.searchContainer}>
-          <Ionicons name="search" size={18} color="#6B7280" />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search by phone or name..."
-            placeholderTextColor="#9CA3AF"
-            value={search}
-            onChangeText={setSearch}
-            onSubmitEditing={handleSearch}
-          />
-          {search.length > 0 && (
-            <TouchableOpacity onPress={() => { setSearch(''); loadUsers(1); }}>
-              <Ionicons name="close-circle" size={18} color="#9CA3AF" />
-            </TouchableOpacity>
-          )}
-        </View>
-        
-        <View style={styles.filterContainer}>
-          {['all', 'active', 'flagged', 'blocked'].map((status) => (
-            <TouchableOpacity
-              key={status}
-              style={[
-                styles.filterButton,
-                (statusFilter === status || (status === 'all' && !statusFilter)) && styles.filterActive
-              ]}
-              onPress={() => setStatusFilter(status === 'all' ? undefined : status)}
-            >
-              <Text style={[
-                styles.filterText,
-                (statusFilter === status || (status === 'all' && !statusFilter)) && styles.filterTextActive
-              ]}>
-                {status.charAt(0).toUpperCase() + status.slice(1)}
-              </Text>
-            </TouchableOpacity>
-          ))}
+      <View style={styles.controlsWrapper}>
+        <View style={styles.controlsBar}>
+          <View style={styles.searchContainer}>
+            <Ionicons name="search" size={18} color="#6B7280" />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search by phone or name..."
+              placeholderTextColor="#9CA3AF"
+              value={search}
+              onChangeText={setSearch}
+              onSubmitEditing={handleSearch}
+            />
+            {search.length > 0 && (
+              <TouchableOpacity onPress={() => { setSearch(''); loadUsers(1); }}>
+                <Ionicons name="close-circle" size={18} color="#9CA3AF" />
+              </TouchableOpacity>
+            )}
+          </View>
+          
+          <View style={styles.filterContainer}>
+            {['all', 'active', 'flagged', 'blocked'].map((status) => (
+              <TouchableOpacity
+                key={status}
+                style={[
+                  styles.filterButton,
+                  (statusFilter === status || (status === 'all' && !statusFilter)) && styles.filterActive
+                ]}
+                onPress={() => setStatusFilter(status === 'all' ? undefined : status)}
+              >
+                <Text style={[
+                  styles.filterText,
+                  (statusFilter === status || (status === 'all' && !statusFilter)) && styles.filterTextActive
+                ]}>
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
       </View>
 
@@ -182,38 +233,43 @@ export default function UsersManagement() {
           <ActivityIndicator size="large" color="#2563EB" />
         </View>
       ) : (
-        <FlatList
-          data={users}
-          renderItem={renderUser}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
-          ListEmptyComponent={
-            <View style={styles.emptyState}>
-              <Ionicons name="people-outline" size={48} color="#9CA3AF" />
-              <Text style={styles.emptyText}>No users found</Text>
-            </View>
-          }
-        />
+        <View style={styles.listWrapper}>
+          {viewMode === 'table' && <TableHeader />}
+          <FlatList
+            data={users}
+            renderItem={viewMode === 'cards' ? renderUserCard : renderTableRow}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.listContent}
+            ListEmptyComponent={
+              <View style={styles.emptyState}>
+                <Ionicons name="people-outline" size={48} color="#9CA3AF" />
+                <Text style={styles.emptyText}>No users found</Text>
+              </View>
+            }
+          />
+        </View>
       )}
 
       {/* Pagination */}
       {pagination.pages > 1 && (
-        <View style={styles.pagination}>
-          <TouchableOpacity
-            style={[styles.pageBtn, pagination.page === 1 && styles.pageBtnDisabled]}
-            onPress={() => loadUsers(pagination.page - 1)}
-            disabled={pagination.page === 1}
-          >
-            <Ionicons name="chevron-back" size={18} color="#fff" />
-          </TouchableOpacity>
-          <Text style={styles.pageText}>Page {pagination.page} of {pagination.pages}</Text>
-          <TouchableOpacity
-            style={[styles.pageBtn, pagination.page === pagination.pages && styles.pageBtnDisabled]}
-            onPress={() => loadUsers(pagination.page + 1)}
-            disabled={pagination.page === pagination.pages}
-          >
-            <Ionicons name="chevron-forward" size={18} color="#fff" />
-          </TouchableOpacity>
+        <View style={styles.paginationWrapper}>
+          <View style={styles.pagination}>
+            <TouchableOpacity
+              style={[styles.pageBtn, pagination.page === 1 && styles.pageBtnDisabled]}
+              onPress={() => loadUsers(pagination.page - 1)}
+              disabled={pagination.page === 1}
+            >
+              <Ionicons name="chevron-back" size={18} color="#fff" />
+            </TouchableOpacity>
+            <Text style={styles.pageText}>Page {pagination.page} of {pagination.pages}</Text>
+            <TouchableOpacity
+              style={[styles.pageBtn, pagination.page === pagination.pages && styles.pageBtnDisabled]}
+              onPress={() => loadUsers(pagination.page + 1)}
+              disabled={pagination.page === pagination.pages}
+            >
+              <Ionicons name="chevron-forward" size={18} color="#fff" />
+            </TouchableOpacity>
+          </View>
         </View>
       )}
 
@@ -230,7 +286,6 @@ export default function UsersManagement() {
 
             {userDetails ? (
               <View style={styles.modalBody}>
-                {/* User Info */}
                 <View style={styles.userInfoSection}>
                   <View style={[styles.modalAvatar, { backgroundColor: getStatusColor(userDetails.user.status) + '15' }]}>
                     <Ionicons name="person" size={28} color={getStatusColor(userDetails.user.status)} />
@@ -247,7 +302,6 @@ export default function UsersManagement() {
                   </View>
                 </View>
 
-                {/* Stats Grid */}
                 <View style={styles.statsGrid}>
                   <View style={styles.statBox}>
                     <Ionicons name="scan" size={18} color="#2563EB" />
@@ -266,7 +320,6 @@ export default function UsersManagement() {
                   </View>
                 </View>
 
-                {/* Fraud Indicators */}
                 {userDetails.fraud_indicators && (
                   <View style={styles.fraudSection}>
                     <Text style={styles.fraudTitle}>
@@ -289,7 +342,6 @@ export default function UsersManagement() {
                   </View>
                 )}
 
-                {/* Action Buttons */}
                 <View style={styles.actionButtons}>
                   {userDetails.user.status !== 'active' && (
                     <TouchableOpacity
@@ -332,14 +384,15 @@ export default function UsersManagement() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F3F4F6' },
-  header: { 
+  header: { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
+  headerInner: { 
     flexDirection: 'row', 
     alignItems: 'center', 
     paddingHorizontal: 20, 
     paddingVertical: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1, 
-    borderBottomColor: '#E5E7EB' 
+    maxWidth: MAX_WIDTH,
+    alignSelf: 'center',
+    width: '100%',
   },
   backButton: { 
     width: 40, 
@@ -350,18 +403,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 16 
   },
-  headerTitleContainer: {},
+  headerTitleContainer: { flex: 1 },
   headerTitle: { fontSize: 20, fontWeight: '700', color: '#111827' },
   headerSubtitle: { fontSize: 13, color: '#6B7280', marginTop: 2 },
   
+  viewToggle: { flexDirection: 'row', backgroundColor: '#E5E7EB', borderRadius: 8, padding: 2 },
+  toggleBtn: { padding: 8, borderRadius: 6 },
+  toggleBtnActive: { backgroundColor: '#2563EB' },
+  
+  controlsWrapper: { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
   controlsBar: { 
     paddingHorizontal: 20, 
     paddingVertical: 12,
-    backgroundColor: '#fff',
-    flexDirection: Platform.OS === 'web' && width > 768 ? 'row' : 'column',
+    flexDirection: isWeb ? 'row' : 'column',
     gap: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    maxWidth: MAX_WIDTH,
+    alignSelf: 'center',
+    width: '100%',
   },
   searchContainer: { 
     flexDirection: 'row', 
@@ -370,8 +428,8 @@ const styles = StyleSheet.create({
     borderRadius: 10, 
     paddingHorizontal: 14,
     height: 44,
-    flex: Platform.OS === 'web' && width > 768 ? 1 : undefined,
-    maxWidth: Platform.OS === 'web' ? 400 : undefined,
+    flex: isWeb ? 1 : undefined,
+    maxWidth: isWeb ? 400 : undefined,
     borderWidth: 1,
     borderColor: '#E5E7EB',
   },
@@ -383,7 +441,8 @@ const styles = StyleSheet.create({
   filterTextActive: { color: '#fff' },
   
   loading: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  listContent: { padding: 20 },
+  listWrapper: { flex: 1, alignItems: isWeb ? 'center' : undefined },
+  listContent: { padding: 20, width: '100%', maxWidth: MAX_WIDTH },
   
   userCard: { 
     flexDirection: 'row', 
@@ -418,18 +477,45 @@ const styles = StyleSheet.create({
   statusDot: { width: 6, height: 6, borderRadius: 3 },
   statusText: { fontSize: 12, fontWeight: '600', textTransform: 'capitalize' },
   
+  tableHeader: { 
+    flexDirection: 'row', 
+    backgroundColor: '#fff', 
+    paddingHorizontal: 16, 
+    paddingVertical: 12, 
+    borderBottomWidth: 1, 
+    borderBottomColor: '#E5E7EB',
+    maxWidth: MAX_WIDTH,
+    width: '100%',
+  },
+  tableHeaderCell: { fontSize: 12, fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' },
+  tableRow: { 
+    flexDirection: 'row', 
+    backgroundColor: '#fff', 
+    paddingHorizontal: 16, 
+    paddingVertical: 14, 
+    borderBottomWidth: 1, 
+    borderBottomColor: '#F3F4F6',
+    alignItems: 'center',
+  },
+  tableCell: { fontSize: 14, color: '#111827' },
+  tableCellName: { fontSize: 14, fontWeight: '500', color: '#111827' },
+  tableCellPhone: { fontSize: 12, color: '#6B7280', marginTop: 2 },
+  statusBadgeSmall: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
+  statusTextSmall: { fontSize: 11, fontWeight: '600', textTransform: 'capitalize' },
+  
   emptyState: { alignItems: 'center', paddingTop: 60 },
   emptyText: { color: '#6B7280', fontSize: 16, marginTop: 12 },
   
+  paginationWrapper: { backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#E5E7EB' },
   pagination: { 
     flexDirection: 'row', 
     justifyContent: 'center', 
     alignItems: 'center', 
     padding: 16, 
     gap: 16,
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
+    maxWidth: MAX_WIDTH,
+    alignSelf: 'center',
+    width: '100%',
   },
   pageBtn: { backgroundColor: '#2563EB', width: 36, height: 36, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
   pageBtnDisabled: { backgroundColor: '#D1D5DB' },

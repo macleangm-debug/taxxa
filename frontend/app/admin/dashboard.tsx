@@ -16,6 +16,8 @@ import { useRouter } from 'expo-router';
 import { useAdminStore } from '../../src/store/adminStore';
 
 const { width } = Dimensions.get('window');
+const isWeb = Platform.OS === 'web';
+const MAX_WIDTH = 1200;
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -30,6 +32,7 @@ export default function AdminDashboard() {
   } = useAdminStore();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showCountryPicker, setShowCountryPicker] = useState(false);
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
 
   const loadData = useCallback(async () => {
     try {
@@ -92,23 +95,86 @@ export default function AdminDashboard() {
     </TouchableOpacity>
   );
 
+  const ViewToggle = () => (
+    <View style={styles.viewToggle}>
+      <TouchableOpacity
+        style={[styles.toggleBtn, viewMode === 'cards' && styles.toggleBtnActive]}
+        onPress={() => setViewMode('cards')}
+      >
+        <Ionicons name="grid" size={16} color={viewMode === 'cards' ? '#fff' : '#6B7280'} />
+        <Text style={[styles.toggleText, viewMode === 'cards' && styles.toggleTextActive]}>Cards</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.toggleBtn, viewMode === 'table' && styles.toggleBtnActive]}
+        onPress={() => setViewMode('table')}
+      >
+        <Ionicons name="list" size={16} color={viewMode === 'table' ? '#fff' : '#6B7280'} />
+        <Text style={[styles.toggleText, viewMode === 'table' && styles.toggleTextActive]}>Table</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderTableView = () => (
+    <View style={styles.tableContainer}>
+      <View style={styles.tableHeader}>
+        <Text style={[styles.tableHeaderCell, { flex: 2 }]}>Metric</Text>
+        <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Value</Text>
+        <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Today</Text>
+      </View>
+      <View style={styles.tableRow}>
+        <View style={[styles.tableCell, { flex: 2, flexDirection: 'row', alignItems: 'center', gap: 8 }]}>
+          <Ionicons name="people" size={16} color="#2563EB" />
+          <Text style={styles.tableCellText}>Users</Text>
+        </View>
+        <Text style={[styles.tableCell, { flex: 1 }]}>{dashboard?.overview?.total_users || 0}</Text>
+        <Text style={[styles.tableCell, { flex: 1, color: '#10B981' }]}>+{dashboard?.today?.new_users || 0}</Text>
+      </View>
+      <View style={styles.tableRow}>
+        <View style={[styles.tableCell, { flex: 2, flexDirection: 'row', alignItems: 'center', gap: 8 }]}>
+          <Ionicons name="scan" size={16} color="#10B981" />
+          <Text style={styles.tableCellText}>Total Scans</Text>
+        </View>
+        <Text style={[styles.tableCell, { flex: 1 }]}>{dashboard?.overview?.total_scans || 0}</Text>
+        <Text style={[styles.tableCell, { flex: 1, color: '#10B981' }]}>+{dashboard?.today?.scans || 0}</Text>
+      </View>
+      <View style={styles.tableRow}>
+        <View style={[styles.tableCell, { flex: 2, flexDirection: 'row', alignItems: 'center', gap: 8 }]}>
+          <Ionicons name="checkmark-circle" size={16} color="#10B981" />
+          <Text style={styles.tableCellText}>Valid Scans</Text>
+        </View>
+        <Text style={[styles.tableCell, { flex: 1 }]}>{dashboard?.overview?.valid_scans || 0}</Text>
+        <Text style={[styles.tableCell, { flex: 1, color: '#10B981' }]}>+{dashboard?.today?.valid_scans || 0}</Text>
+      </View>
+      <View style={[styles.tableRow, { borderBottomWidth: 0 }]}>
+        <View style={[styles.tableCell, { flex: 2, flexDirection: 'row', alignItems: 'center', gap: 8 }]}>
+          <Ionicons name="trophy" size={16} color="#F59E0B" />
+          <Text style={styles.tableCellText}>Active Draws</Text>
+        </View>
+        <Text style={[styles.tableCell, { flex: 1 }]}>{dashboard?.overview?.active_draws || 0}</Text>
+        <Text style={[styles.tableCell, { flex: 1 }]}>-</Text>
+      </View>
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.greeting}>Welcome back</Text>
-          <Text style={styles.headerTitle}>Admin Dashboard</Text>
-        </View>
-        <View style={styles.headerActions}>
-          <TouchableOpacity style={styles.countryBtn} onPress={() => setShowCountryPicker(true)}>
-            <Ionicons name="globe-outline" size={18} color="#2563EB" />
-            <Text style={styles.countryBtnText}>{activeCountry?.code || 'All'}</Text>
-            <Ionicons name="chevron-down" size={14} color="#6B7280" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn}>
-            <Ionicons name="log-out-outline" size={20} color="#EF4444" />
-          </TouchableOpacity>
+        <View style={styles.headerInner}>
+          <View>
+            <Text style={styles.greeting}>Welcome back</Text>
+            <Text style={styles.headerTitle}>Admin Dashboard</Text>
+          </View>
+          <View style={styles.headerActions}>
+            <TouchableOpacity style={styles.countryBtn} onPress={() => setShowCountryPicker(true)}>
+              <Ionicons name="globe-outline" size={18} color="#2563EB" />
+              <Text style={styles.countryBtnText}>{activeCountry?.code || 'All'}</Text>
+              <Ionicons name="chevron-down" size={14} color="#6B7280" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn}>
+              <Ionicons name="log-out-outline" size={20} color="#EF4444" />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
@@ -116,56 +182,71 @@ export default function AdminDashboard() {
         contentContainerStyle={styles.scrollContent}
         refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor="#2563EB" />}
       >
-        {/* Active Country Banner */}
-        {activeCountry && (
-          <View style={styles.countryBanner}>
-            <View style={styles.countryFlag}>
-              <Text style={styles.countryFlagText}>{activeCountry.code}</Text>
+        <View style={styles.contentContainer}>
+          {/* Active Country Banner */}
+          {activeCountry && (
+            <View style={styles.countryBanner}>
+              <View style={styles.countryFlag}>
+                <Text style={styles.countryFlagText}>{activeCountry.code}</Text>
+              </View>
+              <View style={styles.countryInfo}>
+                <Text style={styles.countryName}>{activeCountry.name}</Text>
+                <Text style={styles.countryCurrency}>{activeCountry.currency_symbol} {activeCountry.currency_code}</Text>
+              </View>
             </View>
-            <View style={styles.countryInfo}>
-              <Text style={styles.countryName}>{activeCountry.name}</Text>
-              <Text style={styles.countryCurrency}>{activeCountry.currency_symbol} {activeCountry.currency_code}</Text>
+          )}
+
+          {/* Section Header with Toggle */}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Overview</Text>
+            <ViewToggle />
+          </View>
+
+          {/* Stats - Cards or Table */}
+          {viewMode === 'cards' ? (
+            <View style={styles.statsGrid}>
+              <StatCard title="Users" value={dashboard?.overview?.total_users || 0} icon="people" color="#2563EB" />
+              <StatCard title="Scans" value={dashboard?.overview?.total_scans || 0} icon="scan" color="#10B981" />
+              <StatCard title="Valid" value={dashboard?.overview?.valid_scans || 0} icon="checkmark-circle" color="#10B981" />
+              <StatCard title="Draws" value={dashboard?.overview?.active_draws || 0} icon="trophy" color="#F59E0B" />
             </View>
-          </View>
-        )}
+          ) : (
+            renderTableView()
+          )}
 
-        {/* Stats Grid */}
-        <Text style={styles.sectionTitle}>Overview</Text>
-        <View style={styles.statsGrid}>
-          <StatCard title="Users" value={dashboard?.overview?.total_users || 0} icon="people" color="#2563EB" />
-          <StatCard title="Scans" value={dashboard?.overview?.total_scans || 0} icon="scan" color="#10B981" />
-          <StatCard title="Valid" value={dashboard?.overview?.valid_scans || 0} icon="checkmark-circle" color="#10B981" />
-          <StatCard title="Draws" value={dashboard?.overview?.active_draws || 0} icon="trophy" color="#F59E0B" />
-        </View>
+          {/* Today's Activity */}
+          {viewMode === 'cards' && (
+            <>
+              <Text style={styles.sectionTitleSmall}>Today</Text>
+              <View style={styles.todayCard}>
+                <View style={styles.todayItem}>
+                  <Text style={styles.todayValue}>{dashboard?.today?.new_users || 0}</Text>
+                  <Text style={styles.todayLabel}>New Users</Text>
+                </View>
+                <View style={styles.todayDivider} />
+                <View style={styles.todayItem}>
+                  <Text style={styles.todayValue}>{dashboard?.today?.scans || 0}</Text>
+                  <Text style={styles.todayLabel}>Scans</Text>
+                </View>
+                <View style={styles.todayDivider} />
+                <View style={styles.todayItem}>
+                  <Text style={styles.todayValue}>{dashboard?.today?.valid_scans || 0}</Text>
+                  <Text style={styles.todayLabel}>Valid</Text>
+                </View>
+              </View>
+            </>
+          )}
 
-        {/* Today's Activity */}
-        <Text style={styles.sectionTitle}>Today</Text>
-        <View style={styles.todayCard}>
-          <View style={styles.todayItem}>
-            <Text style={styles.todayValue}>{dashboard?.today?.new_users || 0}</Text>
-            <Text style={styles.todayLabel}>New Users</Text>
+          {/* Quick Actions */}
+          <Text style={styles.sectionTitleSmall}>Manage</Text>
+          <View style={styles.menuGrid}>
+            <MenuCard title="Users" icon="people" color="#2563EB" route="/admin/users" description="View and manage users" />
+            <MenuCard title="Draws" icon="trophy" color="#F59E0B" route="/admin/draws" description="Create and manage draws" />
+            <MenuCard title="Scans" icon="scan" color="#10B981" route="/admin/scans" description="View scan records" />
+            <MenuCard title="Analytics" icon="bar-chart" color="#8B5CF6" route="/admin/analytics" description="View reports" />
+            <MenuCard title="Fraud" icon="shield" color="#EF4444" route="/admin/fraud" description="Monitor suspicious activity" />
+            <MenuCard title="Settings" icon="settings" color="#6B7280" route="/admin/settings" description="Platform settings" />
           </View>
-          <View style={styles.todayDivider} />
-          <View style={styles.todayItem}>
-            <Text style={styles.todayValue}>{dashboard?.today?.scans || 0}</Text>
-            <Text style={styles.todayLabel}>Scans</Text>
-          </View>
-          <View style={styles.todayDivider} />
-          <View style={styles.todayItem}>
-            <Text style={styles.todayValue}>{dashboard?.today?.valid_scans || 0}</Text>
-            <Text style={styles.todayLabel}>Valid</Text>
-          </View>
-        </View>
-
-        {/* Quick Actions */}
-        <Text style={styles.sectionTitle}>Manage</Text>
-        <View style={styles.menuList}>
-          <MenuCard title="Users" icon="people" color="#2563EB" route="/admin/users" description="View and manage users" />
-          <MenuCard title="Draws" icon="trophy" color="#F59E0B" route="/admin/draws" description="Create and manage draws" />
-          <MenuCard title="Scans" icon="scan" color="#10B981" route="/admin/scans" description="View scan records" />
-          <MenuCard title="Analytics" icon="bar-chart" color="#8B5CF6" route="/admin/analytics" description="View reports" />
-          <MenuCard title="Fraud" icon="shield" color="#EF4444" route="/admin/fraud" description="Monitor suspicious activity" />
-          <MenuCard title="Settings" icon="settings" color="#6B7280" route="/admin/settings" description="Platform settings" />
         </View>
       </ScrollView>
 
@@ -200,7 +281,8 @@ export default function AdminDashboard() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F3F4F6' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 16, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
+  header: { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
+  headerInner: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 16, maxWidth: MAX_WIDTH, alignSelf: 'center', width: '100%' },
   greeting: { fontSize: 13, color: '#6B7280' },
   headerTitle: { fontSize: 20, fontWeight: '700', color: '#111827' },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 12 },
@@ -208,7 +290,8 @@ const styles = StyleSheet.create({
   countryBtnText: { color: '#2563EB', fontWeight: '600', fontSize: 13 },
   logoutBtn: { padding: 8 },
   
-  scrollContent: { padding: 20 },
+  scrollContent: { paddingVertical: 20, alignItems: isWeb ? 'center' : undefined },
+  contentContainer: { width: '100%', maxWidth: MAX_WIDTH, paddingHorizontal: 20 },
   
   countryBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 12, padding: 14, marginBottom: 20, gap: 12 },
   countryFlag: { width: 44, height: 44, borderRadius: 8, backgroundColor: '#EFF6FF', justifyContent: 'center', alignItems: 'center' },
@@ -217,22 +300,37 @@ const styles = StyleSheet.create({
   countryName: { color: '#111827', fontWeight: '600', fontSize: 15 },
   countryCurrency: { color: '#6B7280', fontSize: 13, marginTop: 2 },
   
-  sectionTitle: { fontSize: 14, fontWeight: '600', color: '#374151', marginBottom: 12, marginTop: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, marginTop: 8 },
+  sectionTitle: { fontSize: 14, fontWeight: '600', color: '#374151', textTransform: 'uppercase', letterSpacing: 0.5 },
+  sectionTitleSmall: { fontSize: 14, fontWeight: '600', color: '#374151', marginBottom: 12, marginTop: 16, textTransform: 'uppercase', letterSpacing: 0.5 },
   
-  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 12 },
-  statCard: { backgroundColor: '#fff', borderRadius: 12, padding: 16, width: (width - 52) / 2, minWidth: 140, flex: Platform.OS === 'web' ? undefined : 1, flexBasis: Platform.OS === 'web' ? '48%' : undefined },
+  viewToggle: { flexDirection: 'row', backgroundColor: '#E5E7EB', borderRadius: 8, padding: 2 },
+  toggleBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6, gap: 4 },
+  toggleBtnActive: { backgroundColor: '#2563EB' },
+  toggleText: { fontSize: 12, fontWeight: '500', color: '#6B7280' },
+  toggleTextActive: { color: '#fff' },
+  
+  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 4 },
+  statCard: { backgroundColor: '#fff', borderRadius: 12, padding: 16, minWidth: 140, flex: 1, flexBasis: isWeb ? 'calc(25% - 12px)' : '45%', maxWidth: isWeb ? 'calc(25% - 9px)' : '48%' },
   statIcon: { width: 40, height: 40, borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
   statValue: { fontSize: 28, fontWeight: '700', color: '#111827' },
   statTitle: { fontSize: 13, color: '#6B7280', marginTop: 2 },
   statSubtitle: { fontSize: 11, color: '#9CA3AF', marginTop: 2 },
   
-  todayCard: { backgroundColor: '#fff', borderRadius: 12, padding: 20, flexDirection: 'row', marginBottom: 12 },
+  tableContainer: { backgroundColor: '#fff', borderRadius: 12, overflow: 'hidden', marginBottom: 4 },
+  tableHeader: { flexDirection: 'row', backgroundColor: '#F9FAFB', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
+  tableHeaderCell: { fontSize: 12, fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' },
+  tableRow: { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#F3F4F6', alignItems: 'center' },
+  tableCell: { fontSize: 14, color: '#111827' },
+  tableCellText: { fontSize: 14, color: '#111827', fontWeight: '500' },
+  
+  todayCard: { backgroundColor: '#fff', borderRadius: 12, padding: 20, flexDirection: 'row' },
   todayItem: { flex: 1, alignItems: 'center' },
   todayValue: { fontSize: 24, fontWeight: '700', color: '#2563EB' },
   todayLabel: { fontSize: 12, color: '#6B7280', marginTop: 4 },
   todayDivider: { width: 1, backgroundColor: '#E5E7EB' },
   
-  menuList: { gap: 8 },
+  menuGrid: { gap: 8 },
   menuCard: { backgroundColor: '#fff', borderRadius: 12, padding: 16, flexDirection: 'row', alignItems: 'center' },
   menuIcon: { width: 44, height: 44, borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginRight: 14 },
   menuContent: { flex: 1 },
