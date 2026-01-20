@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { drawAPI } from '../../src/utils/api';
+import { useAppConfigStore } from '../../src/store/appConfigStore';
 import { format, formatDistanceToNow } from 'date-fns';
 
 const { width } = Dimensions.get('window');
@@ -48,6 +49,7 @@ interface Draw {
 export default function DrawsScreen() {
   const [draws, setDraws] = useState<Draw[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { currency, fetchConfig } = useAppConfigStore();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const loadDraws = useCallback(async () => {
