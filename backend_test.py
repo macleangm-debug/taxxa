@@ -380,11 +380,16 @@ class TaxDrawAPITester:
         new_draw_id = self.test_create_draw()
         
         if new_draw_id:
-            print(f"⏳ Completing draw {new_draw_id}...")
-            if self.test_complete_draw(new_draw_id):
-                completed_draw_id = new_draw_id
+            print(f"👤 Creating test user and entries for draw {new_draw_id}...")
+            if self.create_test_user_and_entries(new_draw_id):
+                print(f"⏳ Completing draw {new_draw_id}...")
+                if self.test_complete_draw(new_draw_id):
+                    completed_draw_id = new_draw_id
+                else:
+                    print("❌ Failed to complete draw")
+                    return False
             else:
-                print("❌ Failed to complete draw")
+                print("❌ Failed to create test entries")
                 return False
         else:
             print("❌ Failed to create draw")
