@@ -895,6 +895,212 @@ export default function DrawsManagement() {
         icon="trash"
         iconColor="#EF4444"
       />
+
+      {/* Audit Report Modal */}
+      <Modal visible={showAuditModal} animationType="fade" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, styles.auditModalContent]}>
+            <View style={styles.modalHeader}>
+              <View>
+                <Text style={styles.modalTitle}>Audit Report</Text>
+                <Text style={styles.modalSubtitle}>
+                  {selectedDraw?.draw_type?.charAt(0).toUpperCase()}{selectedDraw?.draw_type?.slice(1)} Draw
+                </Text>
+              </View>
+              <View style={styles.auditHeaderActions}>
+                <TouchableOpacity style={styles.exportBtn} onPress={handleExportAudit}>
+                  <Ionicons name="download-outline" size={18} color="#2563EB" />
+                  <Text style={styles.exportBtnText}>Export</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => { setShowAuditModal(false); setAuditData(null); setSelectedDraw(null); }}>
+                  <Ionicons name="close" size={24} color="#64748B" />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {isLoadingAudit ? (
+              <View style={styles.auditLoading}>
+                <ActivityIndicator size="large" color="#2563EB" />
+                <Text style={styles.auditLoadingText}>Loading audit data...</Text>
+              </View>
+            ) : auditData ? (
+              <ScrollView style={styles.auditBody}>
+                {/* Verification Status Banner */}
+                <View style={[
+                  styles.verificationBanner,
+                  auditData.verification?.is_valid ? styles.verificationValid : styles.verificationInvalid
+                ]}>
+                  <Ionicons 
+                    name={auditData.verification?.is_valid ? "shield-checkmark" : "warning"} 
+                    size={24} 
+                    color={auditData.verification?.is_valid ? "#10B981" : "#EF4444"} 
+                  />
+                  <View style={styles.verificationInfo}>
+                    <Text style={[
+                      styles.verificationTitle,
+                      { color: auditData.verification?.is_valid ? "#059669" : "#DC2626" }
+                    ]}>
+                      {auditData.verification?.is_valid ? "✓ Verified & Auditable" : "⚠ Verification Failed"}
+                    </Text>
+                    <Text style={styles.verificationMessage}>{auditData.verification?.message}</Text>
+                  </View>
+                </View>
+
+                {/* Draw Summary */}
+                <View style={styles.auditSection}>
+                  <Text style={styles.auditSectionTitle}>Draw Summary</Text>
+                  <View style={styles.auditGrid}>
+                    <View style={styles.auditGridItem}>
+                      <Text style={styles.auditLabel}>Draw ID</Text>
+                      <Text style={styles.auditValue} numberOfLines={1}>{auditData.draw?.id}</Text>
+                    </View>
+                    <View style={styles.auditGridItem}>
+                      <Text style={styles.auditLabel}>Type</Text>
+                      <Text style={styles.auditValue}>{auditData.draw?.type}</Text>
+                    </View>
+                    <View style={styles.auditGridItem}>
+                      <Text style={styles.auditLabel}>Period</Text>
+                      <Text style={styles.auditValue}>
+                        {auditData.draw?.start_date ? format(new Date(auditData.draw.start_date), 'MMM d') : ''} - {auditData.draw?.end_date ? format(new Date(auditData.draw.end_date), 'MMM d, yyyy') : ''}
+                      </Text>
+                    </View>
+                    <View style={styles.auditGridItem}>
+                      <Text style={styles.auditLabel}>Completed</Text>
+                      <Text style={styles.auditValue}>
+                        {auditData.draw?.completed_at ? format(new Date(auditData.draw.completed_at), 'MMM d, yyyy h:mm a') : 'N/A'}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+
+                {/* Cryptographic Proof */}
+                <View style={styles.auditSection}>
+                  <Text style={styles.auditSectionTitle}>Cryptographic Proof</Text>
+                  <View style={styles.cryptoItem}>
+                    <View style={styles.cryptoHeader}>
+                      <Ionicons name="key" size={16} color="#6366F1" />
+                      <Text style={styles.cryptoLabel}>Random Seed (256-bit)</Text>
+                    </View>
+                    <Text style={styles.cryptoValue} selectable>{auditData.audit?.pre_draw?.seed}</Text>
+                  </View>
+                  <View style={styles.cryptoItem}>
+                    <View style={styles.cryptoHeader}>
+                      <Ionicons name="finger-print" size={16} color="#6366F1" />
+                      <Text style={styles.cryptoLabel}>Pre-Draw Hash</Text>
+                    </View>
+                    <Text style={styles.cryptoValue} selectable>{auditData.audit?.pre_draw?.hash}</Text>
+                  </View>
+                  <View style={styles.cryptoItem}>
+                    <View style={styles.cryptoHeader}>
+                      <Ionicons name="people" size={16} color="#6366F1" />
+                      <Text style={styles.cryptoLabel}>Participants Hash</Text>
+                    </View>
+                    <Text style={styles.cryptoValue} selectable>{auditData.audit?.participants?.hash}</Text>
+                  </View>
+                  <View style={styles.cryptoItem}>
+                    <View style={styles.cryptoHeader}>
+                      <Ionicons name="shield-checkmark" size={16} color="#10B981" />
+                      <Text style={styles.cryptoLabel}>Final Audit Hash</Text>
+                    </View>
+                    <Text style={[styles.cryptoValue, styles.finalHash]} selectable>{auditData.audit?.results?.final_hash}</Text>
+                  </View>
+                </View>
+
+                {/* Participants Summary */}
+                <View style={styles.auditSection}>
+                  <Text style={styles.auditSectionTitle}>Participants</Text>
+                  <View style={styles.statsRow}>
+                    <View style={styles.statBox}>
+                      <Text style={styles.statNumber}>{auditData.audit?.participants?.count || 0}</Text>
+                      <Text style={styles.statLabel}>Participants</Text>
+                    </View>
+                    <View style={styles.statBox}>
+                      <Text style={styles.statNumber}>{auditData.audit?.participants?.total_entries?.toLocaleString() || 0}</Text>
+                      <Text style={styles.statLabel}>Total Entries</Text>
+                    </View>
+                    <View style={styles.statBox}>
+                      <Text style={styles.statNumber}>{auditData.audit?.results?.winners_count || 0}</Text>
+                      <Text style={styles.statLabel}>Winners</Text>
+                    </View>
+                  </View>
+                </View>
+
+                {/* Selection Log */}
+                <View style={styles.auditSection}>
+                  <Text style={styles.auditSectionTitle}>Selection Process</Text>
+                  <View style={styles.algorithmBadge}>
+                    <Ionicons name="code-slash" size={14} color="#2563EB" />
+                    <Text style={styles.algorithmText}>{auditData.audit?.selection?.method}</Text>
+                  </View>
+                  
+                  {auditData.audit?.selection?.steps?.map((step: any, index: number) => (
+                    <View key={index} style={styles.selectionStep}>
+                      <View style={styles.stepNumber}>
+                        <Text style={styles.stepNumberText}>{step.step}</Text>
+                      </View>
+                      <View style={styles.stepContent}>
+                        <Text style={styles.stepTier}>{step.tier_name}</Text>
+                        <Text style={styles.stepWinner}>
+                          Winner: ***{step.winner_phone} ({step.winner_entries} entries)
+                        </Text>
+                        <Text style={styles.stepProbability}>
+                          Pool: {step.pool_size} • Probability: {step.probability_percent}%
+                        </Text>
+                      </View>
+                    </View>
+                  ))}
+                </View>
+
+                {/* Winners List */}
+                <View style={styles.auditSection}>
+                  <Text style={styles.auditSectionTitle}>Winners</Text>
+                  {auditData.audit?.results?.winners?.map((winner: any, index: number) => (
+                    <View key={index} style={styles.winnerItem}>
+                      <View style={styles.winnerRank}>
+                        <Ionicons name="trophy" size={20} color="#F59E0B" />
+                      </View>
+                      <View style={styles.winnerInfo}>
+                        <Text style={styles.winnerName}>{winner.name || `User ***${winner.phone_number?.slice(-4)}`}</Text>
+                        <Text style={styles.winnerPrize}>
+                          {winner.prize_name} - {winner.prize_type === 'money' 
+                            ? `${currencySymbol} ${winner.amount?.toLocaleString()}`
+                            : winner.item_name
+                          }
+                        </Text>
+                      </View>
+                      <View style={styles.winnerTier}>
+                        <Text style={styles.winnerTierText}>Tier {winner.prize_tier}</Text>
+                      </View>
+                    </View>
+                  ))}
+                </View>
+
+                {/* Admin Info */}
+                <View style={styles.auditSection}>
+                  <Text style={styles.auditSectionTitle}>Completed By</Text>
+                  <View style={styles.adminInfo}>
+                    <Ionicons name="person-circle" size={24} color="#64748B" />
+                    <View>
+                      <Text style={styles.adminName}>{auditData.audit?.completed_by?.username}</Text>
+                      <Text style={styles.adminTime}>
+                        {auditData.audit?.completed_by?.timestamp 
+                          ? format(new Date(auditData.audit.completed_by.timestamp), 'MMM d, yyyy h:mm a')
+                          : 'N/A'
+                        }
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              </ScrollView>
+            ) : (
+              <View style={styles.auditError}>
+                <Ionicons name="alert-circle" size={48} color="#EF4444" />
+                <Text style={styles.auditErrorText}>Failed to load audit data</Text>
+              </View>
+            )}
+          </View>
+        </View>
+      </Modal>
     </AdminLayout>
   );
 }
