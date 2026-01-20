@@ -1118,6 +1118,11 @@ async def create_draw(
     admin: dict = Depends(get_current_admin)
 ):
     """Create a new draw with enhanced prize configuration"""
+    draw_type = request.draw_type
+    days_duration = request.days_duration
+    draw_date = request.draw_date
+    prize_tiers = request.prize_tiers
+    
     if prize_tiers is None:
         prize_tiers = [
             {
