@@ -787,6 +787,315 @@ async def get_profile(user: dict = Depends(get_current_user)):
     }
 
 
+# ============== PUSH NOTIFICATIONS ==============
+
+class PushTokenRegister(BaseModel):
+    push_token: str
+    platform: str = "unknown"
+    device_name: Optional[str] = None
+
+class NotificationSend(BaseModel):
+    user_ids: Optional[List[str]] = None  # If None, send to all
+    title: str
+    body: str
+    data: Optional[Dict[str, Any]] = None
+    notification_type: str = "general"  # draw_reminder, winner, scan_reminder, general
+
+@api_router.post("/notifications/register")
+async def register_push_token(data: PushTokenRegister, user: dict = Depends(get_current_user)):
+    """Register or update user's push token for notifications"""
+    user_id = str(user["_id"])
+    
+    # Store push token with user
+    await db.users.update_one(
+        {"_id": user["_id"]},
+        {
+            "$set": {
+                "push_token": data.push_token,
+                "push_platform": data.platform,
+                "push_device_name": data.device_name,
+                "push_token_updated_at": datetime.utcnow()
+            }
+        }
+    )
+    
+    # Also store in dedicated push_tokens collection for easier querying
+    await db.push_tokens.update_one(
+        {"user_id": user_id},
+        {
+            "$set": {
+                "user_id": user_id,
+                "token": data.push_token,
+                "platform": data.platform,
+                "device_name": data.device_name,
+                "is_active": True,
+                "updated_at": datetime.utcnow()
+            }
+        },
+        upsert=True
+    )
+    
+    logger.info(f"Push token registered for user {user_id}: {data.push_token[:20]}...")
+    
+    return {"message": "Push token registered successfully"}
+
+@api_router.delete("/notifications/unregister")
+async def unregister_push_token(user: dict = Depends(get_current_user)):
+    """Unregister user's push token"""
+    user_id = str(user["_id"])
+    
+    await db.users.update_one(
+        {"_id": user["_id"]},
+        {"$unset": {"push_token": "", "push_platform": "", "push_device_name": ""}}
+    )
+    
+    await db.push_tokens.update_one(
+        {"user_id": user_id},
+        {"$set": {"is_active": False}}
+    )
+    
+    return {"message": "Push token unregistered successfully"}
+
+@api_router.get("/notifications/settings")
+async def get_notification_settings(user: dict = Depends(get_current_user)):
+    """Get user's notification preferences"""
+    user_id = str(user["_id"])
+    
+    settings = await db.notification_settings.find_one({"user_id": user_id})
+    
+    if not settings:
+        # Return default settings
+        settings = {
+            "draw_reminders": True,
+            "winner_announcements": True,
+            "scan_reminders": True,
+            "promotional": False
+        }
+    
+    return {
+        "draw_reminders": settings.get("draw_reminders", True),
+        "winner_announcements": settings.get("winner_announcements", True),
+        "scan_reminders": settings.get("scan_reminders", True),
+        "promotional": settings.get("promotional", False)
+    }
+
+@api_router.put("/notifications/settings")
+async def update_notification_settings(
+    draw_reminders: bool = True,
+    winner_announcements: bool = True,
+    scan_reminders: bool = True,
+    promotional: bool = False,
+    user: dict = Depends(get_current_user)
+):
+    """Update user's notification preferences"""
+    user_id = str(user["_id"])
+    
+    await db.notification_settings.update_one(
+        {"user_id": user_id},
+        {
+            "$set": {
+                "user_id": user_id,
+                "draw_reminders": draw_reminders,
+                "winner_announcements": winner_announcements,
+                "scan_reminders": scan_reminders,
+                "promotional": promotional,
+                "updated_at": datetime.utcnow()
+            }
+        },
+        upsert=True
+    )
+    
+    return {"message": "Notification settings updated"}
+
+# Helper function to send push notifications via Expo
+async def send_expo_push_notification(tokens: List[str], title: str, body: str, data: dict = None):
+    """Send push notification via Expo Push Service"""
+    import httpx
+    
+    messages = []
+    for token in tokens:
+        if not token or not token.startswith('ExponentPushToken'):
+            continue
+        
+        message = {
+            "to": token,
+            "sound": "default",
+            "title": title,
+            "body": body,
+            "data": data or {},
+            "priority": "high",
+        }
+        messages.append(message)
+    
+    if not messages:
+        return {"sent": 0, "errors": ["No valid tokens"]}
+    
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://exp.host/--/api/v2/push/send",
+                json=messages,
+                headers={
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
+                }
+            )
+            result = response.json()
+            logger.info(f"Push notification sent to {len(messages)} devices")
+            return {"sent": len(messages), "result": result}
+    except Exception as e:
+        logger.error(f"Failed to send push notification: {e}")
+        return {"sent": 0, "errors": [str(e)]}
+
+@api_router.post("/admin/notifications/send")
+async def admin_send_notification(data: NotificationSend, admin: dict = Depends(get_current_admin)):
+    """Admin endpoint to send push notifications to users"""
+    
+    # Get push tokens
+    query = {"is_active": True}
+    if data.user_ids:
+        query["user_id"] = {"$in": data.user_ids}
+    
+    tokens_cursor = db.push_tokens.find(query)
+    tokens = []
+    async for doc in tokens_cursor:
+        if doc.get("token"):
+            tokens.append(doc["token"])
+    
+    if not tokens:
+        return {"message": "No active push tokens found", "sent": 0}
+    
+    # Send notifications
+    result = await send_expo_push_notification(
+        tokens=tokens,
+        title=data.title,
+        body=data.body,
+        data={
+            "type": data.notification_type,
+            **(data.data or {})
+        }
+    )
+    
+    # Log notification
+    await db.admin_logs.insert_one({
+        "action": "notification_sent",
+        "notification_type": data.notification_type,
+        "title": data.title,
+        "recipients_count": len(tokens),
+        "admin": admin.get("username"),
+        "timestamp": datetime.utcnow()
+    })
+    
+    return {
+        "message": f"Notification sent to {result['sent']} devices",
+        **result
+    }
+
+@api_router.post("/admin/notifications/draw-reminder/{draw_id}")
+async def send_draw_reminder(draw_id: str, admin: dict = Depends(get_current_admin)):
+    """Send draw reminder notification to all users with entries"""
+    try:
+        draw = await db.draws.find_one({"_id": ObjectId(draw_id)})
+        if not draw:
+            raise HTTPException(status_code=404, detail="Draw not found")
+        
+        # Get all users with entries in this draw
+        entries = await db.draw_entries.find({"draw_id": draw_id, "entries": {"$gt": 0}}).to_list(10000)
+        user_ids = [e["user_id"] for e in entries]
+        
+        if not user_ids:
+            return {"message": "No users with entries in this draw", "sent": 0}
+        
+        # Get their push tokens
+        tokens_cursor = db.push_tokens.find({"user_id": {"$in": user_ids}, "is_active": True})
+        tokens = []
+        async for doc in tokens_cursor:
+            if doc.get("token"):
+                tokens.append(doc["token"])
+        
+        if not tokens:
+            return {"message": "No active push tokens for users in this draw", "sent": 0}
+        
+        # Format draw date
+        draw_date = draw.get("draw_date") or draw.get("end_date")
+        date_str = draw_date.strftime("%b %d at %I:%M %p") if draw_date else "soon"
+        
+        result = await send_expo_push_notification(
+            tokens=tokens,
+            title="🎰 Draw Happening Soon!",
+            body=f"The {draw['draw_type']} draw is scheduled for {date_str}. You have entries - don't miss it!",
+            data={
+                "type": "draw_reminder",
+                "draw_id": draw_id
+            }
+        )
+        
+        return {
+            "message": f"Draw reminder sent to {result['sent']} participants",
+            **result
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@api_router.post("/admin/notifications/winner/{draw_id}")
+async def send_winner_notifications(draw_id: str, admin: dict = Depends(get_current_admin)):
+    """Send winner notifications for a completed draw"""
+    try:
+        draw = await db.draws.find_one({"_id": ObjectId(draw_id)})
+        if not draw:
+            raise HTTPException(status_code=404, detail="Draw not found")
+        
+        if draw["status"] != "completed":
+            raise HTTPException(status_code=400, detail="Draw is not completed")
+        
+        winners = draw.get("winners", [])
+        if not winners:
+            return {"message": "No winners in this draw", "sent": 0}
+        
+        # Get active country for currency
+        settings = await db.settings.find_one({"type": "platform"})
+        currency_symbol = "$"
+        if settings and settings.get("active_country"):
+            country = await db.countries.find_one({"_id": ObjectId(settings["active_country"])})
+            if country:
+                currency_symbol = country.get("currency_symbol", "$")
+        
+        sent_count = 0
+        for winner in winners:
+            user_id = winner.get("user_id")
+            if not user_id:
+                continue
+            
+            # Get user's push token
+            token_doc = await db.push_tokens.find_one({"user_id": user_id, "is_active": True})
+            if not token_doc or not token_doc.get("token"):
+                continue
+            
+            # Format prize
+            prize_text = winner.get("prize_name", "a prize")
+            if winner.get("prize_type") == "money" and winner.get("amount"):
+                prize_text = f"{currency_symbol} {winner['amount']:,.0f}"
+            elif winner.get("item_name"):
+                prize_text = winner["item_name"]
+            
+            await send_expo_push_notification(
+                tokens=[token_doc["token"]],
+                title="🎉 Congratulations! You Won!",
+                body=f"You won {prize_text} in the {draw['draw_type']} draw! Tap to claim your prize.",
+                data={
+                    "type": "winner_announcement",
+                    "draw_id": draw_id,
+                    "prize_tier": winner.get("prize_tier"),
+                    "amount": winner.get("amount")
+                }
+            )
+            sent_count += 1
+        
+        return {"message": f"Winner notifications sent to {sent_count} winners", "sent": sent_count}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 # ============== GENERATE TEST QR CODES ==============
 
 @api_router.get("/test/generate-qr")
