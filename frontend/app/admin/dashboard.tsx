@@ -90,28 +90,32 @@ export default function AdminDashboard() {
   const renderTableView = () => (
     <View style={styles.tableContainer}>
       <View style={styles.tableHeader}>
-        <Text style={[styles.tableHeaderCell, { width: 200 }]}>Metric</Text>
-        <Text style={[styles.tableHeaderCell, { width: 120 }]}>Total</Text>
-        <Text style={[styles.tableHeaderCell, { width: 120 }]}>Today</Text>
-        <Text style={[styles.tableHeaderCell, { width: 100 }]}>Status</Text>
+        <Text style={[styles.tableHeaderCell, { flex: 3 }]}>Metric</Text>
+        <Text style={[styles.tableHeaderCell, { flex: 2, textAlign: 'center' }]}>Total Value</Text>
+        <Text style={[styles.tableHeaderCell, { flex: 2, textAlign: 'center' }]}>Today's Change</Text>
+        <Text style={[styles.tableHeaderCell, { flex: 1.5, textAlign: 'center' }]}>Status</Text>
       </View>
       {[
-        { name: 'Users', icon: 'people', color: '#2563EB', total: dashboard?.overview?.total_users || 0, today: dashboard?.today?.new_users || 0 },
-        { name: 'Total Scans', icon: 'scan', color: '#10B981', total: dashboard?.overview?.total_scans || 0, today: dashboard?.today?.scans || 0 },
-        { name: 'Valid Scans', icon: 'checkmark-circle', color: '#10B981', total: dashboard?.overview?.valid_scans || 0, today: dashboard?.today?.valid_scans || 0 },
-        { name: 'Active Draws', icon: 'trophy', color: '#F59E0B', total: dashboard?.overview?.active_draws || 0, today: '-' },
+        { name: 'Total Users', icon: 'people', color: '#2563EB', total: dashboard?.overview?.total_users || 0, today: dashboard?.today?.new_users || 0, status: 'Active' },
+        { name: 'Total Scans', icon: 'scan', color: '#10B981', total: dashboard?.overview?.total_scans || 0, today: dashboard?.today?.scans || 0, status: 'Active' },
+        { name: 'Valid Scans', icon: 'checkmark-circle', color: '#10B981', total: dashboard?.overview?.valid_scans || 0, today: dashboard?.today?.valid_scans || 0, status: 'Active' },
+        { name: 'Active Draws', icon: 'trophy', color: '#F59E0B', total: dashboard?.overview?.active_draws || 0, today: '-', status: 'Running' },
       ].map((item, i) => (
         <View key={i} style={[styles.tableRow, i === 3 && { borderBottomWidth: 0 }]}>
-          <View style={[styles.tableCell, { width: 200, flexDirection: 'row', alignItems: 'center', gap: 12 }]}>
+          <View style={[styles.tableCell, { flex: 3, flexDirection: 'row', alignItems: 'center', gap: 16 }]}>
             <View style={[styles.tableIcon, { backgroundColor: `${item.color}15` }]}>
-              <Ionicons name={item.icon as any} size={18} color={item.color} />
+              <Ionicons name={item.icon as any} size={20} color={item.color} />
             </View>
             <Text style={styles.tableCellText}>{item.name}</Text>
           </View>
-          <Text style={[styles.tableCellValue, { width: 120 }]}>{item.total}</Text>
-          <Text style={[styles.tableCellChange, { width: 120 }]}>{item.today === '-' ? '-' : `+${item.today}`}</Text>
-          <View style={[styles.tableCell, { width: 100 }]}>
-            <View style={styles.statusBadge}><Text style={styles.statusText}>Active</Text></View>
+          <Text style={[styles.tableCellValue, { flex: 2, textAlign: 'center' }]}>{item.total.toLocaleString()}</Text>
+          <Text style={[styles.tableCellChange, { flex: 2, textAlign: 'center', color: item.today === '-' ? '#6B7280' : '#10B981' }]}>
+            {item.today === '-' ? '-' : `+${item.today}`}
+          </Text>
+          <View style={[styles.tableCell, { flex: 1.5, alignItems: 'center' }]}>
+            <View style={[styles.statusBadge, item.status === 'Running' && styles.statusBadgeWarning]}>
+              <Text style={[styles.statusText, item.status === 'Running' && styles.statusTextWarning]}>{item.status}</Text>
+            </View>
           </View>
         </View>
       ))}
