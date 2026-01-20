@@ -11,6 +11,7 @@ import {
   TextInput,
   ScrollView,
   Platform,
+  Share,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAdminStore } from '../../src/store/adminStore';
@@ -18,6 +19,8 @@ import AdminLayout from '../../src/components/AdminLayout';
 import AdminHeader from '../../src/components/AdminHeader';
 import { format } from 'date-fns';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 
 const isWeb = Platform.OS === 'web';
 
