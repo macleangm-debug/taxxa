@@ -26,6 +26,7 @@ const menuItems: MenuItem[] = [
   { id: 'users', label: 'Users', icon: 'people-outline', route: '/admin/users' },
   { id: 'draws', label: 'Draws', icon: 'trophy-outline', route: '/admin/draws' },
   { id: 'scans', label: 'Scans', icon: 'scan-outline', route: '/admin/scans' },
+  { id: 'notifications', label: 'Notifications', icon: 'notifications-outline', route: '/admin/notifications' },
   { id: 'analytics', label: 'Analytics', icon: 'bar-chart-outline', route: '/admin/analytics' },
   { id: 'fraud', label: 'Fraud Detection', icon: 'shield-outline', route: '/admin/fraud' },
   { id: 'settings', label: 'Settings', icon: 'settings-outline', route: '/admin/settings' },
