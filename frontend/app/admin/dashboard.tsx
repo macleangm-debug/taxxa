@@ -256,12 +256,48 @@ export default function AdminDashboard() {
           {/* Quick Actions - Grid of Cards */}
           <Text style={styles.sectionTitleSmall}>Manage</Text>
           <View style={styles.menuGrid}>
-            <MenuCard title="Users" icon="people" color="#2563EB" route="/admin/users" description="View and manage users" />
-            <MenuCard title="Draws" icon="trophy" color="#F59E0B" route="/admin/draws" description="Create and manage draws" />
-            <MenuCard title="Scans" icon="scan" color="#10B981" route="/admin/scans" description="View scan records" />
-            <MenuCard title="Analytics" icon="bar-chart" color="#8B5CF6" route="/admin/analytics" description="View reports" />
-            <MenuCard title="Fraud" icon="shield" color="#EF4444" route="/admin/fraud" description="Monitor suspicious activity" />
-            <MenuCard title="Settings" icon="settings" color="#6B7280" route="/admin/settings" description="Platform settings" />
+            <TouchableOpacity style={styles.menuCard} onPress={() => router.push('/admin/users')}>
+              <View style={[styles.menuIcon, { backgroundColor: '#2563EB15' }]}>
+                <Ionicons name="people" size={28} color="#2563EB" />
+              </View>
+              <Text style={styles.menuTitle}>Users</Text>
+              <Text style={styles.menuDescription}>View and manage users</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.menuCard} onPress={() => router.push('/admin/draws')}>
+              <View style={[styles.menuIcon, { backgroundColor: '#F59E0B15' }]}>
+                <Ionicons name="trophy" size={28} color="#F59E0B" />
+              </View>
+              <Text style={styles.menuTitle}>Draws</Text>
+              <Text style={styles.menuDescription}>Create and manage draws</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.menuCard} onPress={() => router.push('/admin/scans')}>
+              <View style={[styles.menuIcon, { backgroundColor: '#10B98115' }]}>
+                <Ionicons name="scan" size={28} color="#10B981" />
+              </View>
+              <Text style={styles.menuTitle}>Scans</Text>
+              <Text style={styles.menuDescription}>View scan records</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.menuCard} onPress={() => router.push('/admin/analytics')}>
+              <View style={[styles.menuIcon, { backgroundColor: '#8B5CF615' }]}>
+                <Ionicons name="bar-chart" size={28} color="#8B5CF6" />
+              </View>
+              <Text style={styles.menuTitle}>Analytics</Text>
+              <Text style={styles.menuDescription}>View reports</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.menuCard} onPress={() => router.push('/admin/fraud')}>
+              <View style={[styles.menuIcon, { backgroundColor: '#EF444415' }]}>
+                <Ionicons name="shield" size={28} color="#EF4444" />
+              </View>
+              <Text style={styles.menuTitle}>Fraud</Text>
+              <Text style={styles.menuDescription}>Monitor suspicious</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.menuCard} onPress={() => router.push('/admin/settings')}>
+              <View style={[styles.menuIcon, { backgroundColor: '#6B728015' }]}>
+                <Ionicons name="settings" size={28} color="#6B7280" />
+              </View>
+              <Text style={styles.menuTitle}>Settings</Text>
+              <Text style={styles.menuDescription}>Platform settings</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
