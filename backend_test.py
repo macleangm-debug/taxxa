@@ -126,7 +126,91 @@ class TaxDrawAPITester:
             self.log_test("Create Draw", False, f"Request failed: {str(e)}")
             return None
     
-    def test_complete_draw(self, draw_id):
+    def create_test_user_and_entries(self, draw_id):
+        """Create a test user and add entries to the draw"""
+        try:
+            # First, register a test user
+            phone = f"+1555{int(time.time()) % 10000:04d}"  # Generate unique phone
+            
+            # Step 1: Register
+            register_response = self.session.post(
+                f"{BASE_URL}/auth/register",
+                json={"phone_number": phone},
+                timeout=30
+            )
+            
+            if register_response.status_code != 200:
+                self.log_test("Create Test User", False, f"Registration failed: {register_response.status_code}")
+                return False
+            
+            otp = register_response.json().get("otp_for_testing")
+            if not otp:
+                self.log_test("Create Test User", False, "No OTP received")
+                return False
+            
+            # Step 2: Verify OTP
+            verify_response = self.session.post(
+                f"{BASE_URL}/auth/verify-otp",
+                json={"phone_number": phone, "otp": otp},
+                timeout=30
+            )
+            
+            if verify_response.status_code != 200:
+                self.log_test("Create Test User", False, f"OTP verification failed: {verify_response.status_code}")
+                return False
+            
+            # Step 3: Create password and get user token
+            password_response = self.session.post(
+                f"{BASE_URL}/auth/create-password",
+                json={"phone_number": phone, "password": "TestPass123", "name": "Test User"},
+                timeout=30
+            )
+            
+            if password_response.status_code != 200:
+                self.log_test("Create Test User", False, f"Password creation failed: {password_response.status_code}")
+                return False
+            
+            user_token = password_response.json().get("access_token")
+            if not user_token:
+                self.log_test("Create Test User", False, "No user token received")
+                return False
+            
+            # Step 4: Generate test QR and scan it to create entries
+            qr_response = self.session.get(f"{BASE_URL}/test/generate-qr?amount=100", timeout=30)
+            if qr_response.status_code != 200:
+                self.log_test("Create Test User", False, f"QR generation failed: {qr_response.status_code}")
+                return False
+            
+            qr_data = qr_response.json().get("qr_data")
+            if not qr_data:
+                self.log_test("Create Test User", False, "No QR data received")
+                return False
+            
+            # Step 5: Scan the receipt to add entries
+            scan_response = self.session.post(
+                f"{BASE_URL}/scan",
+                json={"qr_data": qr_data},
+                headers={"Authorization": f"Bearer {user_token}"},
+                timeout=30
+            )
+            
+            if scan_response.status_code != 200:
+                self.log_test("Create Test User", False, f"Scan failed: {scan_response.status_code}")
+                return False
+            
+            scan_result = scan_response.json()
+            entries_earned = scan_result.get("entries_earned", 0)
+            
+            if entries_earned > 0:
+                self.log_test("Create Test User", True, f"Created user and earned {entries_earned} entries")
+                return True
+            else:
+                self.log_test("Create Test User", False, f"No entries earned from scan: {scan_result}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Create Test User", False, f"Request failed: {str(e)}")
+            return False
         """Test completing a draw"""
         try:
             response = self.session.post(
