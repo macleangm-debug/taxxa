@@ -11,7 +11,8 @@ import {
   ActivityIndicator,
   Platform,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';\nimport { useAdminStore } from '../../src/store/adminStore';
+import { Ionicons } from '@expo/vector-icons';
+import { useAdminStore } from '../../src/store/adminStore';
 import AdminLayout from '../../src/components/AdminLayout';
 import AdminHeader from '../../src/components/AdminHeader';
 
