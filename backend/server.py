@@ -13,6 +13,7 @@ from datetime import datetime, timedelta
 import jwt
 import bcrypt
 import random
+import secrets  # Cryptographically secure random
 import hashlib
 import json
 from bson import ObjectId
