@@ -15,9 +15,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAdminStore } from '../../src/store/adminStore';
 
-const { width } = Dimensions.get('window');
+const { width: screenWidth } = Dimensions.get('window');
 const isWeb = Platform.OS === 'web';
-const MAX_WIDTH = 1400;
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -69,29 +68,6 @@ export default function AdminDashboard() {
     setShowCountryPicker(false);
   };
 
-  const currencySymbol = activeCountry?.currency_symbol || '$';
-
-  const StatCard = ({ title, value, icon, color, subtitle }: any) => (
-    <View style={styles.statCard}>
-      <View style={[styles.statIcon, { backgroundColor: `${color}15` }]}>
-        <Ionicons name={icon} size={22} color={color} />
-      </View>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statTitle}>{title}</Text>
-      {subtitle && <Text style={styles.statSubtitle}>{subtitle}</Text>}
-    </View>
-  );
-
-  const MenuCard = ({ title, icon, color, route, description }: any) => (
-    <TouchableOpacity style={styles.menuCard} onPress={() => router.push(route)}>
-      <View style={[styles.menuIcon, { backgroundColor: `${color}15` }]}>
-        <Ionicons name={icon} size={28} color={color} />
-      </View>
-      <Text style={styles.menuTitle}>{title}</Text>
-      <Text style={styles.menuDescription}>{description}</Text>
-    </TouchableOpacity>
-  );
-
   const ViewToggle = () => (
     <View style={styles.viewToggle}>
       <TouchableOpacity
@@ -114,71 +90,48 @@ export default function AdminDashboard() {
   const renderTableView = () => (
     <View style={styles.tableContainer}>
       <View style={styles.tableHeader}>
-        <Text style={[styles.tableHeaderCell, { flex: 2 }]}>Metric</Text>
-        <Text style={[styles.tableHeaderCell, { flex: 1.5 }]}>Total Value</Text>
-        <Text style={[styles.tableHeaderCell, { flex: 1.5 }]}>Today's Change</Text>
-        <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Status</Text>
+        <Text style={[styles.tableHeaderCell, { width: 200 }]}>Metric</Text>
+        <Text style={[styles.tableHeaderCell, { width: 120 }]}>Total</Text>
+        <Text style={[styles.tableHeaderCell, { width: 120 }]}>Today</Text>
+        <Text style={[styles.tableHeaderCell, { width: 100 }]}>Status</Text>
       </View>
-      <View style={styles.tableRow}>
-        <View style={[styles.tableCell, { flex: 2, flexDirection: 'row', alignItems: 'center', gap: 12 }]}>
-          <View style={[styles.tableIcon, { backgroundColor: '#2563EB15' }]}>
-            <Ionicons name="people" size={18} color="#2563EB" />
+      {[
+        { name: 'Users', icon: 'people', color: '#2563EB', total: dashboard?.overview?.total_users || 0, today: dashboard?.today?.new_users || 0 },
+        { name: 'Total Scans', icon: 'scan', color: '#10B981', total: dashboard?.overview?.total_scans || 0, today: dashboard?.today?.scans || 0 },
+        { name: 'Valid Scans', icon: 'checkmark-circle', color: '#10B981', total: dashboard?.overview?.valid_scans || 0, today: dashboard?.today?.valid_scans || 0 },
+        { name: 'Active Draws', icon: 'trophy', color: '#F59E0B', total: dashboard?.overview?.active_draws || 0, today: '-' },
+      ].map((item, i) => (
+        <View key={i} style={[styles.tableRow, i === 3 && { borderBottomWidth: 0 }]}>
+          <View style={[styles.tableCell, { width: 200, flexDirection: 'row', alignItems: 'center', gap: 12 }]}>
+            <View style={[styles.tableIcon, { backgroundColor: `${item.color}15` }]}>
+              <Ionicons name={item.icon as any} size={18} color={item.color} />
+            </View>
+            <Text style={styles.tableCellText}>{item.name}</Text>
           </View>
-          <Text style={styles.tableCellText}>Total Users</Text>
-        </View>
-        <Text style={[styles.tableCellValue, { flex: 1.5 }]}>{dashboard?.overview?.total_users || 0}</Text>
-        <Text style={[styles.tableCellChange, { flex: 1.5 }]}>+{dashboard?.today?.new_users || 0}</Text>
-        <View style={[styles.tableCell, { flex: 1 }]}>
-          <View style={styles.statusGood}><Text style={styles.statusText}>Active</Text></View>
-        </View>
-      </View>
-      <View style={styles.tableRow}>
-        <View style={[styles.tableCell, { flex: 2, flexDirection: 'row', alignItems: 'center', gap: 12 }]}>
-          <View style={[styles.tableIcon, { backgroundColor: '#10B98115' }]}>
-            <Ionicons name="scan" size={18} color="#10B981" />
+          <Text style={[styles.tableCellValue, { width: 120 }]}>{item.total}</Text>
+          <Text style={[styles.tableCellChange, { width: 120 }]}>{item.today === '-' ? '-' : `+${item.today}`}</Text>
+          <View style={[styles.tableCell, { width: 100 }]}>
+            <View style={styles.statusBadge}><Text style={styles.statusText}>Active</Text></View>
           </View>
-          <Text style={styles.tableCellText}>Total Scans</Text>
         </View>
-        <Text style={[styles.tableCellValue, { flex: 1.5 }]}>{dashboard?.overview?.total_scans || 0}</Text>
-        <Text style={[styles.tableCellChange, { flex: 1.5 }]}>+{dashboard?.today?.scans || 0}</Text>
-        <View style={[styles.tableCell, { flex: 1 }]}>
-          <View style={styles.statusGood}><Text style={styles.statusText}>Active</Text></View>
-        </View>
-      </View>
-      <View style={styles.tableRow}>
-        <View style={[styles.tableCell, { flex: 2, flexDirection: 'row', alignItems: 'center', gap: 12 }]}>
-          <View style={[styles.tableIcon, { backgroundColor: '#10B98115' }]}>
-            <Ionicons name="checkmark-circle" size={18} color="#10B981" />
-          </View>
-          <Text style={styles.tableCellText}>Valid Scans</Text>
-        </View>
-        <Text style={[styles.tableCellValue, { flex: 1.5 }]}>{dashboard?.overview?.valid_scans || 0}</Text>
-        <Text style={[styles.tableCellChange, { flex: 1.5 }]}>+{dashboard?.today?.valid_scans || 0}</Text>
-        <View style={[styles.tableCell, { flex: 1 }]}>
-          <View style={styles.statusGood}><Text style={styles.statusText}>Active</Text></View>
-        </View>
-      </View>
-      <View style={[styles.tableRow, { borderBottomWidth: 0 }]}>
-        <View style={[styles.tableCell, { flex: 2, flexDirection: 'row', alignItems: 'center', gap: 12 }]}>
-          <View style={[styles.tableIcon, { backgroundColor: '#F59E0B15' }]}>
-            <Ionicons name="trophy" size={18} color="#F59E0B" />
-          </View>
-          <Text style={styles.tableCellText}>Active Draws</Text>
-        </View>
-        <Text style={[styles.tableCellValue, { flex: 1.5 }]}>{dashboard?.overview?.active_draws || 0}</Text>
-        <Text style={[styles.tableCellChange, { flex: 1.5, color: '#6B7280' }]}>-</Text>
-        <View style={[styles.tableCell, { flex: 1 }]}>
-          <View style={styles.statusActive}><Text style={styles.statusTextActive}>Running</Text></View>
-        </View>
-      </View>
+      ))}
     </View>
   );
+
+  const menuItems = [
+    { title: 'Users', icon: 'people', color: '#2563EB', route: '/admin/users', desc: 'View and manage' },
+    { title: 'Draws', icon: 'trophy', color: '#F59E0B', route: '/admin/draws', desc: 'Create draws' },
+    { title: 'Scans', icon: 'scan', color: '#10B981', route: '/admin/scans', desc: 'Scan records' },
+    { title: 'Analytics', icon: 'bar-chart', color: '#8B5CF6', route: '/admin/analytics', desc: 'View reports' },
+    { title: 'Fraud', icon: 'shield', color: '#EF4444', route: '/admin/fraud', desc: 'Monitor activity' },
+    { title: 'Settings', icon: 'settings', color: '#6B7280', route: '/admin/settings', desc: 'Configuration' },
+  ];
 
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <View style={styles.headerInner}>
+        <View style={styles.headerContent}>
           <View>
             <Text style={styles.greeting}>Welcome back</Text>
             <Text style={styles.headerTitle}>Admin Dashboard</Text>
@@ -200,105 +153,80 @@ export default function AdminDashboard() {
         contentContainerStyle={styles.scrollContent}
         refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor="#2563EB" />}
       >
-        <View style={styles.contentContainer}>
-          {/* Active Country Banner */}
-          {activeCountry && (
-            <View style={styles.countryBanner}>
-              <View style={styles.countryFlag}>
-                <Text style={styles.countryFlagText}>{activeCountry.code}</Text>
+        {/* Active Country Banner */}
+        {activeCountry && (
+          <View style={styles.countryBanner}>
+            <View style={styles.countryFlag}>
+              <Text style={styles.countryFlagText}>{activeCountry.code}</Text>
+            </View>
+            <View style={styles.countryInfo}>
+              <Text style={styles.countryName}>{activeCountry.name}</Text>
+              <Text style={styles.countryCurrency}>{activeCountry.currency_symbol} {activeCountry.currency_code}</Text>
+            </View>
+          </View>
+        )}
+
+        {/* Section Header with Toggle */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Overview</Text>
+          <ViewToggle />
+        </View>
+
+        {/* Stats - Cards or Table */}
+        {viewMode === 'cards' ? (
+          <>
+            <View style={styles.statsGrid}>
+              {[
+                { title: 'Users', value: dashboard?.overview?.total_users || 0, icon: 'people', color: '#2563EB' },
+                { title: 'Scans', value: dashboard?.overview?.total_scans || 0, icon: 'scan', color: '#10B981' },
+                { title: 'Valid', value: dashboard?.overview?.valid_scans || 0, icon: 'checkmark-circle', color: '#10B981' },
+                { title: 'Draws', value: dashboard?.overview?.active_draws || 0, icon: 'trophy', color: '#F59E0B' },
+              ].map((stat, i) => (
+                <View key={i} style={styles.statCard}>
+                  <View style={[styles.statIcon, { backgroundColor: `${stat.color}15` }]}>
+                    <Ionicons name={stat.icon as any} size={22} color={stat.color} />
+                  </View>
+                  <Text style={styles.statValue}>{stat.value}</Text>
+                  <Text style={styles.statTitle}>{stat.title}</Text>
+                </View>
+              ))}
+            </View>
+
+            {/* Today's Activity */}
+            <Text style={styles.sectionTitleSmall}>Today</Text>
+            <View style={styles.todayCard}>
+              <View style={styles.todayItem}>
+                <Text style={styles.todayValue}>{dashboard?.today?.new_users || 0}</Text>
+                <Text style={styles.todayLabel}>New Users</Text>
               </View>
-              <View style={styles.countryInfo}>
-                <Text style={styles.countryName}>{activeCountry.name}</Text>
-                <Text style={styles.countryCurrency}>{activeCountry.currency_symbol} {activeCountry.currency_code}</Text>
+              <View style={styles.todayDivider} />
+              <View style={styles.todayItem}>
+                <Text style={styles.todayValue}>{dashboard?.today?.scans || 0}</Text>
+                <Text style={styles.todayLabel}>Scans</Text>
+              </View>
+              <View style={styles.todayDivider} />
+              <View style={styles.todayItem}>
+                <Text style={styles.todayValue}>{dashboard?.today?.valid_scans || 0}</Text>
+                <Text style={styles.todayLabel}>Valid</Text>
               </View>
             </View>
-          )}
+          </>
+        ) : (
+          renderTableView()
+        )}
 
-          {/* Section Header with Toggle */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Overview</Text>
-            <ViewToggle />
-          </View>
-
-          {/* Stats - Cards or Table */}
-          {viewMode === 'cards' ? (
-            <>
-              <View style={styles.statsGrid}>
-                <StatCard title="Users" value={dashboard?.overview?.total_users || 0} icon="people" color="#2563EB" />
-                <StatCard title="Scans" value={dashboard?.overview?.total_scans || 0} icon="scan" color="#10B981" />
-                <StatCard title="Valid" value={dashboard?.overview?.valid_scans || 0} icon="checkmark-circle" color="#10B981" />
-                <StatCard title="Draws" value={dashboard?.overview?.active_draws || 0} icon="trophy" color="#F59E0B" />
+        {/* Quick Actions - Card Grid */}
+        <Text style={styles.sectionTitleSmall}>Manage</Text>
+        <View style={styles.menuGrid}>
+          {menuItems.map((item, i) => (
+            <TouchableOpacity key={i} style={styles.menuCard} onPress={() => router.push(item.route as any)}>
+              <View style={[styles.menuIcon, { backgroundColor: `${item.color}15` }]}>
+                <Ionicons name={item.icon as any} size={28} color={item.color} />
               </View>
-
-              {/* Today's Activity */}
-              <Text style={styles.sectionTitleSmall}>Today</Text>
-              <View style={styles.todayCard}>
-                <View style={styles.todayItem}>
-                  <Text style={styles.todayValue}>{dashboard?.today?.new_users || 0}</Text>
-                  <Text style={styles.todayLabel}>New Users</Text>
-                </View>
-                <View style={styles.todayDivider} />
-                <View style={styles.todayItem}>
-                  <Text style={styles.todayValue}>{dashboard?.today?.scans || 0}</Text>
-                  <Text style={styles.todayLabel}>Scans</Text>
-                </View>
-                <View style={styles.todayDivider} />
-                <View style={styles.todayItem}>
-                  <Text style={styles.todayValue}>{dashboard?.today?.valid_scans || 0}</Text>
-                  <Text style={styles.todayLabel}>Valid</Text>
-                </View>
-              </View>
-            </>
-          ) : (
-            renderTableView()
-          )}
-
-          {/* Quick Actions - Grid of Cards */}
-          <Text style={styles.sectionTitleSmall}>Manage</Text>
-          <View style={styles.menuGrid}>
-            <TouchableOpacity style={styles.menuCard} onPress={() => router.push('/admin/users')}>
-              <View style={[styles.menuIcon, { backgroundColor: '#2563EB15' }]}>
-                <Ionicons name="people" size={28} color="#2563EB" />
-              </View>
-              <Text style={styles.menuTitle}>Users</Text>
-              <Text style={styles.menuDescription}>View and manage users</Text>
+              <Text style={styles.menuTitle}>{item.title}</Text>
+              <Text style={styles.menuDesc}>{item.desc}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.menuCard} onPress={() => router.push('/admin/draws')}>
-              <View style={[styles.menuIcon, { backgroundColor: '#F59E0B15' }]}>
-                <Ionicons name="trophy" size={28} color="#F59E0B" />
-              </View>
-              <Text style={styles.menuTitle}>Draws</Text>
-              <Text style={styles.menuDescription}>Create and manage draws</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.menuCard} onPress={() => router.push('/admin/scans')}>
-              <View style={[styles.menuIcon, { backgroundColor: '#10B98115' }]}>
-                <Ionicons name="scan" size={28} color="#10B981" />
-              </View>
-              <Text style={styles.menuTitle}>Scans</Text>
-              <Text style={styles.menuDescription}>View scan records</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.menuCard} onPress={() => router.push('/admin/analytics')}>
-              <View style={[styles.menuIcon, { backgroundColor: '#8B5CF615' }]}>
-                <Ionicons name="bar-chart" size={28} color="#8B5CF6" />
-              </View>
-              <Text style={styles.menuTitle}>Analytics</Text>
-              <Text style={styles.menuDescription}>View reports</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.menuCard} onPress={() => router.push('/admin/fraud')}>
-              <View style={[styles.menuIcon, { backgroundColor: '#EF444415' }]}>
-                <Ionicons name="shield" size={28} color="#EF4444" />
-              </View>
-              <Text style={styles.menuTitle}>Fraud</Text>
-              <Text style={styles.menuDescription}>Monitor suspicious</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.menuCard} onPress={() => router.push('/admin/settings')}>
-              <View style={[styles.menuIcon, { backgroundColor: '#6B728015' }]}>
-                <Ionicons name="settings" size={28} color="#6B7280" />
-              </View>
-              <Text style={styles.menuTitle}>Settings</Text>
-              <Text style={styles.menuDescription}>Platform settings</Text>
-            </TouchableOpacity>
-          </View>
+          ))}
         </View>
       </ScrollView>
 
@@ -333,8 +261,15 @@ export default function AdminDashboard() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F3F4F6' },
+  
   header: { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
-  headerInner: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingVertical: 16, maxWidth: MAX_WIDTH, alignSelf: 'center', width: '100%' },
+  headerContent: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    paddingHorizontal: 24, 
+    paddingVertical: 16,
+  },
   greeting: { fontSize: 13, color: '#6B7280' },
   headerTitle: { fontSize: 20, fontWeight: '700', color: '#111827' },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 12 },
@@ -342,8 +277,7 @@ const styles = StyleSheet.create({
   countryBtnText: { color: '#2563EB', fontWeight: '600', fontSize: 13 },
   logoutBtn: { padding: 8 },
   
-  scrollContent: { paddingVertical: 24, alignItems: isWeb ? 'center' : undefined },
-  contentContainer: { width: '100%', maxWidth: MAX_WIDTH, paddingHorizontal: 24 },
+  scrollContent: { padding: 24 },
   
   countryBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 12, padding: 14, marginBottom: 24, gap: 12 },
   countryFlag: { width: 44, height: 44, borderRadius: 8, backgroundColor: '#EFF6FF', justifyContent: 'center', alignItems: 'center' },
@@ -362,26 +296,33 @@ const styles = StyleSheet.create({
   toggleText: { fontSize: 12, fontWeight: '500', color: '#6B7280' },
   toggleTextActive: { color: '#fff' },
   
-  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
-  statCard: { backgroundColor: '#fff', borderRadius: 12, padding: 20, minWidth: 160, flex: 1, flexBasis: isWeb ? 'calc(25% - 12px)' : '45%', maxWidth: isWeb ? 'calc(25% - 12px)' : '48%' },
+  statsGrid: { 
+    flexDirection: 'row', 
+    flexWrap: 'wrap', 
+    gap: 16,
+  },
+  statCard: { 
+    backgroundColor: '#fff', 
+    borderRadius: 12, 
+    padding: 20,
+    width: isWeb ? 'calc(25% - 12px)' as any : '47%' as any,
+    minWidth: isWeb ? 200 : undefined,
+  },
   statIcon: { width: 44, height: 44, borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
   statValue: { fontSize: 32, fontWeight: '700', color: '#111827' },
   statTitle: { fontSize: 14, color: '#6B7280', marginTop: 4 },
-  statSubtitle: { fontSize: 11, color: '#9CA3AF', marginTop: 2 },
   
   tableContainer: { backgroundColor: '#fff', borderRadius: 12, overflow: 'hidden' },
   tableHeader: { flexDirection: 'row', backgroundColor: '#F9FAFB', paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
-  tableHeaderCell: { fontSize: 12, fontWeight: '600', color: '#6B7280', textTransform: 'uppercase', letterSpacing: 0.5 },
+  tableHeaderCell: { fontSize: 12, fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' },
   tableRow: { flexDirection: 'row', paddingHorizontal: 20, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#F3F4F6', alignItems: 'center' },
-  tableCell: { fontSize: 14, color: '#111827' },
+  tableCell: {},
   tableIcon: { width: 36, height: 36, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
   tableCellText: { fontSize: 15, color: '#111827', fontWeight: '500' },
   tableCellValue: { fontSize: 18, fontWeight: '700', color: '#111827' },
   tableCellChange: { fontSize: 15, fontWeight: '600', color: '#10B981' },
-  statusGood: { backgroundColor: '#ECFDF5', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 },
-  statusActive: { backgroundColor: '#FEF3C7', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 },
+  statusBadge: { backgroundColor: '#ECFDF5', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 },
   statusText: { fontSize: 12, fontWeight: '600', color: '#10B981' },
-  statusTextActive: { fontSize: 12, fontWeight: '600', color: '#F59E0B' },
   
   todayCard: { backgroundColor: '#fff', borderRadius: 12, padding: 24, flexDirection: 'row' },
   todayItem: { flex: 1, alignItems: 'center' },
@@ -393,19 +334,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row', 
     flexWrap: 'wrap', 
     gap: 16,
-    justifyContent: 'flex-start',
   },
   menuCard: { 
     backgroundColor: '#fff', 
     borderRadius: 12, 
     padding: 20, 
     alignItems: 'center',
-    width: isWeb ? 180 : '30%',
-    minWidth: isWeb ? 180 : 100,
+    width: isWeb ? 160 : '30%' as any,
+    minWidth: isWeb ? 160 : 100,
   },
   menuIcon: { width: 56, height: 56, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
   menuTitle: { fontSize: 15, fontWeight: '600', color: '#111827', textAlign: 'center' },
-  menuDescription: { fontSize: 12, color: '#6B7280', marginTop: 4, textAlign: 'center' },
+  menuDesc: { fontSize: 11, color: '#6B7280', marginTop: 4, textAlign: 'center' },
   
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center', padding: 24 },
   modalContent: { backgroundColor: '#fff', borderRadius: 16, padding: 20, width: '100%', maxWidth: 320 },
