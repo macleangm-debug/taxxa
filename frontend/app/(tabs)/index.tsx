@@ -13,11 +13,19 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../src/store/authStore';
+import { useAppConfigStore } from '../../src/store/appConfigStore';
 import { userAPI, drawAPI } from '../../src/utils/api';
 import { format, formatDistanceToNow } from 'date-fns';
 
 const { width } = Dimensions.get('window');
 const isWeb = Platform.OS === 'web';
+
+interface CurrencyInfo {
+  currency_code: string;
+  currency_symbol: string;
+  currency_name: string;
+  country_name: string;
+}
 
 interface Stats {
   total_scans: number;
@@ -36,11 +44,13 @@ interface Stats {
     date: string;
     amount: number;
   }>;
+  currency?: CurrencyInfo;
 }
 
 export default function HomeScreen() {
   const router = useRouter();
   const { user, logout } = useAuthStore();
+  const { currency, setCurrency, fetchConfig } = useAppConfigStore();
   const [stats, setStats] = useState<Stats | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -48,6 +58,11 @@ export default function HomeScreen() {
     try {
       const response = await userAPI.getStats();
       setStats(response.data);
+      
+      // Update currency from stats response
+      if (response.data.currency) {
+        setCurrency(response.data.currency);
+      }
     } catch (error) {
       console.error('Error loading stats:', error);
     }
