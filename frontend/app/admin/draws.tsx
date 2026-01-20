@@ -50,15 +50,16 @@ export default function DrawsManagement() {
   // Modals
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showAddPrizeModal, setShowAddPrizeModal] = useState(false);
+  const [showPrizeModal, setShowPrizeModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showCompleteConfirm, setShowCompleteConfirm] = useState(false);
   const [showCreateConfirm, setShowCreateConfirm] = useState(false);
   const [showUpdateConfirm, setShowUpdateConfirm] = useState(false);
+  const [showDeletePrizeConfirm, setShowDeletePrizeConfirm] = useState(false);
   
   const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
   
-  // For create/edit
+  // For create/edit draw
   const [editingDraw, setEditingDraw] = useState<Draw | null>(null);
   const [drawType, setDrawType] = useState('weekly');
   const [drawDate, setDrawDate] = useState(new Date());
@@ -69,15 +70,19 @@ export default function DrawsManagement() {
     { tier: 1, name: 'Grand Prize', prize_type: 'money', amount: 10000, winners: 1 },
   ]);
   
-  // For add prize modal
-  const [newPrizeName, setNewPrizeName] = useState('');
-  const [newPrizeType, setNewPrizeType] = useState<'money' | 'item'>('money');
-  const [newPrizeAmount, setNewPrizeAmount] = useState('');
-  const [newPrizeItem, setNewPrizeItem] = useState('');
-  const [newPrizeImage, setNewPrizeImage] = useState('');
-  const [newPrizeWinners, setNewPrizeWinners] = useState('1');
+  // For add/edit prize modal
+  const [editingPrizeIndex, setEditingPrizeIndex] = useState<number | null>(null);
+  const [prizeName, setPrizeName] = useState('');
+  const [prizeType, setPrizeType] = useState<'money' | 'item'>('money');
+  const [prizeAmount, setPrizeAmount] = useState('');
+  const [prizeItem, setPrizeItem] = useState('');
+  const [prizeImage, setPrizeImage] = useState('');
+  const [prizeWinners, setPrizeWinners] = useState('1');
   
-  // For delete/complete
+  // For delete prize
+  const [prizeToDeleteIndex, setPrizeToDeleteIndex] = useState<number | null>(null);
+  
+  // For delete/complete draw
   const [selectedDraw, setSelectedDraw] = useState<Draw | null>(null);
 
   const currencySymbol = activeCountry?.currency_symbol || '$';
@@ -112,9 +117,18 @@ export default function DrawsManagement() {
     setEditingDraw(null);
   };
 
+  const resetPrizeForm = () => {
+    setEditingPrizeIndex(null);
+    setPrizeName('');
+    setPrizeType('money');
+    setPrizeAmount('');
+    setPrizeItem('');
+    setPrizeImage('');
+    setPrizeWinners('1');
+  };
+
   // Open Create Modal
   const openCreateModal = () => {
-    console.log('Opening create modal');
     resetForm();
     setShowCreateModal(true);
   };
@@ -140,6 +154,70 @@ export default function DrawsManagement() {
     }
     
     setShowEditModal(true);
+  };
+
+  // Open Add Prize Modal
+  const openAddPrizeModal = () => {
+    resetPrizeForm();
+    setShowPrizeModal(true);
+  };
+
+  // Open Edit Prize Modal
+  const openEditPrizeModal = (index: number) => {
+    const prize = prizes[index];
+    setEditingPrizeIndex(index);
+    setPrizeName(prize.name);
+    setPrizeType(prize.prize_type);
+    setPrizeAmount(prize.amount?.toString() || '');
+    setPrizeItem(prize.item_name || '');
+    setPrizeImage(prize.image_url || '');
+    setPrizeWinners(prize.winners.toString());
+    setShowPrizeModal(true);
+  };
+
+  // Save Prize (Add or Edit)
+  const savePrize = () => {
+    if (!prizeName) {
+      Alert.alert('Error', 'Enter prize name');
+      return;
+    }
+    
+    const prizeData: PrizeTier = {
+      tier: editingPrizeIndex !== null ? prizes[editingPrizeIndex].tier : prizes.length + 1,
+      name: prizeName,
+      prize_type: prizeType,
+      amount: prizeType === 'money' ? parseInt(prizeAmount) || 0 : undefined,
+      item_name: prizeType === 'item' ? prizeItem : undefined,
+      image_url: prizeType === 'item' ? prizeImage : undefined,
+      winners: parseInt(prizeWinners) || 1,
+    };
+    
+    if (editingPrizeIndex !== null) {
+      // Update existing prize
+      const updatedPrizes = [...prizes];
+      updatedPrizes[editingPrizeIndex] = prizeData;
+      setPrizes(updatedPrizes);
+    } else {
+      // Add new prize
+      setPrizes([...prizes, prizeData]);
+    }
+    
+    setShowPrizeModal(false);
+    resetPrizeForm();
+  };
+
+  // Show Delete Prize Confirmation
+  const confirmDeletePrize = (index: number) => {
+    setPrizeToDeleteIndex(index);
+    setShowDeletePrizeConfirm(true);
+  };
+
+  // Execute Delete Prize
+  const executeDeletePrize = () => {
+    if (prizeToDeleteIndex === null) return;
+    setPrizes(prizes.filter((_, i) => i !== prizeToDeleteIndex));
+    setShowDeletePrizeConfirm(false);
+    setPrizeToDeleteIndex(null);
   };
 
   // Show Create Confirmation
@@ -195,13 +273,13 @@ export default function DrawsManagement() {
     }
   };
 
-  // Show Delete Confirmation
+  // Show Delete Draw Confirmation
   const confirmDelete = (draw: Draw) => {
     setSelectedDraw(draw);
     setShowDeleteConfirm(true);
   };
 
-  // Execute Delete
+  // Execute Delete Draw
   const executeDelete = async () => {
     if (!selectedDraw) return;
     setIsSubmitting(true);
@@ -239,35 +317,6 @@ export default function DrawsManagement() {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const addPrize = () => {
-    if (!newPrizeName) {
-      Alert.alert('Error', 'Enter prize name');
-      return;
-    }
-    
-    const newPrize: PrizeTier = {
-      tier: prizes.length + 1,
-      name: newPrizeName,
-      prize_type: newPrizeType,
-      amount: newPrizeType === 'money' ? parseInt(newPrizeAmount) || 0 : undefined,
-      item_name: newPrizeType === 'item' ? newPrizeItem : undefined,
-      image_url: newPrizeType === 'item' ? newPrizeImage : undefined,
-      winners: parseInt(newPrizeWinners) || 1,
-    };
-    
-    setPrizes([...prizes, newPrize]);
-    setShowAddPrizeModal(false);
-    setNewPrizeName('');
-    setNewPrizeAmount('');
-    setNewPrizeItem('');
-    setNewPrizeImage('');
-    setNewPrizeWinners('1');
-  };
-
-  const removePrize = (index: number) => {
-    setPrizes(prizes.filter((_, i) => i !== index));
   };
 
   const getStatusColor = (status: string) => {
@@ -447,13 +496,13 @@ export default function DrawsManagement() {
 
       <View style={styles.prizesHeader}>
         <Text style={styles.label}>Prizes ({prizes.length})</Text>
-        <TouchableOpacity onPress={() => setShowAddPrizeModal(true)}>
+        <TouchableOpacity onPress={openAddPrizeModal}>
           <Text style={styles.addPrizeLink}>+ Add Prize</Text>
         </TouchableOpacity>
       </View>
 
       {prizes.map((p, i) => (
-        <View key={i} style={styles.prizeItem}>
+        <TouchableOpacity key={i} style={styles.prizeItem} onPress={() => openEditPrizeModal(i)} activeOpacity={0.7}>
           <Ionicons name={p.prize_type === 'item' ? 'gift' : 'cash'} size={20} color={p.prize_type === 'item' ? '#F59E0B' : '#10B981'} />
           <View style={styles.prizeItemInfo}>
             <Text style={styles.prizeItemName}>{p.name}</Text>
@@ -461,10 +510,15 @@ export default function DrawsManagement() {
               {p.prize_type === 'item' ? p.item_name : `${currencySymbol}${p.amount?.toLocaleString()}`} • {p.winners} winner(s)
             </Text>
           </View>
-          <TouchableOpacity onPress={() => removePrize(i)}>
-            <Ionicons name="trash-outline" size={18} color="#EF4444" />
-          </TouchableOpacity>
-        </View>
+          <View style={styles.prizeActions}>
+            <TouchableOpacity style={styles.prizeEditBtn} onPress={() => openEditPrizeModal(i)}>
+              <Ionicons name="pencil" size={16} color="#2563EB" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.prizeDeleteBtn} onPress={() => confirmDeletePrize(i)}>
+              <Ionicons name="trash-outline" size={16} color="#EF4444" />
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
       ))}
 
       <TouchableOpacity style={styles.submitBtn} onPress={isEdit ? confirmUpdate : confirmCreate}>
@@ -628,6 +682,96 @@ export default function DrawsManagement() {
         </View>
       </Modal>
 
+      {/* Add/Edit Prize Modal */}
+      <Modal visible={showPrizeModal} animationType="fade" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { maxHeight: '85%' }]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>{editingPrizeIndex !== null ? 'Edit Prize' : 'Add Prize'}</Text>
+              <TouchableOpacity onPress={() => { setShowPrizeModal(false); resetPrizeForm(); }}>
+                <Ionicons name="close" size={24} color="#64748B" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.modalBody}>
+              <Text style={styles.label}>Prize Name *</Text>
+              <TextInput 
+                style={styles.input} 
+                placeholder="e.g. Grand Prize" 
+                value={prizeName} 
+                onChangeText={setPrizeName} 
+                placeholderTextColor="#9CA3AF" 
+              />
+
+              <Text style={styles.label}>Type</Text>
+              <View style={styles.typeRow}>
+                <TouchableOpacity 
+                  style={[styles.typeBtn, prizeType === 'money' && styles.typeBtnActive]} 
+                  onPress={() => setPrizeType('money')}
+                >
+                  <Ionicons name="cash" size={18} color={prizeType === 'money' ? '#fff' : '#10B981'} />
+                  <Text style={[styles.typeBtnText, prizeType === 'money' && styles.typeBtnTextActive]}>Money</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={[styles.typeBtn, prizeType === 'item' && styles.typeBtnActive]} 
+                  onPress={() => setPrizeType('item')}
+                >
+                  <Ionicons name="gift" size={18} color={prizeType === 'item' ? '#fff' : '#F59E0B'} />
+                  <Text style={[styles.typeBtnText, prizeType === 'item' && styles.typeBtnTextActive]}>Item</Text>
+                </TouchableOpacity>
+              </View>
+
+              {prizeType === 'money' ? (
+                <>
+                  <Text style={styles.label}>Amount ({currencySymbol}) *</Text>
+                  <TextInput 
+                    style={styles.input} 
+                    placeholder="10000" 
+                    keyboardType="numeric" 
+                    value={prizeAmount} 
+                    onChangeText={setPrizeAmount} 
+                    placeholderTextColor="#9CA3AF" 
+                  />
+                </>
+              ) : (
+                <>
+                  <Text style={styles.label}>Item Name *</Text>
+                  <TextInput 
+                    style={styles.input} 
+                    placeholder="e.g. Toyota Corolla" 
+                    value={prizeItem} 
+                    onChangeText={setPrizeItem} 
+                    placeholderTextColor="#9CA3AF" 
+                  />
+                  <Text style={styles.label}>Image URL (optional)</Text>
+                  <TextInput 
+                    style={styles.input} 
+                    placeholder="https://..." 
+                    value={prizeImage} 
+                    onChangeText={setPrizeImage} 
+                    placeholderTextColor="#9CA3AF" 
+                  />
+                </>
+              )}
+
+              <Text style={styles.label}>Number of Winners *</Text>
+              <TextInput 
+                style={styles.input} 
+                placeholder="1" 
+                keyboardType="numeric" 
+                value={prizeWinners} 
+                onChangeText={setPrizeWinners} 
+                placeholderTextColor="#9CA3AF" 
+              />
+
+              <TouchableOpacity style={styles.submitBtn} onPress={savePrize}>
+                <Text style={styles.submitBtnText}>{editingPrizeIndex !== null ? 'Update Prize' : 'Add Prize'}</Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
       {/* Create Confirmation Modal */}
       <ConfirmationModal
         visible={showCreateConfirm}
@@ -654,7 +798,7 @@ export default function DrawsManagement() {
         iconColor="#2563EB"
       />
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Draw Confirmation Modal */}
       <ConfirmationModal
         visible={showDeleteConfirm}
         onClose={() => { setShowDeleteConfirm(false); setSelectedDraw(null); }}
@@ -680,57 +824,18 @@ export default function DrawsManagement() {
         iconColor="#10B981"
       />
 
-      {/* Add Prize Modal */}
-      <Modal visible={showAddPrizeModal} animationType="fade" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { maxHeight: '80%' }]}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Add Prize</Text>
-              <TouchableOpacity onPress={() => setShowAddPrizeModal(false)}>
-                <Ionicons name="close" size={24} color="#64748B" />
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView style={styles.modalBody}>
-              <Text style={styles.label}>Prize Name</Text>
-              <TextInput style={styles.input} placeholder="e.g. Grand Prize" value={newPrizeName} onChangeText={setNewPrizeName} placeholderTextColor="#9CA3AF" />
-
-              <Text style={styles.label}>Type</Text>
-              <View style={styles.typeRow}>
-                <TouchableOpacity style={[styles.typeBtn, newPrizeType === 'money' && styles.typeBtnActive]} onPress={() => setNewPrizeType('money')}>
-                  <Ionicons name="cash" size={18} color={newPrizeType === 'money' ? '#fff' : '#10B981'} />
-                  <Text style={[styles.typeBtnText, newPrizeType === 'money' && styles.typeBtnTextActive]}>Money</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.typeBtn, newPrizeType === 'item' && styles.typeBtnActive]} onPress={() => setNewPrizeType('item')}>
-                  <Ionicons name="gift" size={18} color={newPrizeType === 'item' ? '#fff' : '#F59E0B'} />
-                  <Text style={[styles.typeBtnText, newPrizeType === 'item' && styles.typeBtnTextActive]}>Item</Text>
-                </TouchableOpacity>
-              </View>
-
-              {newPrizeType === 'money' ? (
-                <>
-                  <Text style={styles.label}>Amount ({currencySymbol})</Text>
-                  <TextInput style={styles.input} placeholder="10000" keyboardType="numeric" value={newPrizeAmount} onChangeText={setNewPrizeAmount} placeholderTextColor="#9CA3AF" />
-                </>
-              ) : (
-                <>
-                  <Text style={styles.label}>Item Name</Text>
-                  <TextInput style={styles.input} placeholder="e.g. Toyota Corolla" value={newPrizeItem} onChangeText={setNewPrizeItem} placeholderTextColor="#9CA3AF" />
-                  <Text style={styles.label}>Image URL (optional)</Text>
-                  <TextInput style={styles.input} placeholder="https://..." value={newPrizeImage} onChangeText={setNewPrizeImage} placeholderTextColor="#9CA3AF" />
-                </>
-              )}
-
-              <Text style={styles.label}>Number of Winners</Text>
-              <TextInput style={styles.input} placeholder="1" keyboardType="numeric" value={newPrizeWinners} onChangeText={setNewPrizeWinners} placeholderTextColor="#9CA3AF" />
-
-              <TouchableOpacity style={styles.submitBtn} onPress={addPrize}>
-                <Text style={styles.submitBtnText}>Add Prize</Text>
-              </TouchableOpacity>
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
+      {/* Delete Prize Confirmation Modal */}
+      <ConfirmationModal
+        visible={showDeletePrizeConfirm}
+        onClose={() => { setShowDeletePrizeConfirm(false); setPrizeToDeleteIndex(null); }}
+        onConfirm={executeDeletePrize}
+        title="Delete Prize?"
+        message={`Are you sure you want to remove "${prizeToDeleteIndex !== null ? prizes[prizeToDeleteIndex]?.name : ''}" from this draw?`}
+        confirmText="Delete"
+        confirmColor="#EF4444"
+        icon="trash"
+        iconColor="#EF4444"
+      />
     </AdminLayout>
   );
 }
@@ -1089,6 +1194,8 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 8,
     gap: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   prizeItemInfo: {
     flex: 1,
@@ -1102,6 +1209,20 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#64748B',
     marginTop: 2,
+  },
+  prizeActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  prizeEditBtn: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: '#EFF6FF',
+  },
+  prizeDeleteBtn: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: '#FEF2F2',
   },
   submitBtn: {
     backgroundColor: '#2563EB',
