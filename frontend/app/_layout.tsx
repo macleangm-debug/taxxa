@@ -3,6 +3,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { useAuthStore } from '../src/store/authStore';
+import { NotificationProvider } from '../src/context/NotificationContext';
 
 export default function RootLayout() {
   const { isLoading, loadStoredAuth } = useAuthStore();
@@ -20,7 +21,7 @@ export default function RootLayout() {
   }
 
   return (
-    <>
+    <NotificationProvider>
       <StatusBar style="light" />
       <Stack
         screenOptions={{
@@ -32,7 +33,7 @@ export default function RootLayout() {
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
-    </>
+    </NotificationProvider>
   );
 }
 
