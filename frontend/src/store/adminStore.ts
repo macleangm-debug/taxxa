@@ -203,6 +203,21 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     await get().fetchDraws();
   },
 
+  updateDraw: async (drawId: string, drawType?: string, drawDate?: string, prizeTiers?: any[]) => {
+    const params: any = {};
+    if (drawType) params.draw_type = drawType;
+    if (drawDate) params.draw_date = drawDate;
+    if (prizeTiers) params.prize_tiers = prizeTiers;
+    
+    await adminApi.put(`/admin/draws/${drawId}`, params);
+    await get().fetchDraws();
+  },
+
+  deleteDraw: async (drawId: string) => {
+    await adminApi.delete(`/admin/draws/${drawId}`);
+    await get().fetchDraws();
+  },
+
   completeDraw: async (drawId: string) => {
     const response = await adminApi.post(`/admin/draws/${drawId}/complete`);
     await get().fetchDraws();
