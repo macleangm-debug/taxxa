@@ -507,7 +507,7 @@ export default function DrawsManagement() {
           <View style={styles.prizeItemInfo}>
             <Text style={styles.prizeItemName}>{p.name}</Text>
             <Text style={styles.prizeItemValue}>
-              {p.prize_type === 'item' ? p.item_name : `${currencySymbol}${p.amount?.toLocaleString()}`} • {p.winners} winner(s)
+              {p.prize_type === 'item' ? p.item_name : `${currencySymbol} ${p.amount?.toLocaleString()}`} • {p.winners} winner(s)
             </Text>
           </View>
           <View style={styles.prizeActions}>
