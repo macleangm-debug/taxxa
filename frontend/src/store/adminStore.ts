@@ -330,4 +330,15 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     await adminApi.put('/admin/settings', settings);
     await get().fetchSettings();
   },
+
+  // Audit
+  fetchDrawAudit: async (drawId: string) => {
+    const response = await adminApi.get(`/admin/draws/${drawId}/audit`);
+    return response.data;
+  },
+
+  exportDrawAudit: async (drawId: string) => {
+    const response = await adminApi.get(`/admin/draws/${drawId}/audit/export`);
+    return response.data;
+  },
 }));
