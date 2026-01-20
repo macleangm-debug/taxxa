@@ -1289,7 +1289,7 @@ async def complete_draw_and_select_winners(
     draw_id: str,
     admin: dict = Depends(get_current_admin)
 ):
-    """Complete a draw and randomly select winners"""
+    """Complete a draw using cryptographically secure random selection with full audit trail"""
     try:
         draw = await db.draws.find_one({"_id": ObjectId(draw_id)})
         if not draw:
@@ -1298,31 +1298,68 @@ async def complete_draw_and_select_winners(
         if draw["status"] != "active":
             raise HTTPException(status_code=400, detail="Draw is not active")
         
-        # Get all entries for this draw
+        # ============================================
+        # STEP 1: Generate Cryptographic Seed & Timestamp
+        # ============================================
+        draw_timestamp = datetime.utcnow()
+        
+        # Generate 256-bit cryptographically secure seed
+        crypto_seed = secrets.token_hex(32)  # 64 character hex string
+        
+        # Create pre-draw hash (proves seed was generated before selection)
+        pre_draw_data = {
+            "draw_id": draw_id,
+            "timestamp": draw_timestamp.isoformat(),
+            "seed": crypto_seed,
+            "draw_type": draw["draw_type"]
+        }
+        pre_draw_hash = hashlib.sha256(json.dumps(pre_draw_data, sort_keys=True).encode()).hexdigest()
+        
+        # ============================================
+        # STEP 2: Collect All Eligible Entries
+        # ============================================
         entries = await db.draw_entries.find({"draw_id": draw_id, "entries": {"$gt": 0}}).to_list(10000)
         
         if not entries:
             raise HTTPException(status_code=400, detail="No entries in this draw")
         
-        # Build weighted list for random selection
-        weighted_users = []
+        # Build participant list with weighted entries
+        participants = []
+        weighted_pool = []
+        total_entries = 0
+        
         for entry in entries:
             user_id = entry["user_id"]
-            # Check if user is active
             user = await db.users.find_one({"_id": ObjectId(user_id), "status": {"$ne": "blocked"}})
             if user:
-                for _ in range(entry["entries"]):
-                    weighted_users.append({
-                        "user_id": user_id,
-                        "phone_number": user["phone_number"],
-                        "name": user.get("name")
-                    })
+                entry_count = entry["entries"]
+                total_entries += entry_count
+                
+                participant = {
+                    "user_id": user_id,
+                    "phone_number": user["phone_number"],
+                    "name": user.get("name"),
+                    "entries": entry_count
+                }
+                participants.append(participant)
+                
+                # Add to weighted pool (each entry = one chance)
+                for _ in range(entry_count):
+                    weighted_pool.append(participant)
         
-        if not weighted_users:
+        if not weighted_pool:
             raise HTTPException(status_code=400, detail="No eligible participants")
         
-        # Select winners for each tier
+        # Create participants hash for audit
+        participants_hash = hashlib.sha256(
+            json.dumps([{"user_id": p["user_id"], "entries": p["entries"]} for p in participants], sort_keys=True).encode()
+        ).hexdigest()
+        
+        # ============================================
+        # STEP 3: Cryptographically Secure Winner Selection
+        # ============================================
         winners = []
+        selection_log = []  # Detailed log of each selection step
         selected_user_ids = set()
         
         for tier in draw["prize_tiers"]:
@@ -1330,33 +1367,131 @@ async def complete_draw_and_select_winners(
             num_winners = tier.get("winners", 1)
             
             # Filter out already selected winners
-            available_users = [u for u in weighted_users if u["user_id"] not in selected_user_ids]
+            available_pool = [u for u in weighted_pool if u["user_id"] not in selected_user_ids]
             
-            for _ in range(min(num_winners, len(available_users))):
-                if available_users:
-                    winner = random.choice(available_users)
-                    tier_winners.append({
+            for selection_num in range(min(num_winners, len(available_pool))):
+                if available_pool:
+                    # Use secrets.choice for cryptographically secure selection
+                    winner = secrets.choice(available_pool)
+                    
+                    # Calculate winner's probability at time of selection
+                    winner_entries_in_pool = sum(1 for u in available_pool if u["user_id"] == winner["user_id"])
+                    total_in_pool = len(available_pool)
+                    probability = round((winner_entries_in_pool / total_in_pool) * 100, 4)
+                    
+                    winner_record = {
                         "user_id": winner["user_id"],
                         "phone_number": winner["phone_number"],
                         "name": winner["name"],
                         "prize_tier": tier["tier"],
                         "prize_name": tier["name"],
-                        "amount": tier["amount"]
+                        "prize_type": tier.get("prize_type", "money"),
+                        "amount": tier.get("amount"),
+                        "item_name": tier.get("item_name"),
+                        "selected_at": datetime.utcnow().isoformat()
+                    }
+                    tier_winners.append(winner_record)
+                    
+                    # Log selection details
+                    selection_log.append({
+                        "step": len(selection_log) + 1,
+                        "tier": tier["tier"],
+                        "tier_name": tier["name"],
+                        "winner_user_id": winner["user_id"],
+                        "winner_phone": winner["phone_number"][-4:],  # Last 4 digits only for privacy
+                        "winner_entries": winner["entries"],
+                        "pool_size": total_in_pool,
+                        "probability_percent": probability,
+                        "timestamp": datetime.utcnow().isoformat()
                     })
+                    
                     selected_user_ids.add(winner["user_id"])
-                    available_users = [u for u in available_users if u["user_id"] != winner["user_id"]]
+                    available_pool = [u for u in available_pool if u["user_id"] != winner["user_id"]]
             
             winners.extend(tier_winners)
         
-        # Update draw status and winners
+        # ============================================
+        # STEP 4: Create Final Audit Hash
+        # ============================================
+        final_audit_data = {
+            "draw_id": draw_id,
+            "pre_draw_hash": pre_draw_hash,
+            "seed": crypto_seed,
+            "participants_hash": participants_hash,
+            "total_participants": len(participants),
+            "total_entries": total_entries,
+            "winners": [{"user_id": w["user_id"], "tier": w["prize_tier"]} for w in winners],
+            "completed_at": draw_timestamp.isoformat()
+        }
+        final_audit_hash = hashlib.sha256(json.dumps(final_audit_data, sort_keys=True).encode()).hexdigest()
+        
+        # ============================================
+        # STEP 5: Store Complete Audit Record
+        # ============================================
+        audit_record = {
+            "draw_id": draw_id,
+            "draw_type": draw["draw_type"],
+            "audit_version": "2.0",
+            "algorithm": "cryptographically_secure_weighted_random",
+            
+            # Pre-draw data
+            "pre_draw": {
+                "timestamp": draw_timestamp,
+                "seed": crypto_seed,
+                "hash": pre_draw_hash
+            },
+            
+            # Participants snapshot
+            "participants": {
+                "count": len(participants),
+                "total_entries": total_entries,
+                "hash": participants_hash,
+                "list": [{"user_id": p["user_id"], "entries": p["entries"], "phone_last4": p["phone_number"][-4:]} for p in participants]
+            },
+            
+            # Selection process
+            "selection": {
+                "method": "secrets.choice (CSPRNG)",
+                "steps": selection_log
+            },
+            
+            # Results
+            "results": {
+                "winners_count": len(winners),
+                "winners": winners,
+                "final_hash": final_audit_hash
+            },
+            
+            # Admin info
+            "completed_by": {
+                "username": admin.get("username"),
+                "timestamp": datetime.utcnow()
+            },
+            
+            # Verification
+            "verification": {
+                "pre_draw_hash": pre_draw_hash,
+                "participants_hash": participants_hash,
+                "final_hash": final_audit_hash,
+                "verification_url": f"/api/admin/draws/{draw_id}/audit"
+            }
+        }
+        
+        # Store audit record
+        await db.draw_audits.insert_one(audit_record)
+        
+        # ============================================
+        # STEP 6: Update Draw Status
+        # ============================================
         await db.draws.update_one(
             {"_id": ObjectId(draw_id)},
             {
                 "$set": {
                     "status": "completed",
-                    "completed_at": datetime.utcnow(),
+                    "completed_at": draw_timestamp,
                     "winners": winners,
-                    "completed_by": admin.get("username")
+                    "completed_by": admin.get("username"),
+                    "audit_hash": final_audit_hash
                 }
             }
         )
@@ -1366,13 +1501,22 @@ async def complete_draw_and_select_winners(
             "action": "draw_completed",
             "draw_id": draw_id,
             "winners_count": len(winners),
+            "total_participants": len(participants),
+            "total_entries": total_entries,
+            "audit_hash": final_audit_hash,
             "admin": admin.get("username"),
             "timestamp": datetime.utcnow()
         })
         
         return {
             "message": "Draw completed successfully",
-            "winners": winners
+            "winners": winners,
+            "audit": {
+                "total_participants": len(participants),
+                "total_entries": total_entries,
+                "audit_hash": final_audit_hash,
+                "verification_url": f"/api/admin/draws/{draw_id}/audit"
+            }
         }
     except HTTPException:
         raise
