@@ -16,7 +16,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAdminStore } from '../../src/store/adminStore';
 import AdminLayout from '../../src/components/AdminLayout';
 import AdminHeader from '../../src/components/AdminHeader';
-import { format } from 'date-fns';
+import { format, addDays, addMonths } from 'date-fns';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const isWeb = Platform.OS === 'web';
 
@@ -38,8 +39,10 @@ export default function DrawsManagement() {
   const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
   
   const [drawType, setDrawType] = useState('weekly');
-  const [drawDate, setDrawDate] = useState('');
-  const [drawTime, setDrawTime] = useState('');
+  const [drawDate, setDrawDate] = useState(new Date());
+  const [drawTime, setDrawTime] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
   const [prizes, setPrizes] = useState<PrizeTier[]>([
     { tier: 1, name: 'Grand Prize', prize_type: 'money', amount: 10000, winners: 1 },
   ]);
@@ -52,6 +55,32 @@ export default function DrawsManagement() {
   const [newPrizeWinners, setNewPrizeWinners] = useState('1');
 
   const currencySymbol = activeCountry?.currency_symbol || '$';
+
+  // Calculate draw period based on type and selected date
+  const getDrawPeriod = () => {
+    const startDate = new Date();
+    let endDate: Date;
+    
+    switch (drawType) {
+      case 'weekly':
+        endDate = addDays(drawDate, 0); // End date is the draw date
+        break;
+      case 'monthly':
+        endDate = addDays(drawDate, 0);
+        break;
+      case 'quarterly':
+        endDate = addDays(drawDate, 0);
+        break;
+      default:
+        endDate = drawDate;
+    }
+    
+    return {
+      start: format(startDate, 'MMM d, yyyy'),
+      end: format(endDate, 'MMM d, yyyy'),
+      days: Math.ceil((drawDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
+    };
+  };
 
   const loadDraws = useCallback(async () => {
     setIsLoading(true);
@@ -68,17 +97,22 @@ export default function DrawsManagement() {
 
   const resetForm = () => {
     setDrawType('weekly');
-    setDrawDate('');
-    setDrawTime('');
+    setDrawDate(new Date());
+    setDrawTime(new Date());
     setPrizes([{ tier: 1, name: 'Grand Prize', prize_type: 'money', amount: 10000, winners: 1 }]);
   };
 
   const handleCreate = async () => {
-    const days = drawType === 'weekly' ? 7 : drawType === 'monthly' ? 30 : 90;
-    const fullDrawDate = drawDate && drawTime ? `${drawDate}T${drawTime}:00` : undefined;
+    const period = getDrawPeriod();
+    
+    // Combine date and time
+    const combinedDateTime = new Date(drawDate);
+    combinedDateTime.setHours(drawTime.getHours(), drawTime.getMinutes(), 0, 0);
+    
+    const fullDrawDate = combinedDateTime.toISOString();
     
     try {
-      await createDraw(drawType, days, prizes, fullDrawDate);
+      await createDraw(drawType, period.days > 0 ? period.days : 7, prizes, fullDrawDate);
       setShowCreateModal(false);
       resetForm();
       Alert.alert('Success', 'Draw created!');
@@ -138,6 +172,119 @@ export default function DrawsManagement() {
       default: return '#6B7280';
     }
   };
+
+  const onDateChange = (event: any, selectedDate?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false);
+    }
+    if (selectedDate) {
+      setDrawDate(selectedDate);
+    }
+  };
+
+  const onTimeChange = (event: any, selectedTime?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowTimePicker(false);
+    }
+    if (selectedTime) {
+      setDrawTime(selectedTime);
+    }
+  };
+
+  // Web-specific date/time inputs
+  const WebDateTimePicker = () => (
+    <View style={styles.dateTimeRow}>
+      <View style={styles.datePickerContainer}>
+        <Text style={styles.pickerLabel}>Draw Date</Text>
+        <input
+          type="date"
+          value={format(drawDate, 'yyyy-MM-dd')}
+          onChange={(e) => setDrawDate(new Date(e.target.value))}
+          min={format(new Date(), 'yyyy-MM-dd')}
+          style={{
+            width: '100%',
+            padding: '14px 16px',
+            fontSize: '14px',
+            borderRadius: '10px',
+            border: '1px solid #E2E8F0',
+            backgroundColor: '#F8FAFC',
+            color: '#1E293B',
+            outline: 'none',
+          }}
+        />
+      </View>
+      <View style={styles.timePickerContainer}>
+        <Text style={styles.pickerLabel}>Time</Text>
+        <input
+          type="time"
+          value={format(drawTime, 'HH:mm')}
+          onChange={(e) => {
+            const [hours, minutes] = e.target.value.split(':');
+            const newTime = new Date();
+            newTime.setHours(parseInt(hours), parseInt(minutes));
+            setDrawTime(newTime);
+          }}
+          style={{
+            width: '100%',
+            padding: '14px 16px',
+            fontSize: '14px',
+            borderRadius: '10px',
+            border: '1px solid #E2E8F0',
+            backgroundColor: '#F8FAFC',
+            color: '#1E293B',
+            outline: 'none',
+          }}
+        />
+      </View>
+    </View>
+  );
+
+  // Native date/time picker
+  const NativeDateTimePicker = () => (
+    <View style={styles.dateTimeRow}>
+      <View style={styles.datePickerContainer}>
+        <Text style={styles.pickerLabel}>Draw Date</Text>
+        <TouchableOpacity 
+          style={styles.pickerButton} 
+          onPress={() => setShowDatePicker(true)}
+        >
+          <Ionicons name="calendar" size={20} color="#2563EB" />
+          <Text style={styles.pickerButtonText}>
+            {format(drawDate, 'MMM d, yyyy')}
+          </Text>
+        </TouchableOpacity>
+        {showDatePicker && (
+          <DateTimePicker
+            value={drawDate}
+            mode="date"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={onDateChange}
+            minimumDate={new Date()}
+          />
+        )}
+      </View>
+      <View style={styles.timePickerContainer}>
+        <Text style={styles.pickerLabel}>Time</Text>
+        <TouchableOpacity 
+          style={styles.pickerButton} 
+          onPress={() => setShowTimePicker(true)}
+        >
+          <Ionicons name="time" size={20} color="#2563EB" />
+          <Text style={styles.pickerButtonText}>
+            {format(drawTime, 'h:mm a')}
+          </Text>
+        </TouchableOpacity>
+        {showTimePicker && (
+          <DateTimePicker
+            value={drawTime}
+            mode="time"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={onTimeChange}
+          />
+        )}
+      </View>
+    </View>
+  );
 
   const renderTableRow = ({ item, index }: { item: any; index: number }) => (
     <View style={[styles.tableRow, index % 2 === 0 && styles.tableRowAlt]}>
@@ -234,6 +381,8 @@ export default function DrawsManagement() {
     </View>
   );
 
+  const period = getDrawPeriod();
+
   return (
     <AdminLayout>
       <AdminHeader 
@@ -276,9 +425,22 @@ export default function DrawsManagement() {
               </View>
 
               <Text style={styles.label}>Draw Date & Time</Text>
-              <View style={styles.dateRow}>
-                <TextInput style={[styles.input, { flex: 1 }]} placeholder="YYYY-MM-DD" value={drawDate} onChangeText={setDrawDate} placeholderTextColor="#9CA3AF" />
-                <TextInput style={[styles.input, { width: 100 }]} placeholder="HH:MM" value={drawTime} onChangeText={setDrawTime} placeholderTextColor="#9CA3AF" />
+              {isWeb ? <WebDateTimePicker /> : <NativeDateTimePicker />}
+
+              {/* Draw Period Preview */}
+              <View style={styles.periodPreview}>
+                <View style={styles.periodIcon}>
+                  <Ionicons name="calendar-outline" size={20} color="#2563EB" />
+                </View>
+                <View style={styles.periodInfo}>
+                  <Text style={styles.periodLabel}>Draw Period</Text>
+                  <Text style={styles.periodDates}>
+                    {period.start} → {period.end}
+                  </Text>
+                  <Text style={styles.periodDays}>
+                    {period.days > 0 ? `${period.days} days from now` : 'Today'}
+                  </Text>
+                </View>
               </View>
 
               <View style={styles.prizesHeader}>
@@ -543,7 +705,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
     width: '100%',
-    maxWidth: 500,
+    maxWidth: 520,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -605,9 +767,74 @@ const styles = StyleSheet.create({
   typeBtnTextActive: {
     color: '#fff',
   },
-  dateRow: {
+  dateTimeRow: {
     flexDirection: 'row',
     gap: 12,
+  },
+  datePickerContainer: {
+    flex: 2,
+  },
+  timePickerContainer: {
+    flex: 1,
+  },
+  pickerLabel: {
+    fontSize: 12,
+    color: '#64748B',
+    marginBottom: 6,
+  },
+  pickerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    gap: 10,
+  },
+  pickerButtonText: {
+    fontSize: 14,
+    color: '#1E293B',
+    fontWeight: '500',
+  },
+  periodPreview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#EFF6FF',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 16,
+    gap: 12,
+  },
+  periodIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    backgroundColor: '#DBEAFE',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  periodInfo: {
+    flex: 1,
+  },
+  periodLabel: {
+    fontSize: 12,
+    color: '#2563EB',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  periodDates: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1E40AF',
+    marginTop: 4,
+  },
+  periodDays: {
+    fontSize: 13,
+    color: '#3B82F6',
+    marginTop: 2,
   },
   prizesHeader: {
     flexDirection: 'row',
