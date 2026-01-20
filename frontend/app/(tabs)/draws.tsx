@@ -166,7 +166,7 @@ export default function DrawsScreen() {
                   ) : (
                     <>
                       <Text style={styles.prizeLabel}>Total Prize Pool</Text>
-                      <Text style={styles.prizeAmount}>{currency.currency_symbol}{getTotalCashPrize(draw.prize_tiers).toLocaleString()}</Text>
+                      <Text style={styles.prizeAmount}>{currency.currency_symbol} {getTotalCashPrize(draw.prize_tiers).toLocaleString()}</Text>
                     </>
                   )}
                 </View>
