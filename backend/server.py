@@ -1106,12 +1106,15 @@ async def get_all_draws(
     
     return result
 
+class CreateDrawRequest(BaseModel):
+    draw_type: str = "weekly"
+    days_duration: int = 7
+    draw_date: Optional[str] = None
+    prize_tiers: Optional[List[Dict]] = None
+
 @api_router.post("/admin/draws")
 async def create_draw(
-    draw_type: str = "weekly",
-    days_duration: int = 7,
-    draw_date: Optional[str] = None,  # Specific draw date/time ISO format
-    prize_tiers: Optional[List[Dict]] = None,
+    request: CreateDrawRequest,
     admin: dict = Depends(get_current_admin)
 ):
     """Create a new draw with enhanced prize configuration"""
