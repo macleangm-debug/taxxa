@@ -86,13 +86,17 @@ export default function DrawsScreen() {
     if (tier.prize_type === 'item') {
       return tier.item_name || tier.name;
     }
-    return `$${(tier.amount || 0).toLocaleString()}`;
+    return `${currency.currency_symbol}${(tier.amount || 0).toLocaleString()}`;
   };
 
   const getTotalCashPrize = (tiers: PrizeTier[]) => {
     return tiers
       .filter(t => t.prize_type !== 'item')
       .reduce((sum, tier) => sum + (tier.amount || 0) * tier.winners, 0);
+  };
+
+  const formatPrize = (amount: number) => {
+    return `${currency.currency_symbol}${amount.toLocaleString()}`;
   };
 
   const hasItemPrizes = (tiers: PrizeTier[]) => {
