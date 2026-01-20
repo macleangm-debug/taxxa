@@ -104,6 +104,10 @@ interface AdminState {
   // Settings
   fetchSettings: () => Promise<void>;
   updateSettings: (settings: Partial<PlatformSettings>) => Promise<void>;
+  
+  // Audit
+  fetchDrawAudit: (drawId: string) => Promise<any>;
+  exportDrawAudit: (drawId: string) => Promise<any>;
 }
 
 export const useAdminStore = create<AdminState>((set, get) => ({
