@@ -477,8 +477,8 @@ const styles = StyleSheet.create({
   filterText: { color: '#6B7280', fontWeight: '500' },
   filterTextActive: { color: '#fff' },
   
-  listWrapper: { flex: 1, alignItems: isWeb ? 'center' : undefined },
-  list: { padding: 20, width: '100%', maxWidth: MAX_WIDTH },
+  listWrapper: { flex: 1 },
+  list: { padding: 20 },
   emptyText: { textAlign: 'center', color: '#6B7280', marginTop: 40 },
   
   drawCard: { backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 12 },
