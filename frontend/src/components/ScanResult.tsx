@@ -54,7 +54,7 @@ export default function ScanResult({ visible, result, onClose }: ScanResultProps
               )}
               {result.receipt_data.amount && (
                 <Text style={styles.infoText}>
-                  Amount: {currency.currency_symbol}{result.receipt_data.amount.toLocaleString()}
+                  Amount: {currency.currency_symbol} {result.receipt_data.amount.toLocaleString()}
                 </Text>
               )}
               <Text style={styles.entriesText}>
