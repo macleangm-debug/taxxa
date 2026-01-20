@@ -675,7 +675,7 @@ async def get_user_stats(user: dict = Depends(get_current_user)):
     user_id = str(user["_id"])
     
     # Get active country currency info
-    settings = await db.settings.find_one({"key": "platform_settings"})
+    settings = await db.settings.find_one({"type": "platform"})
     active_country_id = settings.get("active_country") if settings else None
     
     currency_info = {
