@@ -290,31 +290,21 @@ class TaxDrawAPITester:
         # Step 2: Get all draws
         draws = self.test_get_all_draws()
         
-        # Step 3: Find or create a completed draw
-        completed_draw_id = None
+        # Step 3: Create a fresh draw for audit testing
+        # We'll create a new draw to ensure we have proper audit records
+        print("📝 Creating new draw for audit testing...")
+        new_draw_id = self.test_create_draw()
         
-        # Check if there are any completed draws
-        for draw in draws:
-            if draw.get("status") == "completed":
-                completed_draw_id = draw.get("id")
-                print(f"📋 Found existing completed draw: {completed_draw_id}")
-                break
-        
-        # If no completed draws, create and complete one
-        if not completed_draw_id:
-            print("📝 No completed draws found. Creating new draw...")
-            new_draw_id = self.test_create_draw()
-            
-            if new_draw_id:
-                print(f"⏳ Completing draw {new_draw_id}...")
-                if self.test_complete_draw(new_draw_id):
-                    completed_draw_id = new_draw_id
-                else:
-                    print("❌ Failed to complete draw")
-                    return False
+        if new_draw_id:
+            print(f"⏳ Completing draw {new_draw_id}...")
+            if self.test_complete_draw(new_draw_id):
+                completed_draw_id = new_draw_id
             else:
-                print("❌ Failed to create draw")
+                print("❌ Failed to complete draw")
                 return False
+        else:
+            print("❌ Failed to create draw")
+            return False
         
         # Step 4: Test audit endpoints
         if completed_draw_id:
