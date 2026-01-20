@@ -211,6 +211,8 @@ class TaxDrawAPITester:
         except Exception as e:
             self.log_test("Create Test User", False, f"Request failed: {str(e)}")
             return False
+    
+    def test_complete_draw(self, draw_id):
         """Test completing a draw"""
         try:
             response = self.session.post(
