@@ -745,7 +745,7 @@ async def get_user_stats(user: dict = Depends(get_current_user)):
 @api_router.get("/app/config")
 async def get_app_config():
     """Get app configuration including active country currency (public endpoint)"""
-    settings = await db.settings.find_one({"key": "platform_settings"})
+    settings = await db.settings.find_one({"type": "platform"})
     active_country_id = settings.get("active_country") if settings else None
     
     currency_info = {
