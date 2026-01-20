@@ -1523,6 +1523,140 @@ async def complete_draw_and_select_winners(
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+@api_router.get("/admin/draws/{draw_id}/audit")
+async def get_draw_audit(draw_id: str, admin: dict = Depends(get_current_admin)):
+    """Get complete audit trail for a completed draw"""
+    try:
+        # Get draw info
+        draw = await db.draws.find_one({"_id": ObjectId(draw_id)})
+        if not draw:
+            raise HTTPException(status_code=404, detail="Draw not found")
+        
+        if draw["status"] != "completed":
+            raise HTTPException(status_code=400, detail="Draw is not completed yet")
+        
+        # Get audit record
+        audit = await db.draw_audits.find_one({"draw_id": draw_id})
+        if not audit:
+            raise HTTPException(status_code=404, detail="Audit record not found")
+        
+        # Remove MongoDB _id for JSON serialization
+        audit["_id"] = str(audit["_id"])
+        
+        # Convert datetime objects
+        if "pre_draw" in audit and "timestamp" in audit["pre_draw"]:
+            audit["pre_draw"]["timestamp"] = audit["pre_draw"]["timestamp"].isoformat()
+        if "completed_by" in audit and "timestamp" in audit["completed_by"]:
+            audit["completed_by"]["timestamp"] = audit["completed_by"]["timestamp"].isoformat()
+        
+        return {
+            "draw": {
+                "id": draw_id,
+                "type": draw["draw_type"],
+                "status": draw["status"],
+                "start_date": draw["start_date"].isoformat(),
+                "end_date": draw["end_date"].isoformat(),
+                "completed_at": draw.get("completed_at", "").isoformat() if draw.get("completed_at") else None,
+                "audit_hash": draw.get("audit_hash")
+            },
+            "audit": audit,
+            "verification": {
+                "is_valid": draw.get("audit_hash") == audit["results"]["final_hash"],
+                "message": "Audit hash matches - draw results are verified" if draw.get("audit_hash") == audit["results"]["final_hash"] else "WARNING: Hash mismatch detected"
+            }
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@api_router.get("/admin/draws/{draw_id}/audit/export")
+async def export_draw_audit(draw_id: str, admin: dict = Depends(get_current_admin)):
+    """Export audit report as downloadable JSON"""
+    try:
+        # Get draw info
+        draw = await db.draws.find_one({"_id": ObjectId(draw_id)})
+        if not draw:
+            raise HTTPException(status_code=404, detail="Draw not found")
+        
+        if draw["status"] != "completed":
+            raise HTTPException(status_code=400, detail="Draw is not completed yet")
+        
+        # Get audit record
+        audit = await db.draw_audits.find_one({"draw_id": draw_id})
+        if not audit:
+            raise HTTPException(status_code=404, detail="Audit record not found")
+        
+        # Prepare export data
+        export_data = {
+            "report_type": "TaxDraw Lottery Audit Report",
+            "report_version": "2.0",
+            "generated_at": datetime.utcnow().isoformat(),
+            "draw_info": {
+                "draw_id": draw_id,
+                "draw_type": draw["draw_type"],
+                "start_date": draw["start_date"].isoformat(),
+                "end_date": draw["end_date"].isoformat(),
+                "completed_at": draw.get("completed_at", "").isoformat() if draw.get("completed_at") else None
+            },
+            "algorithm": {
+                "name": "Cryptographically Secure Weighted Random Selection",
+                "method": "Python secrets.choice() - CSPRNG",
+                "description": "Winners selected using cryptographically secure pseudo-random number generator. Each entry gives proportional chance of winning."
+            },
+            "pre_draw_verification": {
+                "seed": audit["pre_draw"]["seed"],
+                "seed_generated_at": audit["pre_draw"]["timestamp"].isoformat() if isinstance(audit["pre_draw"]["timestamp"], datetime) else audit["pre_draw"]["timestamp"],
+                "pre_draw_hash": audit["pre_draw"]["hash"]
+            },
+            "participants": {
+                "total_participants": audit["participants"]["count"],
+                "total_entries": audit["participants"]["total_entries"],
+                "participants_hash": audit["participants"]["hash"]
+            },
+            "selection_log": audit["selection"]["steps"],
+            "results": {
+                "winners": audit["results"]["winners"],
+                "final_hash": audit["results"]["final_hash"]
+            },
+            "verification": {
+                "stored_hash": draw.get("audit_hash"),
+                "computed_hash": audit["results"]["final_hash"],
+                "match": draw.get("audit_hash") == audit["results"]["final_hash"],
+                "status": "VERIFIED" if draw.get("audit_hash") == audit["results"]["final_hash"] else "VERIFICATION FAILED"
+            },
+            "completed_by": audit["completed_by"]["username"]
+        }
+        
+        return export_data
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@api_router.get("/admin/audits")
+async def list_draw_audits(admin: dict = Depends(get_current_admin)):
+    """List all draw audits"""
+    try:
+        audits = await db.draw_audits.find().sort("completed_by.timestamp", -1).to_list(100)
+        
+        result = []
+        for audit in audits:
+            result.append({
+                "draw_id": audit["draw_id"],
+                "draw_type": audit["draw_type"],
+                "total_participants": audit["participants"]["count"],
+                "total_entries": audit["participants"]["total_entries"],
+                "winners_count": audit["results"]["winners_count"],
+                "audit_hash": audit["results"]["final_hash"],
+                "completed_by": audit["completed_by"]["username"],
+                "completed_at": audit["completed_by"]["timestamp"].isoformat() if isinstance(audit["completed_by"]["timestamp"], datetime) else audit["completed_by"]["timestamp"]
+            })
+        
+        return {"audits": result}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 @api_router.delete("/admin/draws/{draw_id}")
 async def cancel_draw(draw_id: str, admin: dict = Depends(get_current_admin)):
     """Cancel/delete a draw"""
