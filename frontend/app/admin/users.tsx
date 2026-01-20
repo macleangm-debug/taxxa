@@ -462,8 +462,8 @@ const styles = StyleSheet.create({
   filterTextActive: { color: '#fff' },
   
   loading: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  listWrapper: { flex: 1, alignItems: isWeb ? 'center' : undefined },
-  listContent: { padding: 20, width: '100%', maxWidth: MAX_WIDTH },
+  listWrapper: { flex: 1 },
+  listContent: { padding: 20 },
   
   userCard: { 
     flexDirection: 'row', 
