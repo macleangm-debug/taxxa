@@ -90,41 +90,41 @@ export default function AdminDashboard() {
   const renderTableView = () => (
     <View style={styles.tableContainer}>
       <View style={styles.tableHeader}>
-        <View style={{ flex: 3, flexDirection: 'row', alignItems: 'center' }}>
+        <View style={{ flex: 2.5, flexDirection: 'row', alignItems: 'center' }}>
           <Text style={styles.tableHeaderCell}>Metric</Text>
         </View>
-        <View style={{ flex: 2 }}>
+        <View style={{ flex: 1.5 }}>
           <Text style={[styles.tableHeaderCell, { textAlign: 'center' }]}>Total</Text>
         </View>
-        <View style={{ flex: 2 }}>
+        <View style={{ flex: 1.5 }}>
           <Text style={[styles.tableHeaderCell, { textAlign: 'center' }]}>Today</Text>
         </View>
-        <View style={{ flex: 2 }}>
+        <View style={{ flex: 1.5 }}>
           <Text style={[styles.tableHeaderCell, { textAlign: 'center' }]}>Status</Text>
         </View>
       </View>
       {[
-        { name: 'Total Users', icon: 'people', color: '#2563EB', total: dashboard?.overview?.total_users || 0, today: dashboard?.today?.new_users || 0, status: 'Active' },
+        { name: 'Users', icon: 'people', color: '#2563EB', total: dashboard?.overview?.total_users || 0, today: dashboard?.today?.new_users || 0, status: 'Active' },
         { name: 'Total Scans', icon: 'scan', color: '#10B981', total: dashboard?.overview?.total_scans || 0, today: dashboard?.today?.scans || 0, status: 'Active' },
         { name: 'Valid Scans', icon: 'checkmark-circle', color: '#10B981', total: dashboard?.overview?.valid_scans || 0, today: dashboard?.today?.valid_scans || 0, status: 'Active' },
         { name: 'Active Draws', icon: 'trophy', color: '#F59E0B', total: dashboard?.overview?.active_draws || 0, today: '-', status: 'Running' },
       ].map((item, i) => (
         <View key={i} style={[styles.tableRow, i === 3 && { borderBottomWidth: 0 }]}>
-          <View style={{ flex: 3, flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+          <View style={{ flex: 2.5, flexDirection: 'row', alignItems: 'center', gap: 16 }}>
             <View style={[styles.tableIcon, { backgroundColor: `${item.color}15` }]}>
               <Ionicons name={item.icon as any} size={20} color={item.color} />
             </View>
             <Text style={styles.tableCellText}>{item.name}</Text>
           </View>
-          <View style={{ flex: 2 }}>
+          <View style={{ flex: 1.5 }}>
             <Text style={[styles.tableCellValue, { textAlign: 'center' }]}>{item.total.toLocaleString()}</Text>
           </View>
-          <View style={{ flex: 2 }}>
+          <View style={{ flex: 1.5 }}>
             <Text style={[styles.tableCellChange, { textAlign: 'center', color: item.today === '-' ? '#6B7280' : '#10B981' }]}>
               {item.today === '-' ? '-' : `+${item.today}`}
             </Text>
           </View>
-          <View style={{ flex: 2, alignItems: 'center' }}>
+          <View style={{ flex: 1.5, alignItems: 'center' }}>
             <View style={[styles.statusBadge, item.status === 'Running' && styles.statusBadgeWarning]}>
               <Text style={[styles.statusText, item.status === 'Running' && styles.statusTextWarning]}>{item.status}</Text>
             </View>
