@@ -12,14 +12,13 @@ import {
   ScrollView,
   Platform,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import { useAdminStore } from '../../src/store/adminStore';
+import AdminLayout from '../../src/components/AdminLayout';
+import AdminHeader from '../../src/components/AdminHeader';
 import { format } from 'date-fns';
 
 const isWeb = Platform.OS === 'web';
-const MAX_WIDTH = 1200;
 
 interface PrizeTier {
   tier: number;
@@ -32,13 +31,11 @@ interface PrizeTier {
 }
 
 export default function DrawsManagement() {
-  const router = useRouter();
   const { draws, fetchDraws, createDraw, completeDraw, cancelDraw, activeCountry } = useAdminStore();
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAddPrizeModal, setShowAddPrizeModal] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
-  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   
   const [drawType, setDrawType] = useState('weekly');
   const [drawDate, setDrawDate] = useState('');
@@ -142,195 +139,123 @@ export default function DrawsManagement() {
     }
   };
 
-  const ViewToggle = () => (
-    <View style={styles.viewToggle}>
-      <TouchableOpacity
-        style={[styles.toggleBtn, viewMode === 'cards' && styles.toggleBtnActive]}
-        onPress={() => setViewMode('cards')}
-      >
-        <Ionicons name="grid" size={16} color={viewMode === 'cards' ? '#fff' : '#6B7280'} />
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[styles.toggleBtn, viewMode === 'table' && styles.toggleBtnActive]}
-        onPress={() => setViewMode('table')}
-      >
-        <Ionicons name="list" size={16} color={viewMode === 'table' ? '#fff' : '#6B7280'} />
-      </TouchableOpacity>
-    </View>
-  );
-
-  const renderDrawCard = ({ item }: any) => (
-    <View style={styles.drawCard}>
-      <View style={styles.drawHeader}>
-        <View style={styles.drawInfo}>
-          <Text style={styles.drawType}>{item.draw_type.charAt(0).toUpperCase() + item.draw_type.slice(1)} Draw</Text>
-          <Text style={styles.drawDates}>{format(new Date(item.start_date), 'MMM d')} - {format(new Date(item.end_date), 'MMM d')}</Text>
-        </View>
-        <View style={[styles.statusBadge, { backgroundColor: `${getStatusColor(item.status)}15` }]}>
-          <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>{item.status}</Text>
-        </View>
-      </View>
-
-      {item.draw_date && (
-        <View style={styles.drawDateRow}>
-          <Ionicons name="calendar" size={16} color="#F59E0B" />
-          <Text style={styles.drawDateText}>{format(new Date(item.draw_date), 'MMM d, yyyy h:mm a')}</Text>
-        </View>
-      )}
-
-      <View style={styles.statsRow}>
-        <View style={styles.stat}>
-          <Text style={styles.statValue}>{item.total_entries}</Text>
-          <Text style={styles.statLabel}>Entries</Text>
-        </View>
-        <View style={styles.stat}>
-          <Text style={styles.statValue}>{item.prize_tiers?.length || 0}</Text>
-          <Text style={styles.statLabel}>Prizes</Text>
-        </View>
-      </View>
-
-      <View style={styles.prizesList}>
-        {item.prize_tiers?.map((tier: any, i: number) => (
-          <View key={i} style={styles.prizeRow}>
-            <Ionicons name={tier.prize_type === 'item' ? 'gift' : 'cash'} size={18} color={tier.prize_type === 'item' ? '#F59E0B' : '#10B981'} />
-            <Text style={styles.prizeName}>{tier.name}</Text>
-            <Text style={styles.prizeValue}>
-              {tier.prize_type === 'item' ? tier.item_name : `${currencySymbol}${tier.amount?.toLocaleString()}`}
-            </Text>
-            <Text style={styles.prizeWinners}>x{tier.winners}</Text>
-          </View>
-        ))}
-      </View>
-
-      {item.status === 'active' && (
-        <View style={styles.actions}>
-          <TouchableOpacity style={[styles.actionBtn, styles.completeBtn]} onPress={() => handleComplete(item.id)}>
-            <Text style={styles.actionBtnText}>Complete</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.actionBtn, styles.cancelBtn]} onPress={() => handleCancel(item.id)}>
-            <Text style={[styles.actionBtnText, { color: '#EF4444' }]}>Cancel</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-    </View>
-  );
-
-  const renderTableRow = ({ item }: any) => (
-    <View style={styles.tableRow}>
-      <View style={{ flex: 3, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+  const renderTableRow = ({ item, index }: { item: any; index: number }) => (
+    <View style={[styles.tableRow, index % 2 === 0 && styles.tableRowAlt]}>
+      <View style={styles.drawCell}>
         <View style={[styles.drawIcon, { backgroundColor: `${getStatusColor(item.status)}15` }]}>
           <Ionicons name="trophy" size={18} color={getStatusColor(item.status)} />
         </View>
         <View>
-          <Text style={styles.tableCellTitle}>{item.draw_type.charAt(0).toUpperCase() + item.draw_type.slice(1)} Draw</Text>
-          <Text style={styles.tableCellSubtitle}>{format(new Date(item.start_date), 'MMM d')} - {format(new Date(item.end_date), 'MMM d')}</Text>
+          <Text style={styles.drawType}>{item.draw_type?.charAt(0).toUpperCase() + item.draw_type?.slice(1)} Draw</Text>
+          <Text style={styles.drawDates}>
+            {format(new Date(item.start_date), 'MMM d')} - {format(new Date(item.end_date), 'MMM d, yyyy')}
+          </Text>
         </View>
       </View>
-      <View style={{ flex: 1.5 }}>
-        <Text style={styles.tableCellValue}>{item.total_entries}</Text>
-      </View>
-      <View style={{ flex: 1.5 }}>
-        <Text style={styles.tableCellValue}>{item.prize_tiers?.length || 0}</Text>
-      </View>
-      <View style={{ flex: 1.5, alignItems: 'center' }}>
-        <View style={[styles.statusBadgeSmall, { backgroundColor: `${getStatusColor(item.status)}15` }]}>
-          <Text style={[styles.statusTextSmall, { color: getStatusColor(item.status) }]}>{item.status}</Text>
+      <Text style={styles.tableCell}>{item.total_entries}</Text>
+      <Text style={styles.tableCell}>{item.prize_tiers?.length || 0}</Text>
+      <View style={styles.tableCell}>
+        <View style={[styles.statusBadge, { backgroundColor: `${getStatusColor(item.status)}15` }]}>
+          <View style={[styles.statusDot, { backgroundColor: getStatusColor(item.status) }]} />
+          <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>{item.status}</Text>
         </View>
       </View>
-      <View style={{ flex: 1.5, flexDirection: 'row', gap: 12, justifyContent: 'flex-end' }}>
+      <View style={styles.actionCell}>
         {item.status === 'active' ? (
-          <>
-            <TouchableOpacity onPress={() => handleComplete(item.id)}>
-              <Ionicons name="checkmark-circle" size={24} color="#10B981" />
+          <View style={styles.actionButtons}>
+            <TouchableOpacity style={styles.actionIconBtn} onPress={() => handleComplete(item.id)}>
+              <Ionicons name="checkmark-circle" size={20} color="#10B981" />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => handleCancel(item.id)}>
-              <Ionicons name="close-circle" size={24} color="#EF4444" />
+            <TouchableOpacity style={styles.actionIconBtn} onPress={() => handleCancel(item.id)}>
+              <Ionicons name="close-circle" size={20} color="#EF4444" />
             </TouchableOpacity>
-          </>
+          </View>
         ) : (
-          <Text style={{ color: '#9CA3AF' }}>-</Text>
+          <Text style={styles.completedText}>-</Text>
         )}
       </View>
     </View>
   );
 
-  const TableHeader = () => (
-    <View style={styles.tableHeader}>
-      <View style={{ flex: 3 }}>
-        <Text style={styles.tableHeaderCell}>Draw</Text>
-      </View>
-      <View style={{ flex: 1.5 }}>
-        <Text style={styles.tableHeaderCell}>Entries</Text>
-      </View>
-      <View style={{ flex: 1.5 }}>
-        <Text style={styles.tableHeaderCell}>Prizes</Text>
-      </View>
-      <View style={{ flex: 1.5 }}>
-        <Text style={[styles.tableHeaderCell, { textAlign: 'center' }]}>Status</Text>
-      </View>
-      <View style={{ flex: 1.5 }}>
-        <Text style={[styles.tableHeaderCell, { textAlign: 'right' }]}>Actions</Text>
-      </View>
-    </View>
-  );
-
-  return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerInner}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={24} color="#111827" />
-          </TouchableOpacity>
-          <Text style={styles.title}>Draws</Text>
-          <View style={{ flex: 1 }} />
-          <ViewToggle />
-          <TouchableOpacity style={styles.addBtn} onPress={() => setShowCreateModal(true)}>
-            <Ionicons name="add" size={20} color="#fff" />
-            <Text style={styles.addBtnText}>New</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Filters */}
-      <View style={styles.filterWrapper}>
-        <View style={styles.filters}>
-          {['all', 'active', 'completed'].map((s) => (
+  const content = (
+    <View style={styles.content}>
+      {/* Toolbar */}
+      <View style={styles.toolbar}>
+        <View style={styles.filterTabs}>
+          {['all', 'active', 'completed', 'cancelled'].map((status) => (
             <TouchableOpacity
-              key={s}
-              style={[styles.filterBtn, (statusFilter === s || (s === 'all' && !statusFilter)) && styles.filterActive]}
-              onPress={() => setStatusFilter(s === 'all' ? undefined : s)}
+              key={status}
+              style={[
+                styles.filterTab,
+                (statusFilter === status || (status === 'all' && !statusFilter)) && styles.filterTabActive
+              ]}
+              onPress={() => setStatusFilter(status === 'all' ? undefined : status)}
             >
-              <Text style={[styles.filterText, (statusFilter === s || (s === 'all' && !statusFilter)) && styles.filterTextActive]}>
-                {s.charAt(0).toUpperCase() + s.slice(1)}
+              <Text style={[
+                styles.filterTabText,
+                (statusFilter === status || (status === 'all' && !statusFilter)) && styles.filterTabTextActive
+              ]}>
+                {status.charAt(0).toUpperCase() + status.slice(1)}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
       </View>
 
-      {isLoading ? (
-        <ActivityIndicator size="large" color="#2563EB" style={{ marginTop: 40 }} />
-      ) : (
-        <View style={styles.listWrapper}>
-          {viewMode === 'table' && <TableHeader />}
+      {/* Table */}
+      <View style={styles.tableContainer}>
+        <View style={styles.tableHeader}>
+          <Text style={[styles.tableHeaderCell, { flex: 2.5 }]}>Draw</Text>
+          <Text style={styles.tableHeaderCell}>Entries</Text>
+          <Text style={styles.tableHeaderCell}>Prizes</Text>
+          <Text style={styles.tableHeaderCell}>Status</Text>
+          <Text style={[styles.tableHeaderCell, { flex: 0.8 }]}>Actions</Text>
+        </View>
+        
+        {isLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#2563EB" />
+          </View>
+        ) : (
           <FlatList
             data={draws}
-            renderItem={viewMode === 'cards' ? renderDrawCard : renderTableRow}
+            renderItem={renderTableRow}
             keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.list}
-            ListEmptyComponent={<Text style={styles.emptyText}>No draws found</Text>}
+            ListEmptyComponent={
+              <View style={styles.emptyState}>
+                <Ionicons name="trophy-outline" size={48} color="#CBD5E1" />
+                <Text style={styles.emptyTitle}>No draws found</Text>
+                <Text style={styles.emptyText}>Create a new draw to get started</Text>
+              </View>
+            }
           />
-        </View>
-      )}
+        )}
+      </View>
+    </View>
+  );
+
+  return (
+    <AdminLayout>
+      <AdminHeader 
+        title="Draws" 
+        subtitle={`${draws.length} total draws`}
+        rightContent={
+          <TouchableOpacity style={styles.createBtn} onPress={() => setShowCreateModal(true)}>
+            <Ionicons name="add" size={18} color="#fff" />
+            <Text style={styles.createBtnText}>New Draw</Text>
+          </TouchableOpacity>
+        }
+      />
+      {content}
 
       {/* Create Modal */}
-      <Modal visible={showCreateModal} animationType="slide" transparent>
+      <Modal visible={showCreateModal} animationType="fade" transparent>
         <View style={styles.modalOverlay}>
-          <View style={styles.modal}>
+          <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Create Draw</Text>
               <TouchableOpacity onPress={() => setShowCreateModal(false)}>
-                <Ionicons name="close" size={24} color="#6B7280" />
+                <Ionicons name="close" size={24} color="#64748B" />
               </TouchableOpacity>
             </View>
 
@@ -352,8 +277,8 @@ export default function DrawsManagement() {
 
               <Text style={styles.label}>Draw Date & Time</Text>
               <View style={styles.dateRow}>
-                <TextInput style={[styles.input, { flex: 1 }]} placeholder="YYYY-MM-DD" value={drawDate} onChangeText={setDrawDate} />
-                <TextInput style={[styles.input, { width: 80 }]} placeholder="HH:MM" value={drawTime} onChangeText={setDrawTime} />
+                <TextInput style={[styles.input, { flex: 1 }]} placeholder="YYYY-MM-DD" value={drawDate} onChangeText={setDrawDate} placeholderTextColor="#9CA3AF" />
+                <TextInput style={[styles.input, { width: 100 }]} placeholder="HH:MM" value={drawTime} onChangeText={setDrawTime} placeholderTextColor="#9CA3AF" />
               </View>
 
               <View style={styles.prizesHeader}>
@@ -378,8 +303,8 @@ export default function DrawsManagement() {
                 </View>
               ))}
 
-              <TouchableOpacity style={styles.createBtn} onPress={handleCreate}>
-                <Text style={styles.createBtnText}>Create Draw</Text>
+              <TouchableOpacity style={styles.submitBtn} onPress={handleCreate}>
+                <Text style={styles.submitBtnText}>Create Draw</Text>
               </TouchableOpacity>
             </ScrollView>
           </View>
@@ -389,17 +314,17 @@ export default function DrawsManagement() {
       {/* Add Prize Modal */}
       <Modal visible={showAddPrizeModal} animationType="fade" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modal, { maxHeight: '80%' }]}>
+          <View style={[styles.modalContent, { maxHeight: '80%' }]}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Add Prize</Text>
               <TouchableOpacity onPress={() => setShowAddPrizeModal(false)}>
-                <Ionicons name="close" size={24} color="#6B7280" />
+                <Ionicons name="close" size={24} color="#64748B" />
               </TouchableOpacity>
             </View>
 
             <ScrollView style={styles.modalBody}>
               <Text style={styles.label}>Prize Name</Text>
-              <TextInput style={styles.input} placeholder="e.g. Grand Prize" value={newPrizeName} onChangeText={setNewPrizeName} />
+              <TextInput style={styles.input} placeholder="e.g. Grand Prize" value={newPrizeName} onChangeText={setNewPrizeName} placeholderTextColor="#9CA3AF" />
 
               <Text style={styles.label}>Type</Text>
               <View style={styles.typeRow}>
@@ -416,152 +341,318 @@ export default function DrawsManagement() {
               {newPrizeType === 'money' ? (
                 <>
                   <Text style={styles.label}>Amount ({currencySymbol})</Text>
-                  <TextInput style={styles.input} placeholder="10000" keyboardType="numeric" value={newPrizeAmount} onChangeText={setNewPrizeAmount} />
+                  <TextInput style={styles.input} placeholder="10000" keyboardType="numeric" value={newPrizeAmount} onChangeText={setNewPrizeAmount} placeholderTextColor="#9CA3AF" />
                 </>
               ) : (
                 <>
                   <Text style={styles.label}>Item Name</Text>
-                  <TextInput style={styles.input} placeholder="e.g. Toyota Corolla" value={newPrizeItem} onChangeText={setNewPrizeItem} />
+                  <TextInput style={styles.input} placeholder="e.g. Toyota Corolla" value={newPrizeItem} onChangeText={setNewPrizeItem} placeholderTextColor="#9CA3AF" />
                   <Text style={styles.label}>Image URL (optional)</Text>
-                  <TextInput style={styles.input} placeholder="https://..." value={newPrizeImage} onChangeText={setNewPrizeImage} />
+                  <TextInput style={styles.input} placeholder="https://..." value={newPrizeImage} onChangeText={setNewPrizeImage} placeholderTextColor="#9CA3AF" />
                 </>
               )}
 
               <Text style={styles.label}>Number of Winners</Text>
-              <TextInput style={styles.input} placeholder="1" keyboardType="numeric" value={newPrizeWinners} onChangeText={setNewPrizeWinners} />
+              <TextInput style={styles.input} placeholder="1" keyboardType="numeric" value={newPrizeWinners} onChangeText={setNewPrizeWinners} placeholderTextColor="#9CA3AF" />
 
-              <TouchableOpacity style={styles.createBtn} onPress={addPrize}>
-                <Text style={styles.createBtnText}>Add Prize</Text>
+              <TouchableOpacity style={styles.submitBtn} onPress={addPrize}>
+                <Text style={styles.submitBtnText}>Add Prize</Text>
               </TouchableOpacity>
             </ScrollView>
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </AdminLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F3F4F6' },
-  header: { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
-  headerInner: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    paddingHorizontal: 20, 
+  content: {
+    flex: 1,
+    padding: 32,
+  },
+  toolbar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  filterTabs: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    padding: 4,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  filterTab: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+  },
+  filterTabActive: {
+    backgroundColor: '#2563EB',
+  },
+  filterTabText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#64748B',
+  },
+  filterTabTextActive: {
+    color: '#FFFFFF',
+  },
+  createBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: '#2563EB',
+    borderRadius: 10,
+  },
+  createBtnText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  tableContainer: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    overflow: 'hidden',
+  },
+  tableHeader: {
+    flexDirection: 'row',
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    backgroundColor: '#F8FAFC',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+  },
+  tableHeaderCell: {
+    flex: 1,
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#64748B',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  tableRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 24,
     paddingVertical: 16,
-    maxWidth: MAX_WIDTH,
-    alignSelf: 'center',
-    width: '100%',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  tableRowAlt: {
+    backgroundColor: '#FAFAFA',
+  },
+  drawCell: {
+    flex: 2.5,
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 12,
   },
-  backBtn: { marginRight: 8 },
-  title: { fontSize: 20, fontWeight: '700', color: '#111827' },
-  viewToggle: { flexDirection: 'row', backgroundColor: '#E5E7EB', borderRadius: 8, padding: 2 },
-  toggleBtn: { padding: 8, borderRadius: 6 },
-  toggleBtnActive: { backgroundColor: '#2563EB' },
-  addBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#2563EB', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8, gap: 4 },
-  addBtnText: { color: '#fff', fontWeight: '600' },
-  
-  filterWrapper: { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
-  filters: { 
-    flexDirection: 'row', 
-    paddingHorizontal: 20, 
-    paddingVertical: 12, 
-    gap: 8,
-    maxWidth: MAX_WIDTH,
-    alignSelf: 'center',
-    width: '100%',
-  },
-  filterBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8, backgroundColor: '#F3F4F6' },
-  filterActive: { backgroundColor: '#2563EB' },
-  filterText: { color: '#6B7280', fontWeight: '500' },
-  filterTextActive: { color: '#fff' },
-  
-  listWrapper: { flex: 1 },
-  list: { padding: 20 },
-  emptyText: { textAlign: 'center', color: '#6B7280', marginTop: 40 },
-  
-  drawCard: { backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 12 },
-  drawHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 },
-  drawInfo: {},
-  drawType: { fontSize: 16, fontWeight: '600', color: '#111827' },
-  drawDates: { fontSize: 13, color: '#6B7280', marginTop: 2 },
-  statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 },
-  statusText: { fontSize: 12, fontWeight: '600', textTransform: 'capitalize' },
-  
-  drawDateRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FEF3C7', padding: 10, borderRadius: 8, marginBottom: 12, gap: 8 },
-  drawDateText: { color: '#92400E', fontSize: 13, fontWeight: '500' },
-  
-  statsRow: { flexDirection: 'row', marginBottom: 12 },
-  stat: { flex: 1, alignItems: 'center', paddingVertical: 8, backgroundColor: '#F9FAFB', borderRadius: 8, marginRight: 8 },
-  statValue: { fontSize: 20, fontWeight: '700', color: '#111827' },
-  statLabel: { fontSize: 12, color: '#6B7280' },
-  
-  prizesList: { borderTopWidth: 1, borderTopColor: '#E5E7EB', paddingTop: 12 },
-  prizeRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, gap: 10 },
-  prizeName: { flex: 1, fontSize: 14, color: '#111827' },
-  prizeValue: { fontSize: 14, fontWeight: '600', color: '#10B981' },
-  prizeWinners: { fontSize: 12, color: '#6B7280', width: 30 },
-  
-  actions: { flexDirection: 'row', gap: 10, marginTop: 12 },
-  actionBtn: { flex: 1, paddingVertical: 10, borderRadius: 8, alignItems: 'center' },
-  completeBtn: { backgroundColor: '#10B981' },
-  cancelBtn: { backgroundColor: '#FEE2E2' },
-  actionBtnText: { color: '#fff', fontWeight: '600' },
-  
-  tableHeader: { 
-    flexDirection: 'row', 
-    backgroundColor: '#fff', 
-    paddingHorizontal: 24, 
-    paddingVertical: 14, 
-    borderBottomWidth: 1, 
-    borderBottomColor: '#E5E7EB',
-    width: '100%',
-  },
-  tableHeaderCell: { fontSize: 12, fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' },
-  tableRow: { 
-    flexDirection: 'row', 
-    backgroundColor: '#fff', 
-    paddingHorizontal: 24, 
-    paddingVertical: 16, 
-    borderBottomWidth: 1, 
-    borderBottomColor: '#F3F4F6',
+  drawIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    justifyContent: 'center',
     alignItems: 'center',
-    width: '100%',
   },
-  tableCell: { fontSize: 14, color: '#111827' },
-  tableCellTitle: { fontSize: 14, fontWeight: '500', color: '#111827' },
-  tableCellSubtitle: { fontSize: 12, color: '#6B7280', marginTop: 2 },
-  tableCellValue: { fontSize: 15, fontWeight: '600', color: '#111827' },
-  drawIcon: { width: 36, height: 36, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
-  statusBadgeSmall: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 6 },
-  statusTextSmall: { fontSize: 12, fontWeight: '600', textTransform: 'capitalize' },
-  
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
-  modal: { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '90%' },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
-  modalTitle: { fontSize: 18, fontWeight: '600', color: '#111827' },
-  modalBody: { padding: 20 },
-  
-  label: { fontSize: 13, fontWeight: '500', color: '#374151', marginBottom: 8, marginTop: 16 },
-  input: { backgroundColor: '#F9FAFB', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: '#111827' },
-  
-  typeRow: { flexDirection: 'row', gap: 10 },
-  typeBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 12, borderRadius: 8, backgroundColor: '#F3F4F6', gap: 6 },
-  typeBtnActive: { backgroundColor: '#2563EB' },
-  typeBtnText: { color: '#6B7280', fontWeight: '500' },
-  typeBtnTextActive: { color: '#fff' },
-  
-  dateRow: { flexDirection: 'row', gap: 10 },
-  
-  prizesHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 16, marginBottom: 8 },
-  addPrizeLink: { color: '#2563EB', fontWeight: '600' },
-  
-  prizeItem: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F9FAFB', borderRadius: 8, padding: 12, marginBottom: 8, gap: 10 },
-  prizeItemInfo: { flex: 1 },
-  prizeItemName: { fontSize: 14, fontWeight: '600', color: '#111827' },
-  prizeItemValue: { fontSize: 12, color: '#6B7280', marginTop: 2 },
-  
-  createBtn: { backgroundColor: '#2563EB', paddingVertical: 14, borderRadius: 10, alignItems: 'center', marginTop: 24, marginBottom: 20 },
-  createBtnText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  drawType: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1E293B',
+  },
+  drawDates: {
+    fontSize: 13,
+    color: '#64748B',
+    marginTop: 2,
+  },
+  tableCell: {
+    flex: 1,
+    fontSize: 14,
+    color: '#475569',
+    fontWeight: '500',
+  },
+  actionCell: {
+    flex: 0.8,
+    alignItems: 'flex-end',
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  actionIconBtn: {
+    padding: 4,
+  },
+  completedText: {
+    color: '#94A3B8',
+    fontSize: 14,
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    gap: 6,
+    alignSelf: 'flex-start',
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'capitalize',
+  },
+  loadingContainer: {
+    padding: 60,
+    alignItems: 'center',
+  },
+  emptyState: {
+    padding: 60,
+    alignItems: 'center',
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#475569',
+    marginTop: 16,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#94A3B8',
+    marginTop: 4,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    width: '100%',
+    maxWidth: 500,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1E293B',
+  },
+  modalBody: {
+    padding: 24,
+  },
+  label: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#374151',
+    marginBottom: 8,
+    marginTop: 16,
+  },
+  input: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 14,
+    color: '#1E293B',
+  },
+  typeRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  typeBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 10,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    gap: 8,
+  },
+  typeBtnActive: {
+    backgroundColor: '#2563EB',
+    borderColor: '#2563EB',
+  },
+  typeBtnText: {
+    color: '#64748B',
+    fontWeight: '500',
+  },
+  typeBtnTextActive: {
+    color: '#fff',
+  },
+  dateRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  prizesHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  addPrizeLink: {
+    color: '#2563EB',
+    fontWeight: '600',
+  },
+  prizeItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 10,
+    padding: 14,
+    marginBottom: 8,
+    gap: 12,
+  },
+  prizeItemInfo: {
+    flex: 1,
+  },
+  prizeItemName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1E293B',
+  },
+  prizeItemValue: {
+    fontSize: 12,
+    color: '#64748B',
+    marginTop: 2,
+  },
+  submitBtn: {
+    backgroundColor: '#2563EB',
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 24,
+    marginBottom: 20,
+  },
+  submitBtnText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
 });
