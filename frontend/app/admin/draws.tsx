@@ -507,7 +507,9 @@ export default function DrawsManagement() {
             </>
           )}
           {item.status === 'completed' && (
-            <Text style={styles.completedText}>Completed</Text>
+            <TouchableOpacity style={[styles.actionIconBtn, styles.auditBtn]} onPress={() => openAuditModal(item)}>
+              <Ionicons name="shield-checkmark" size={16} color="#2563EB" />
+            </TouchableOpacity>
           )}
           {item.status === 'cancelled' && (
             <Text style={styles.cancelledText}>Cancelled</Text>
