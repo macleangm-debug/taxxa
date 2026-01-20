@@ -17,7 +17,7 @@ import { useAdminStore } from '../../src/store/adminStore';
 
 const { width } = Dimensions.get('window');
 const isWeb = Platform.OS === 'web';
-const MAX_WIDTH = 1200;
+const MAX_WIDTH = 1400;
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -85,13 +85,10 @@ export default function AdminDashboard() {
   const MenuCard = ({ title, icon, color, route, description }: any) => (
     <TouchableOpacity style={styles.menuCard} onPress={() => router.push(route)}>
       <View style={[styles.menuIcon, { backgroundColor: `${color}15` }]}>
-        <Ionicons name={icon} size={24} color={color} />
+        <Ionicons name={icon} size={28} color={color} />
       </View>
-      <View style={styles.menuContent}>
-        <Text style={styles.menuTitle}>{title}</Text>
-        <Text style={styles.menuDescription}>{description}</Text>
-      </View>
-      <Ionicons name="chevron-forward" size={20} color="#D1D5DB" />
+      <Text style={styles.menuTitle}>{title}</Text>
+      <Text style={styles.menuDescription}>{description}</Text>
     </TouchableOpacity>
   );
 
@@ -118,40 +115,61 @@ export default function AdminDashboard() {
     <View style={styles.tableContainer}>
       <View style={styles.tableHeader}>
         <Text style={[styles.tableHeaderCell, { flex: 2 }]}>Metric</Text>
-        <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Value</Text>
-        <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Today</Text>
+        <Text style={[styles.tableHeaderCell, { flex: 1.5 }]}>Total Value</Text>
+        <Text style={[styles.tableHeaderCell, { flex: 1.5 }]}>Today's Change</Text>
+        <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Status</Text>
       </View>
       <View style={styles.tableRow}>
-        <View style={[styles.tableCell, { flex: 2, flexDirection: 'row', alignItems: 'center', gap: 8 }]}>
-          <Ionicons name="people" size={16} color="#2563EB" />
-          <Text style={styles.tableCellText}>Users</Text>
+        <View style={[styles.tableCell, { flex: 2, flexDirection: 'row', alignItems: 'center', gap: 12 }]}>
+          <View style={[styles.tableIcon, { backgroundColor: '#2563EB15' }]}>
+            <Ionicons name="people" size={18} color="#2563EB" />
+          </View>
+          <Text style={styles.tableCellText}>Total Users</Text>
         </View>
-        <Text style={[styles.tableCell, { flex: 1 }]}>{dashboard?.overview?.total_users || 0}</Text>
-        <Text style={[styles.tableCell, { flex: 1, color: '#10B981' }]}>+{dashboard?.today?.new_users || 0}</Text>
+        <Text style={[styles.tableCellValue, { flex: 1.5 }]}>{dashboard?.overview?.total_users || 0}</Text>
+        <Text style={[styles.tableCellChange, { flex: 1.5 }]}>+{dashboard?.today?.new_users || 0}</Text>
+        <View style={[styles.tableCell, { flex: 1 }]}>
+          <View style={styles.statusGood}><Text style={styles.statusText}>Active</Text></View>
+        </View>
       </View>
       <View style={styles.tableRow}>
-        <View style={[styles.tableCell, { flex: 2, flexDirection: 'row', alignItems: 'center', gap: 8 }]}>
-          <Ionicons name="scan" size={16} color="#10B981" />
+        <View style={[styles.tableCell, { flex: 2, flexDirection: 'row', alignItems: 'center', gap: 12 }]}>
+          <View style={[styles.tableIcon, { backgroundColor: '#10B98115' }]}>
+            <Ionicons name="scan" size={18} color="#10B981" />
+          </View>
           <Text style={styles.tableCellText}>Total Scans</Text>
         </View>
-        <Text style={[styles.tableCell, { flex: 1 }]}>{dashboard?.overview?.total_scans || 0}</Text>
-        <Text style={[styles.tableCell, { flex: 1, color: '#10B981' }]}>+{dashboard?.today?.scans || 0}</Text>
+        <Text style={[styles.tableCellValue, { flex: 1.5 }]}>{dashboard?.overview?.total_scans || 0}</Text>
+        <Text style={[styles.tableCellChange, { flex: 1.5 }]}>+{dashboard?.today?.scans || 0}</Text>
+        <View style={[styles.tableCell, { flex: 1 }]}>
+          <View style={styles.statusGood}><Text style={styles.statusText}>Active</Text></View>
+        </View>
       </View>
       <View style={styles.tableRow}>
-        <View style={[styles.tableCell, { flex: 2, flexDirection: 'row', alignItems: 'center', gap: 8 }]}>
-          <Ionicons name="checkmark-circle" size={16} color="#10B981" />
+        <View style={[styles.tableCell, { flex: 2, flexDirection: 'row', alignItems: 'center', gap: 12 }]}>
+          <View style={[styles.tableIcon, { backgroundColor: '#10B98115' }]}>
+            <Ionicons name="checkmark-circle" size={18} color="#10B981" />
+          </View>
           <Text style={styles.tableCellText}>Valid Scans</Text>
         </View>
-        <Text style={[styles.tableCell, { flex: 1 }]}>{dashboard?.overview?.valid_scans || 0}</Text>
-        <Text style={[styles.tableCell, { flex: 1, color: '#10B981' }]}>+{dashboard?.today?.valid_scans || 0}</Text>
+        <Text style={[styles.tableCellValue, { flex: 1.5 }]}>{dashboard?.overview?.valid_scans || 0}</Text>
+        <Text style={[styles.tableCellChange, { flex: 1.5 }]}>+{dashboard?.today?.valid_scans || 0}</Text>
+        <View style={[styles.tableCell, { flex: 1 }]}>
+          <View style={styles.statusGood}><Text style={styles.statusText}>Active</Text></View>
+        </View>
       </View>
       <View style={[styles.tableRow, { borderBottomWidth: 0 }]}>
-        <View style={[styles.tableCell, { flex: 2, flexDirection: 'row', alignItems: 'center', gap: 8 }]}>
-          <Ionicons name="trophy" size={16} color="#F59E0B" />
+        <View style={[styles.tableCell, { flex: 2, flexDirection: 'row', alignItems: 'center', gap: 12 }]}>
+          <View style={[styles.tableIcon, { backgroundColor: '#F59E0B15' }]}>
+            <Ionicons name="trophy" size={18} color="#F59E0B" />
+          </View>
           <Text style={styles.tableCellText}>Active Draws</Text>
         </View>
-        <Text style={[styles.tableCell, { flex: 1 }]}>{dashboard?.overview?.active_draws || 0}</Text>
-        <Text style={[styles.tableCell, { flex: 1 }]}>-</Text>
+        <Text style={[styles.tableCellValue, { flex: 1.5 }]}>{dashboard?.overview?.active_draws || 0}</Text>
+        <Text style={[styles.tableCellChange, { flex: 1.5, color: '#6B7280' }]}>-</Text>
+        <View style={[styles.tableCell, { flex: 1 }]}>
+          <View style={styles.statusActive}><Text style={styles.statusTextActive}>Running</Text></View>
+        </View>
       </View>
     </View>
   );
@@ -204,19 +222,15 @@ export default function AdminDashboard() {
 
           {/* Stats - Cards or Table */}
           {viewMode === 'cards' ? (
-            <View style={styles.statsGrid}>
-              <StatCard title="Users" value={dashboard?.overview?.total_users || 0} icon="people" color="#2563EB" />
-              <StatCard title="Scans" value={dashboard?.overview?.total_scans || 0} icon="scan" color="#10B981" />
-              <StatCard title="Valid" value={dashboard?.overview?.valid_scans || 0} icon="checkmark-circle" color="#10B981" />
-              <StatCard title="Draws" value={dashboard?.overview?.active_draws || 0} icon="trophy" color="#F59E0B" />
-            </View>
-          ) : (
-            renderTableView()
-          )}
-
-          {/* Today's Activity */}
-          {viewMode === 'cards' && (
             <>
+              <View style={styles.statsGrid}>
+                <StatCard title="Users" value={dashboard?.overview?.total_users || 0} icon="people" color="#2563EB" />
+                <StatCard title="Scans" value={dashboard?.overview?.total_scans || 0} icon="scan" color="#10B981" />
+                <StatCard title="Valid" value={dashboard?.overview?.valid_scans || 0} icon="checkmark-circle" color="#10B981" />
+                <StatCard title="Draws" value={dashboard?.overview?.active_draws || 0} icon="trophy" color="#F59E0B" />
+              </View>
+
+              {/* Today's Activity */}
               <Text style={styles.sectionTitleSmall}>Today</Text>
               <View style={styles.todayCard}>
                 <View style={styles.todayItem}>
@@ -235,9 +249,11 @@ export default function AdminDashboard() {
                 </View>
               </View>
             </>
+          ) : (
+            renderTableView()
           )}
 
-          {/* Quick Actions */}
+          {/* Quick Actions - Grid of Cards */}
           <Text style={styles.sectionTitleSmall}>Manage</Text>
           <View style={styles.menuGrid}>
             <MenuCard title="Users" icon="people" color="#2563EB" route="/admin/users" description="View and manage users" />
@@ -282,7 +298,7 @@ export default function AdminDashboard() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F3F4F6' },
   header: { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
-  headerInner: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 16, maxWidth: MAX_WIDTH, alignSelf: 'center', width: '100%' },
+  headerInner: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingVertical: 16, maxWidth: MAX_WIDTH, alignSelf: 'center', width: '100%' },
   greeting: { fontSize: 13, color: '#6B7280' },
   headerTitle: { fontSize: 20, fontWeight: '700', color: '#111827' },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 12 },
@@ -290,19 +306,19 @@ const styles = StyleSheet.create({
   countryBtnText: { color: '#2563EB', fontWeight: '600', fontSize: 13 },
   logoutBtn: { padding: 8 },
   
-  scrollContent: { paddingVertical: 20, alignItems: isWeb ? 'center' : undefined },
-  contentContainer: { width: '100%', maxWidth: MAX_WIDTH, paddingHorizontal: 20 },
+  scrollContent: { paddingVertical: 24, alignItems: isWeb ? 'center' : undefined },
+  contentContainer: { width: '100%', maxWidth: MAX_WIDTH, paddingHorizontal: 24 },
   
-  countryBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 12, padding: 14, marginBottom: 20, gap: 12 },
+  countryBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 12, padding: 14, marginBottom: 24, gap: 12 },
   countryFlag: { width: 44, height: 44, borderRadius: 8, backgroundColor: '#EFF6FF', justifyContent: 'center', alignItems: 'center' },
   countryFlagText: { color: '#2563EB', fontWeight: '700', fontSize: 14 },
   countryInfo: { flex: 1 },
   countryName: { color: '#111827', fontWeight: '600', fontSize: 15 },
   countryCurrency: { color: '#6B7280', fontSize: 13, marginTop: 2 },
   
-  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, marginTop: 8 },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
   sectionTitle: { fontSize: 14, fontWeight: '600', color: '#374151', textTransform: 'uppercase', letterSpacing: 0.5 },
-  sectionTitleSmall: { fontSize: 14, fontWeight: '600', color: '#374151', marginBottom: 12, marginTop: 16, textTransform: 'uppercase', letterSpacing: 0.5 },
+  sectionTitleSmall: { fontSize: 14, fontWeight: '600', color: '#374151', marginBottom: 16, marginTop: 24, textTransform: 'uppercase', letterSpacing: 0.5 },
   
   viewToggle: { flexDirection: 'row', backgroundColor: '#E5E7EB', borderRadius: 8, padding: 2 },
   toggleBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6, gap: 4 },
@@ -310,32 +326,51 @@ const styles = StyleSheet.create({
   toggleText: { fontSize: 12, fontWeight: '500', color: '#6B7280' },
   toggleTextActive: { color: '#fff' },
   
-  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 4 },
-  statCard: { backgroundColor: '#fff', borderRadius: 12, padding: 16, minWidth: 140, flex: 1, flexBasis: isWeb ? 'calc(25% - 12px)' : '45%', maxWidth: isWeb ? 'calc(25% - 9px)' : '48%' },
-  statIcon: { width: 40, height: 40, borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
-  statValue: { fontSize: 28, fontWeight: '700', color: '#111827' },
-  statTitle: { fontSize: 13, color: '#6B7280', marginTop: 2 },
+  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
+  statCard: { backgroundColor: '#fff', borderRadius: 12, padding: 20, minWidth: 160, flex: 1, flexBasis: isWeb ? 'calc(25% - 12px)' : '45%', maxWidth: isWeb ? 'calc(25% - 12px)' : '48%' },
+  statIcon: { width: 44, height: 44, borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
+  statValue: { fontSize: 32, fontWeight: '700', color: '#111827' },
+  statTitle: { fontSize: 14, color: '#6B7280', marginTop: 4 },
   statSubtitle: { fontSize: 11, color: '#9CA3AF', marginTop: 2 },
   
-  tableContainer: { backgroundColor: '#fff', borderRadius: 12, overflow: 'hidden', marginBottom: 4 },
-  tableHeader: { flexDirection: 'row', backgroundColor: '#F9FAFB', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
-  tableHeaderCell: { fontSize: 12, fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' },
-  tableRow: { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#F3F4F6', alignItems: 'center' },
+  tableContainer: { backgroundColor: '#fff', borderRadius: 12, overflow: 'hidden' },
+  tableHeader: { flexDirection: 'row', backgroundColor: '#F9FAFB', paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
+  tableHeaderCell: { fontSize: 12, fontWeight: '600', color: '#6B7280', textTransform: 'uppercase', letterSpacing: 0.5 },
+  tableRow: { flexDirection: 'row', paddingHorizontal: 20, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#F3F4F6', alignItems: 'center' },
   tableCell: { fontSize: 14, color: '#111827' },
-  tableCellText: { fontSize: 14, color: '#111827', fontWeight: '500' },
+  tableIcon: { width: 36, height: 36, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
+  tableCellText: { fontSize: 15, color: '#111827', fontWeight: '500' },
+  tableCellValue: { fontSize: 18, fontWeight: '700', color: '#111827' },
+  tableCellChange: { fontSize: 15, fontWeight: '600', color: '#10B981' },
+  statusGood: { backgroundColor: '#ECFDF5', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 },
+  statusActive: { backgroundColor: '#FEF3C7', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 },
+  statusText: { fontSize: 12, fontWeight: '600', color: '#10B981' },
+  statusTextActive: { fontSize: 12, fontWeight: '600', color: '#F59E0B' },
   
-  todayCard: { backgroundColor: '#fff', borderRadius: 12, padding: 20, flexDirection: 'row' },
+  todayCard: { backgroundColor: '#fff', borderRadius: 12, padding: 24, flexDirection: 'row' },
   todayItem: { flex: 1, alignItems: 'center' },
-  todayValue: { fontSize: 24, fontWeight: '700', color: '#2563EB' },
-  todayLabel: { fontSize: 12, color: '#6B7280', marginTop: 4 },
+  todayValue: { fontSize: 28, fontWeight: '700', color: '#2563EB' },
+  todayLabel: { fontSize: 13, color: '#6B7280', marginTop: 4 },
   todayDivider: { width: 1, backgroundColor: '#E5E7EB' },
   
-  menuGrid: { gap: 8 },
-  menuCard: { backgroundColor: '#fff', borderRadius: 12, padding: 16, flexDirection: 'row', alignItems: 'center' },
-  menuIcon: { width: 44, height: 44, borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginRight: 14 },
-  menuContent: { flex: 1 },
-  menuTitle: { fontSize: 15, fontWeight: '600', color: '#111827' },
-  menuDescription: { fontSize: 13, color: '#6B7280', marginTop: 2 },
+  menuGrid: { 
+    flexDirection: 'row', 
+    flexWrap: 'wrap', 
+    gap: 16,
+  },
+  menuCard: { 
+    backgroundColor: '#fff', 
+    borderRadius: 12, 
+    padding: 20, 
+    alignItems: 'center',
+    minWidth: 150,
+    flex: 1,
+    flexBasis: isWeb ? 'calc(16.666% - 14px)' : '30%',
+    maxWidth: isWeb ? 'calc(16.666% - 14px)' : '31%',
+  },
+  menuIcon: { width: 56, height: 56, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
+  menuTitle: { fontSize: 15, fontWeight: '600', color: '#111827', textAlign: 'center' },
+  menuDescription: { fontSize: 12, color: '#6B7280', marginTop: 4, textAlign: 'center' },
   
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center', padding: 24 },
   modalContent: { backgroundColor: '#fff', borderRadius: 16, padding: 20, width: '100%', maxWidth: 320 },
