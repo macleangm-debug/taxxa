@@ -191,25 +191,25 @@ export const useAdminStore = create<AdminState>((set, get) => ({
   },
 
   createDraw: async (drawType: string, days: number, prizeTiers?: any[], drawDate?: string) => {
-    let url = `/admin/draws?draw_type=${drawType}&days_duration=${days}`;
-    if (drawDate) url += `&draw_date=${encodeURIComponent(drawDate)}`;
+    // Send all data in request body as JSON
+    const payload = {
+      draw_type: drawType,
+      days_duration: days,
+      draw_date: drawDate,
+      prize_tiers: prizeTiers
+    };
     
-    // Send prize tiers in request body
-    if (prizeTiers) {
-      await adminApi.post(url, { prize_tiers: prizeTiers });
-    } else {
-      await adminApi.post(url);
-    }
+    await adminApi.post('/admin/draws', payload);
     await get().fetchDraws();
   },
 
   updateDraw: async (drawId: string, drawType?: string, drawDate?: string, prizeTiers?: any[]) => {
-    const params: any = {};
-    if (drawType) params.draw_type = drawType;
-    if (drawDate) params.draw_date = drawDate;
-    if (prizeTiers) params.prize_tiers = prizeTiers;
+    const payload: any = {};
+    if (drawType) payload.draw_type = drawType;
+    if (drawDate) payload.draw_date = drawDate;
+    if (prizeTiers) payload.prize_tiers = prizeTiers;
     
-    await adminApi.put(`/admin/draws/${drawId}`, params);
+    await adminApi.put(`/admin/draws/${drawId}`, payload);
     await get().fetchDraws();
   },
 
