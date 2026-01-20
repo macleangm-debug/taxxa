@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useAppConfigStore } from '../store/appConfigStore';
 
 interface ScanResultProps {
   visible: boolean;
@@ -18,6 +19,8 @@ interface ScanResultProps {
 }
 
 export default function ScanResult({ visible, result, onClose }: ScanResultProps) {
+  const { currency } = useAppConfigStore();
+  
   if (!result) return null;
 
   const isSuccess = result.status === 'valid';
@@ -51,7 +54,7 @@ export default function ScanResult({ visible, result, onClose }: ScanResultProps
               )}
               {result.receipt_data.amount && (
                 <Text style={styles.infoText}>
-                  Amount: ${result.receipt_data.amount.toFixed(2)}
+                  Amount: {currency.currency_symbol}{result.receipt_data.amount.toLocaleString()}
                 </Text>
               )}
               <Text style={styles.entriesText}>
