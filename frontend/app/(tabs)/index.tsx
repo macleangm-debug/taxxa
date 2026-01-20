@@ -202,7 +202,7 @@ export default function HomeScreen() {
                     {format(new Date(win.date), 'MMM d, yyyy')}
                   </Text>
                 </View>
-                <Text style={styles.winAmount}>${win.amount}</Text>
+                <Text style={styles.winAmount}>{currency.currency_symbol}{win.amount?.toLocaleString()}</Text>
               </View>
             ))}
           </>
