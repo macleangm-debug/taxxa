@@ -46,7 +46,7 @@ interface Draw {
 }
 
 export default function DrawsManagement() {
-  const { draws, fetchDraws, createDraw, updateDraw, deleteDraw, completeDraw, activeCountry } = useAdminStore();
+  const { draws, fetchDraws, createDraw, updateDraw, deleteDraw, completeDraw, activeCountry, fetchDrawAudit, exportDrawAudit } = useAdminStore();
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -59,6 +59,11 @@ export default function DrawsManagement() {
   const [showCreateConfirm, setShowCreateConfirm] = useState(false);
   const [showUpdateConfirm, setShowUpdateConfirm] = useState(false);
   const [showDeletePrizeConfirm, setShowDeletePrizeConfirm] = useState(false);
+  const [showAuditModal, setShowAuditModal] = useState(false);
+  
+  // Audit data
+  const [auditData, setAuditData] = useState<any>(null);
+  const [isLoadingAudit, setIsLoadingAudit] = useState(false);
   
   const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
   
