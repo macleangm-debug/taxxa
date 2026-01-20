@@ -217,37 +217,60 @@ export default function DrawsManagement() {
 
   const renderTableRow = ({ item }: any) => (
     <View style={styles.tableRow}>
-      <View style={[styles.tableCell, { flex: 2 }]}>
-        <Text style={styles.tableCellTitle}>{item.draw_type.charAt(0).toUpperCase() + item.draw_type.slice(1)} Draw</Text>
-        <Text style={styles.tableCellSubtitle}>{format(new Date(item.start_date), 'MMM d')} - {format(new Date(item.end_date), 'MMM d')}</Text>
+      <View style={{ flex: 3, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <View style={[styles.drawIcon, { backgroundColor: `${getStatusColor(item.status)}15` }]}>
+          <Ionicons name="trophy" size={18} color={getStatusColor(item.status)} />
+        </View>
+        <View>
+          <Text style={styles.tableCellTitle}>{item.draw_type.charAt(0).toUpperCase() + item.draw_type.slice(1)} Draw</Text>
+          <Text style={styles.tableCellSubtitle}>{format(new Date(item.start_date), 'MMM d')} - {format(new Date(item.end_date), 'MMM d')}</Text>
+        </View>
       </View>
-      <Text style={[styles.tableCell, { flex: 1, textAlign: 'center' }]}>{item.total_entries}</Text>
-      <Text style={[styles.tableCell, { flex: 1, textAlign: 'center' }]}>{item.prize_tiers?.length || 0}</Text>
-      <View style={[styles.tableCell, { flex: 1, alignItems: 'center' }]}>
+      <View style={{ flex: 1.5 }}>
+        <Text style={styles.tableCellValue}>{item.total_entries}</Text>
+      </View>
+      <View style={{ flex: 1.5 }}>
+        <Text style={styles.tableCellValue}>{item.prize_tiers?.length || 0}</Text>
+      </View>
+      <View style={{ flex: 1.5, alignItems: 'center' }}>
         <View style={[styles.statusBadgeSmall, { backgroundColor: `${getStatusColor(item.status)}15` }]}>
           <Text style={[styles.statusTextSmall, { color: getStatusColor(item.status) }]}>{item.status}</Text>
         </View>
       </View>
-      {item.status === 'active' && (
-        <View style={[styles.tableCell, { flex: 1, flexDirection: 'row', gap: 8, justifyContent: 'flex-end' }]}>
-          <TouchableOpacity onPress={() => handleComplete(item.id)}>
-            <Ionicons name="checkmark-circle" size={22} color="#10B981" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => handleCancel(item.id)}>
-            <Ionicons name="close-circle" size={22} color="#EF4444" />
-          </TouchableOpacity>
-        </View>
-      )}
+      <View style={{ flex: 1.5, flexDirection: 'row', gap: 12, justifyContent: 'flex-end' }}>
+        {item.status === 'active' ? (
+          <>
+            <TouchableOpacity onPress={() => handleComplete(item.id)}>
+              <Ionicons name="checkmark-circle" size={24} color="#10B981" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleCancel(item.id)}>
+              <Ionicons name="close-circle" size={24} color="#EF4444" />
+            </TouchableOpacity>
+          </>
+        ) : (
+          <Text style={{ color: '#9CA3AF' }}>-</Text>
+        )}
+      </View>
     </View>
   );
 
   const TableHeader = () => (
     <View style={styles.tableHeader}>
-      <Text style={[styles.tableHeaderCell, { flex: 2 }]}>Draw</Text>
-      <Text style={[styles.tableHeaderCell, { flex: 1, textAlign: 'center' }]}>Entries</Text>
-      <Text style={[styles.tableHeaderCell, { flex: 1, textAlign: 'center' }]}>Prizes</Text>
-      <Text style={[styles.tableHeaderCell, { flex: 1, textAlign: 'center' }]}>Status</Text>
-      <Text style={[styles.tableHeaderCell, { flex: 1, textAlign: 'right' }]}>Actions</Text>
+      <View style={{ flex: 3 }}>
+        <Text style={styles.tableHeaderCell}>Draw</Text>
+      </View>
+      <View style={{ flex: 1.5 }}>
+        <Text style={styles.tableHeaderCell}>Entries</Text>
+      </View>
+      <View style={{ flex: 1.5 }}>
+        <Text style={styles.tableHeaderCell}>Prizes</Text>
+      </View>
+      <View style={{ flex: 1.5 }}>
+        <Text style={[styles.tableHeaderCell, { textAlign: 'center' }]}>Status</Text>
+      </View>
+      <View style={{ flex: 1.5 }}>
+        <Text style={[styles.tableHeaderCell, { textAlign: 'right' }]}>Actions</Text>
+      </View>
     </View>
   );
 
