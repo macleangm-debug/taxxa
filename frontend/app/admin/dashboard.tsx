@@ -90,9 +90,9 @@ export default function AdminDashboard() {
   const renderTableView = () => (
     <View style={styles.tableContainer}>
       <View style={styles.tableHeader}>
-        <Text style={[styles.tableHeaderCell, { flex: 3 }]}>Metric</Text>
-        <Text style={[styles.tableHeaderCell, { flex: 2, textAlign: 'center' }]}>Total Value</Text>
-        <Text style={[styles.tableHeaderCell, { flex: 2, textAlign: 'center' }]}>Today's Change</Text>
+        <Text style={[styles.tableHeaderCell, { flex: 2.5 }]}>Metric</Text>
+        <Text style={[styles.tableHeaderCell, { flex: 1.5, textAlign: 'center' }]}>Total</Text>
+        <Text style={[styles.tableHeaderCell, { flex: 1.5, textAlign: 'center' }]}>Today</Text>
         <Text style={[styles.tableHeaderCell, { flex: 1.5, textAlign: 'center' }]}>Status</Text>
       </View>
       {[
@@ -102,14 +102,14 @@ export default function AdminDashboard() {
         { name: 'Active Draws', icon: 'trophy', color: '#F59E0B', total: dashboard?.overview?.active_draws || 0, today: '-', status: 'Running' },
       ].map((item, i) => (
         <View key={i} style={[styles.tableRow, i === 3 && { borderBottomWidth: 0 }]}>
-          <View style={[styles.tableCell, { flex: 3, flexDirection: 'row', alignItems: 'center', gap: 16 }]}>
+          <View style={[styles.tableCell, { flex: 2.5, flexDirection: 'row', alignItems: 'center', gap: 16 }]}>
             <View style={[styles.tableIcon, { backgroundColor: `${item.color}15` }]}>
               <Ionicons name={item.icon as any} size={20} color={item.color} />
             </View>
             <Text style={styles.tableCellText}>{item.name}</Text>
           </View>
-          <Text style={[styles.tableCellValue, { flex: 2, textAlign: 'center' }]}>{item.total.toLocaleString()}</Text>
-          <Text style={[styles.tableCellChange, { flex: 2, textAlign: 'center', color: item.today === '-' ? '#6B7280' : '#10B981' }]}>
+          <Text style={[styles.tableCellValue, { flex: 1.5, textAlign: 'center' }]}>{item.total.toLocaleString()}</Text>
+          <Text style={[styles.tableCellChange, { flex: 1.5, textAlign: 'center', color: item.today === '-' ? '#6B7280' : '#10B981' }]}>
             {item.today === '-' ? '-' : `+${item.today}`}
           </Text>
           <View style={[styles.tableCell, { flex: 1.5, alignItems: 'center' }]}>
