@@ -637,6 +637,19 @@ async def scan_receipt(data: ScanRequest, user: dict = Depends(get_current_user)
                 upsert=True
             )
         
+        # Check for referral milestones
+        updated_user = await db.users.find_one({"_id": user["_id"]})
+        new_valid_scans = updated_user.get("valid_scans", 0)
+        
+        # Update referral scans count and check milestones
+        referral = await db.referrals.find_one({"referred_user_id": user_id})
+        if referral:
+            await db.referrals.update_one(
+                {"_id": referral["_id"]},
+                {"$set": {"scans_completed": new_valid_scans}}
+            )
+            await check_and_reward_referral(user_id, new_valid_scans)
+        
         return ScanResponse(
             id=str(result.inserted_id),
             status="valid",
