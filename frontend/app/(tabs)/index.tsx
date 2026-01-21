@@ -417,4 +417,41 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#10B981',
   },
+  // Referral Banner Styles
+  referralBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#7C3AED',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 24,
+  },
+  referralContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  referralIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  referralTextContainer: {
+    flex: 1,
+  },
+  referralTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  referralSubtitle: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.8)',
+    marginTop: 2,
+  },
 });
