@@ -133,6 +133,25 @@ class UserStats(BaseModel):
     upcoming_draws: List[Dict[str, Any]]
     past_winnings: List[Dict[str, Any]]
 
+# Referral Models
+class ReferralStats(BaseModel):
+    referral_code: str
+    referral_link: str
+    total_referrals: int
+    pending_referrals: int  # Registered but not active
+    active_referrals: int   # Scanned at least 1 receipt
+    bonus_entries_earned: int
+    max_referrals: int = 20
+    referrals_remaining: int
+
+class ReferralItem(BaseModel):
+    id: str
+    referred_phone: str  # Masked phone number
+    status: str  # pending, active_1, active_5, maxed
+    scans_completed: int
+    entries_earned: int
+    joined_at: datetime
+
 
 # ============== HELPER FUNCTIONS ==============
 
