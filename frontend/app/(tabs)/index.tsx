@@ -158,6 +158,23 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Referral Banner */}
+        <TouchableOpacity 
+          style={styles.referralBanner}
+          onPress={() => router.push('/(tabs)/referral')}
+        >
+          <View style={styles.referralContent}>
+            <View style={styles.referralIconContainer}>
+              <Ionicons name="gift" size={24} color="#fff" />
+            </View>
+            <View style={styles.referralTextContainer}>
+              <Text style={styles.referralTitle}>Refer Friends & Earn!</Text>
+              <Text style={styles.referralSubtitle}>Get up to 4 entries per friend</Text>
+            </View>
+          </View>
+          <Ionicons name="chevron-forward" size={24} color="#fff" />
+        </TouchableOpacity>
+
         {/* Upcoming Draws */}
         <Text style={styles.sectionTitle}>Upcoming Draws</Text>
         {stats?.upcoming_draws && stats.upcoming_draws.length > 0 ? (
