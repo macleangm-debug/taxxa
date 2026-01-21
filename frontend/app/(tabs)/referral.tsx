@@ -82,14 +82,14 @@ export default function ReferralScreen() {
   const copyLink = async () => {
     if (!stats?.referral_link) return;
     
-    if (Platform.OS === 'web') {
-      await navigator.clipboard.writeText(stats.referral_link);
-    } else {
-      Clipboard.setString(stats.referral_link);
+    try {
+      await Clipboard.setStringAsync(stats.referral_link);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy:', error);
+      Alert.alert('Error', 'Failed to copy link');
     }
-    
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2000);
   };
 
   const shareVia = async (platform: 'whatsapp' | 'sms' | 'facebook' | 'general') => {
