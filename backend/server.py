@@ -883,6 +883,163 @@ async def get_profile(user: dict = Depends(get_current_user)):
     }
 
 
+# ============== REFERRAL SYSTEM ==============
+
+@api_router.get("/referral/stats")
+async def get_referral_stats(user: dict = Depends(get_current_user)):
+    """Get user's referral statistics"""
+    user_id = str(user["_id"])
+    
+    # Get or create referral code
+    referral_code = user.get("referral_code")
+    if not referral_code:
+        referral_code = generate_referral_code(user_id)
+        await db.users.update_one(
+            {"_id": user["_id"]},
+            {"$set": {"referral_code": referral_code}}
+        )
+    
+    referral_link = get_referral_link(referral_code)
+    
+    # Count referrals
+    total_referrals = await db.referrals.count_documents({"referrer_id": user_id})
+    pending_referrals = await db.referrals.count_documents({"referrer_id": user_id, "status": "pending"})
+    active_referrals = await db.referrals.count_documents({
+        "referrer_id": user_id, 
+        "status": {"$in": ["active_1", "active_5"]}
+    })
+    
+    # Calculate bonus entries earned from referrals
+    referral_entries = user.get("referral_entries", 0)
+    rewarded_count = user.get("referrals_rewarded", 0)
+    
+    return {
+        "referral_code": referral_code,
+        "referral_link": referral_link,
+        "total_referrals": total_referrals,
+        "pending_referrals": pending_referrals,
+        "active_referrals": active_referrals,
+        "bonus_entries_earned": referral_entries,
+        "max_referrals": 20,
+        "referrals_remaining": max(0, 20 - rewarded_count)
+    }
+
+@api_router.get("/referral/list")
+async def get_referral_list(user: dict = Depends(get_current_user)):
+    """Get list of user's referrals"""
+    user_id = str(user["_id"])
+    
+    referrals = await db.referrals.find({"referrer_id": user_id}).sort("created_at", -1).to_list(50)
+    
+    result = []
+    for ref in referrals:
+        # Get referred user info (masked phone)
+        referred_user = await db.users.find_one({"_id": ObjectId(ref["referred_user_id"])})
+        if referred_user:
+            phone = referred_user.get("phone_number", "")
+            masked_phone = phone[:3] + "***" + phone[-3:] if len(phone) >= 6 else "***"
+            
+            result.append({
+                "id": str(ref["_id"]),
+                "referred_phone": masked_phone,
+                "status": ref.get("status", "pending"),
+                "scans_completed": ref.get("scans_completed", 0),
+                "entries_earned": ref.get("entries_earned", 0),
+                "joined_at": ref.get("created_at", datetime.utcnow()).isoformat()
+            })
+    
+    return {"referrals": result}
+
+@api_router.get("/referral/rewards")
+async def get_referral_rewards():
+    """Get referral reward structure"""
+    return {
+        "rewards": [
+            {
+                "milestone": "registration",
+                "description": "Friend registers",
+                "entries": 0,
+                "status": "pending"
+            },
+            {
+                "milestone": "first_scan",
+                "description": "Friend scans first valid receipt",
+                "entries": 1,
+                "status": "active_1"
+            },
+            {
+                "milestone": "five_scans",
+                "description": "Friend scans 5 valid receipts",
+                "entries": 3,
+                "status": "active_5"
+            }
+        ],
+        "max_referrals": 20,
+        "total_possible_entries": 80  # 20 referrals × 4 entries each (1+3)
+    }
+
+@api_router.get("/ref/{referral_code}")
+async def handle_referral_link(referral_code: str):
+    """Handle referral link - redirect to app store or open app"""
+    # Find referrer by code
+    referrer = await db.users.find_one({"referral_code": referral_code})
+    
+    if not referrer:
+        raise HTTPException(status_code=404, detail="Invalid referral code")
+    
+    # Return redirect info (frontend will handle actual redirect)
+    return {
+        "valid": True,
+        "referral_code": referral_code,
+        "referrer_id": str(referrer["_id"]),
+        "app_store_url": "https://apps.apple.com/app/taxdraw",  # Placeholder
+        "play_store_url": "https://play.google.com/store/apps/details?id=com.taxdraw",  # Placeholder
+        "web_url": f"/register?ref={referral_code}"
+    }
+
+@api_router.post("/referral/apply")
+async def apply_referral_code(referral_code: str, user: dict = Depends(get_current_user)):
+    """Apply a referral code to current user (only works if user hasn't been referred yet)"""
+    user_id = str(user["_id"])
+    
+    # Check if user already has a referrer
+    existing_referral = await db.referrals.find_one({"referred_user_id": user_id})
+    if existing_referral:
+        raise HTTPException(status_code=400, detail="You have already been referred")
+    
+    # Find referrer
+    referrer = await db.users.find_one({"referral_code": referral_code})
+    if not referrer:
+        raise HTTPException(status_code=404, detail="Invalid referral code")
+    
+    referrer_id = str(referrer["_id"])
+    
+    # Can't refer yourself
+    if referrer_id == user_id:
+        raise HTTPException(status_code=400, detail="You cannot use your own referral code")
+    
+    # Create referral relationship
+    await db.referrals.insert_one({
+        "referrer_id": referrer_id,
+        "referred_user_id": user_id,
+        "referral_code": referral_code,
+        "status": "pending",
+        "scans_completed": 0,
+        "entries_earned": 0,
+        "created_at": datetime.utcnow()
+    })
+    
+    # Update referrer's total referrals count
+    await db.users.update_one(
+        {"_id": referrer["_id"]},
+        {"$inc": {"total_referrals": 1}}
+    )
+    
+    logger.info(f"Referral applied: {referrer_id} referred {user_id}")
+    
+    return {"message": "Referral code applied successfully"}
+
+
 # ============== PUSH NOTIFICATIONS ==============
 
 class PushTokenRegister(BaseModel):
