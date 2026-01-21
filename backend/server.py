@@ -199,6 +199,83 @@ def generate_receipt_signature(receipt_data: dict) -> str:
     data_str = json.dumps(receipt_data, sort_keys=True)
     return hashlib.sha256(data_str.encode()).hexdigest()[:32]
 
+def generate_referral_code(user_id: str) -> str:
+    """Generate a unique referral code for a user"""
+    # Create a short, memorable code based on user_id
+    hash_input = f"{user_id}-taxdraw-referral"
+    hash_output = hashlib.sha256(hash_input.encode()).hexdigest()[:8].upper()
+    return f"TD{hash_output}"
+
+def get_referral_link(referral_code: str) -> str:
+    """Get the full referral link"""
+    base_url = os.environ.get('APP_URL', 'https://prizescan-2.preview.emergentagent.com')
+    return f"{base_url}/ref/{referral_code}"
+
+async def check_and_reward_referral(referred_user_id: str, scans_count: int):
+    """Check if referral rewards should be given based on scan milestones"""
+    # Find if this user was referred
+    referral = await db.referrals.find_one({"referred_user_id": referred_user_id})
+    if not referral:
+        return None
+    
+    referrer_id = referral["referrer_id"]
+    
+    # Check referrer's total rewarded referrals
+    referrer_stats = await db.users.find_one({"_id": ObjectId(referrer_id)})
+    rewarded_count = referrer_stats.get("referrals_rewarded", 0) if referrer_stats else 0
+    
+    if rewarded_count >= 20:
+        return None  # Max referrals reached
+    
+    entries_to_add = 0
+    new_status = referral.get("status", "pending")
+    
+    # First scan milestone: +1 entry
+    if scans_count >= 1 and referral.get("status") == "pending":
+        entries_to_add = 1
+        new_status = "active_1"
+    
+    # 5 scans milestone: +3 entries (additional)
+    elif scans_count >= 5 and referral.get("status") == "active_1":
+        entries_to_add = 3
+        new_status = "active_5"
+    
+    if entries_to_add > 0:
+        # Update referral status
+        await db.referrals.update_one(
+            {"_id": referral["_id"]},
+            {
+                "$set": {"status": new_status},
+                "$inc": {"entries_earned": entries_to_add}
+            }
+        )
+        
+        # Add entries to referrer
+        await db.users.update_one(
+            {"_id": ObjectId(referrer_id)},
+            {
+                "$inc": {
+                    "total_entries": entries_to_add,
+                    "referral_entries": entries_to_add,
+                    "referrals_rewarded": 1 if new_status == "active_1" else 0
+                }
+            }
+        )
+        
+        # Add entries to active draw
+        active_draw = await db.draws.find_one({"status": "active"})
+        if active_draw:
+            await db.draw_entries.update_one(
+                {"user_id": referrer_id, "draw_id": str(active_draw["_id"])},
+                {"$inc": {"entries": entries_to_add}},
+                upsert=True
+            )
+        
+        logger.info(f"Referral reward: {entries_to_add} entries to user {referrer_id} for referral {referred_user_id}")
+        return {"entries_added": entries_to_add, "milestone": new_status}
+    
+    return None
+
 
 # ============== MOCK REVENUE AUTHORITY API ==============
 
