@@ -10,13 +10,13 @@ import {
   Alert,
   ActivityIndicator,
   Linking,
-  Clipboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../src/store/authStore';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Clipboard from 'expo-clipboard';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://prizescan-2.preview.emergentagent.com';
 
