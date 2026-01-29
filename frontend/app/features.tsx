@@ -236,15 +236,15 @@ export default function FeaturesPage() {
         },
         {
           name: 'Tax Authority APIs',
-          description: 'Framework for integrating with any Tax Authority\'s verification system.',
+          description: '8 African jurisdictions supported with extensible framework.',
           icon: 'business',
-          status: 'ready'
+          status: 'live'
         },
         {
           name: 'Webhook Support',
-          description: 'Configurable webhooks for real-time event notifications.',
+          description: '16 event types with retry logic and signature verification.',
           icon: 'git-network',
-          status: 'planned'
+          status: 'live'
         },
         {
           name: 'Analytics Export',
