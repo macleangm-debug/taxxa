@@ -9,12 +9,13 @@ import {
   Dimensions,
   TextInput,
   Modal,
+  useWindowDimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
-const { width } = Dimensions.get('window');
+const { width: screenWidth } = Dimensions.get('window');
 const isWeb = Platform.OS === 'web';
 
 export default function LandingPage() {
