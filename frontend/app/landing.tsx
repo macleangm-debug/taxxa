@@ -1334,26 +1334,42 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E2E8F0',
   },
-  caseStudyIcon: {
-    fontSize: 40,
+  caseStudyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 16,
   },
+  countryBadge: {
+    width: 48,
+    height: 48,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14,
+  },
+  countryBadgeText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  caseStudyInfo: {
+    flex: 1,
+  },
   caseStudyCountry: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '700',
     color: '#1E293B',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   caseStudyProgram: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '500',
     color: '#3B82F6',
-    marginBottom: 12,
   },
   caseStudyResult: {
-    fontSize: 15,
+    fontSize: 14,
     color: '#64748B',
-    lineHeight: 24,
+    lineHeight: 22,
   },
   // Features
   featuresGrid: {
