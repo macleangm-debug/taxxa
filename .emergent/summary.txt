@@ -3,201 +3,197 @@
 **original_problem_statement**:
 The user wants to build a mobile application with a backend system to increase tax compliance. Consumers scan QR codes on tax receipts to earn entries into prize draws.
 
-**PRODUCT REQUIREMENTS:**
-
-**1. Mobile & User Web Application:**
-*   **User Auth:** Phone number & OTP verification.
-*   **UI/UX:**
-    *   All user-facing web pages must be mobile-friendly.
-    *   Display currency dynamically based on the user's country.
-*   **Draws & Rewards:**
-    *   Display draw periods with specific dates and times.
-    *   Display prizes, including images for item-based prizes.
-    *   The draw selection mechanism must be secure, auditable, and provably fair.
-
-**2. Admin Portal (Web):**
-*   **UI/UX:**
-    *   A professional, enterprise-grade layout with a permanent sidebar navigation.
-    *   The dashboard should be data-visualization heavy, focusing on charts and graphs.
-    *   Content on pages should utilize the full page width effectively.
-*   **Dashboard:**
-    *   Admins must be able to switch between countries using a dropdown.
-    *   All dashboard data must update to reflect the selected country.
-*   **Draw Management:**
-    *   Admins must be able to create, edit, and delete draws.
-    *   Draw creation should use intuitive date and time pickers.
-    *   All destructive actions (delete, complete) and creation actions must have confirmation modals.
-    *   Admins must be able to configure prizes (money or items) and edit/delete prizes within a draw.
-    *   Admins must be able to view a verifiable audit report for each completed draw.
-*   **Settings:**
-    *   Admins should be able to add/manage countries and their local currencies.
+**PRODUCT REQUIREMENTS (extended during session):**
+- **Core App**: Mobile-first application for users to scan receipts and participate in draws.
+- **Admin Portal**: A professional, enterprise-grade web portal for managing draws, users, and settings.
+- **Secure Draws**: The draw mechanism must be cryptographically secure and auditable. An admin-facing UI is required to view the audit trail.
+- **Push Notifications**: Implement full push notifications (via Expo Push Service) for draw reminders, winner announcements, and general broadcasts.
+- **Referral System**: Implement a system where users can refer friends to earn bonus entries. The system should track referrals and award entries based on the referred user's activity (e.g., first scan, five scans).
+- **B2G Landing Page**: A professional, public-facing landing page targeted at government stakeholders and tax authorities to explain the solution, its benefits, and showcase its capabilities. The product name for this audience is Taxxa.
 
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack application with a FastAPI/MongoDB backend and an Expo (React Native) frontend. The admin portal has been completely redesigned with a professional, enterprise-grade layout featuring a permanent sidebar, a data-visualization dashboard, and consistent UI across all pages. Draw management is feature-rich, allowing admins to create, edit, and delete draws and prizes with confirmation modals. The user-facing application now dynamically displays currency based on the selected country. The backend draw mechanism has been upgraded to use cryptographically secure randomness and generates a detailed audit log.
+A full-stack application with a FastAPI/MongoDB backend and an Expo (React Native) frontend. The session added several major features:
+- A complete, viewable Draw Audit Report UI in the admin portal.
+- A full-featured Push Notification system, including a user settings page and an admin broadcast interface.
+- An end-to-end Referral System with a dedicated UI for users to track their referrals, share links, and see their earned bonus entries. The system was E2E tested.
+- A professional, multi-section landing page is being developed at the  route, specifically targeted at a B2G audience.
 
 **Last working item**:
-    - Last item agent was working: Implementing a cryptographically secure and auditable random draw mechanism. The agent updated the backend () to use Python's  module for selection, generate a unique seed and hash for each draw, and store a detailed audit log in a new  collection. A new API endpoint () was created to retrieve this data.
+    - Last item agent was working: The agent was performing the third revision of the new product landing page. Based on user feedback, the agent was updating the page to:
+        1. Change the product name from TaxDraw to Taxxa.
+        2. Add a more detailed section explaining Why Traditional Compliance Fails.
+        3. Re-organize the Deployment Process section for better clarity.
+        The agent has overwritten  with the new code and restarted the frontend server.
     - Status: IN PROGRESS
-    - Agent Testing Done: N (Backend was restarted, but the new draw completion logic and audit endpoint were not tested).
-    - Which testing method agent to use? backend testing agent
+    - Agent Testing Done: N
+    - Which testing method agent to use? screenshot tool
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
-  Issue 1: Frontend UI for Draw Audit Report is Missing (P0)
-  Issue 2: Frontend Auth Token Persistence on Web Preview (P1)
+  Issue 1: Frontend Auth Token Persistence on Web Preview (P1)
 
   Issues Detail:
   - **Issue 1:**
-     - **Description**: The backend now generates a detailed, verifiable audit log for each draw, and an API endpoint exists to fetch it. However, there is no UI in the admin portal for an administrator to view or export this audit report. This makes the new security feature incomplete from a user perspective.
-     - **Attempted fixes**: None. This is the next logical step.
+     - **Description**: The player-facing and admin web previews () repeatedly fail to maintain a logged-in state after a page reload or direct navigation to a protected route. This forces re-login and complicates testing. The agent has been working around this by logging in and then navigating internally without reloading the page.
+     - **Attempted fixes**: The issue was identified in a previous session, but no fix has been attempted in this one as feature development was prioritized.
      - **Next debug checklist**:
-         1. In , add a button (e.g., View Audit) for completed draws.
-         2. This button should trigger a modal or navigate to a new page.
-         3. Create a new function in  to call .
-         4. Display the audit data (seed, hash, participants, selection process, winners) in a clean, readable format in the modal/page.
-     - **Why fix this issue and what will be achieved with the fix?**: To complete the secure and auditable draw feature by making the audit trail accessible to admins, building trust and allowing for verification.
+         1. Investigate using a more reliable storage mechanism for Expo Web than . Options include  or a web-specific solution like browser cookies managed via the backend.
+         2. Review  to ensure the Authorization header is being set correctly on every request, even after a page refresh.
+     - **Why fix this issue and what will be achieved with the fix?**: It will enable proper testing and verification of the application on the web preview, improving the development and feedback loop for both user and admin flows.
      - **Status**:  NOT STARTED
-     - **Is recurring issue?** N
-     - **Should Test frontend/backend/both after fix?**: frontend
-     - **Blocked on other issue**: None
-
-  - **Issue 2:**
-     - **Description**: The player-facing web preview () repeatedly fails to maintain a logged-in state. After logging in, navigating to pages that require authentication (like ) results in an unauthenticated state, showing No active draws. This is likely due to  not persisting correctly in the web environment. The agent confirmed via  that the backend APIs work correctly with a valid token.
-     - **Attempted fixes**: The agent identified the issue but did not attempt a fix, correctly prioritizing feature development.
-     - **Next debug checklist**:
-         1. Review  to check how the Authorization header is set.
-         2. Investigate alternative persistent storage for Expo web, such as  or a cookie-based approach, as  is known to be unreliable on web.
-     - **Why fix this issue and what will be achieved with the fix?**: It will enable proper testing and verification of the player-facing application on the web preview, improving the development and feedback loop.
-     - **Status**:  NOT STARTED
-     - **Is recurring issue?**: Y
+     - **Is recurring issue?** Y
      - **Should Test frontend/backend/both after fix?**: frontend
      - **Blocked on other issue**: None
 
 **In progress Task List**:
-  - None.
+  Task 1: Finalize and Verify V3 of the B2G Landing Page (P0)
+
+ Task Detail:
+  - **Task 1**: 
+     - **Where to resume**: The code for the updated landing page is in . The next step is to use the screenshot tool to visually verify all the requested changes: the name Taxxa, the new compliance section, and the deployment process layout. After verification, present it to the user.
+     - **What will be achieved with this?**: A complete, professional landing page that accurately reflects the product's B2G positioning and meets the user's specific content and branding requirements.
+     - **Status**:  IN PROGRESS
+     - **Should Test frontend/backend/both after fix?**: frontend
+     - **Blocked on something**: None
 
 **Upcoming and Future Tasks**
  Upcoming Tasks:
--   **P0: Frontend UI for Draw Audit Report**: Create the UI for admins to view the audit log for completed draws. (Continuation of the last working item).
--   **P1: Implement New Product Logo**: The user previously requested to change the logo. This should be implemented across the user app, auth screens, and the new admin portal.
--   **P2: Integrate with a real Revenue Authority API**: The current QR code validation in  is a mock. This needs to be replaced with a real integration.
--   **P3: Implement Push Notifications**: Set up and configure  for both user and admin alerts.
+- **P1: Implement Live Draw Animation**: User has approved this feature. This involves creating a new page with a real-time, animated visualization of the winner selection process using WebSockets and .
+- **P2: Implement Referral Entry Expiration Logic**: The user and agent discussed options for how long referral bonus entries should last (e.g., 30 days, 2 draw cycles). A decision needs to be made and the logic implemented in the backend, likely by adding an  field to entries and updating the draw participation logic.
+- **P3: Implement New Product Logo**: The user requested a new logo in a previous session. This task has not been started. It involves replacing the current logo across the user app, auth screens, admin portal, and the new landing page.
+- **P4: Update App Name to Taxxa Globally**: The agent updated the landing page, but the name TaxDraw is still used elsewhere (e.g., in ). A global search-and-replace is needed.
 
  Future Tasks:
--   Implement geo-location tracking for scan analytics.
--   Add more advanced fraud detection rules.
--   Implement a system for tracking prize payouts to winners.
--   Allow admins to exclude recent winners or set a maximum win limit per user.
+- Integrate with a real Revenue Authority API (the current one is a mock).
+- Implement a manual referral code entry field on the registration screen.
+- Implement geo-location tracking for scan analytics.
+- Add more advanced fraud detection rules.
+- Implement a system for tracking prize payouts to winners.
 
 **Completed work in this session**
-- **Admin Portal Enterprise Redesign**: Fully redesigned the entire admin portal with a permanent sidebar, data-visualization dashboard, and consistent styling across all pages (, , , , , , ).
-- **Draw Management Enhancements**:
-    - Implemented date and time pickers in the create/edit draw modals.
-    - Added comprehensive Create, Edit, and Delete functionality for draws.
-    - Implemented confirmation modals for all critical actions (Create, Complete, Delete).
-- **Prize Management**: Implemented functionality to Edit and Delete individual prize tiers within a draw, including a confirmation modal for prize deletion.
-- **Create Draw Bug Fix**: Fixed a 422 error by refactoring the backend  endpoint to use a Pydantic model for the request body and updating the frontend store to match.
-- **Dynamic Currency Implementation**:
-    - Refactored the backend to provide the active country's currency via a new  endpoint.
-    - Updated all user-facing screens (, , ) and the admin portal () to display prices and values in the correct local currency (e.g., TSh 10,000).
-- **Cryptographically Secure Draws (Backend)**: Replaced the standard  with  for winner selection, and implemented a full audit trail (seed, hash, logs) which is saved to the database.
+- **Draw Audit Report Feature**:
+  - Implemented the frontend UI for admins to view the audit log for completed draws.
+  - Added a View Audit button which opens a modal displaying the full audit trail, including cryptographic proof and winner selection logs.
+- **Push Notification System**:
+  - Integrated  for full push notification capabilities.
+  - Created backend endpoints for registering tokens and sending notifications (broadcast, to winners, draw reminders).
+  - Built a UI for users to manage notification preferences.
+  - Built a UI in the admin portal for sending broadcast messages.
+- **Referral System**:
+  - Implemented a full-featured referral system with a backend to track referrals and award bonus entries.
+  - Created a user-facing UI to view referral stats, copy/share a unique referral link, and see the status of referred friends.
+  - The system rewards the referrer with entries when the referred user completes their 1st and 5th valid scans.
+- **Bug Fixes**:
+  - **User Login Failure**: Diagnosed and fixed a 401 error caused by an incorrect password hash in the database for the test user.
+  - **Referral Page Crash**: Fixed a crash on the referral page by replacing the deprecated  Clipboard API with .
 
 **Earlier issues found/mentioned but not fixed**
    - **Issue 1: Frontend Auth Token Persistence on Web Preview.**
-     - **Debug checklist**: See Issue 2 in **All Pending/In progress Issue list**.
+     - **Debug checklist**: See Issue 1 in **All Pending/In progress Issue list**.
      - **Why to solve this issue and what will be achieved with this?**: This prevents effective testing of the authenticated user experience on the web preview. Fixing it will streamline development and allow for verification of user-facing features.
      - **Should Test frontend/backend/both after fix:** frontend
      - **Is recurring issue?**: Y
 
 **Known issue recurrence from previous fork**
   - **Issue recurrence in previous fork**: Frontend Auth Token Persistence on Web Preview.
-  - **Recurrence count**: 2+
+  - **Recurrence count**: 3+
   - **Status**: NOT STARTED
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Backend:** FastAPI, Motor (async MongoDB), Pydantic, JWT, , .
--   **Frontend:** React Native, Expo, Expo Router v3, TypeScript.
--   **State Management:** Zustand.
--   **Styling:** React Native , Platform-specific logic.
+- **Backend:** FastAPI, Motor, Pydantic, JWT, , ,  (for sending Expo push notifications).
+- **Frontend:** React Native, Expo, Expo Router v3, TypeScript, Zustand, , .
+- **State Management:** Zustand, React Context (for notifications).
 
 **key DB schema**
-  - **users:** 
+  - **users:**  (updated)
   - **draws:** 
-  - **settings:** 
-  - **draw_audits:**  (NEW)
+  - **scans:** 
+  - **draw_audits:** 
+  - **referrals:**  (NEW)
+  - **push_tokens:**  (NEW, although sometimes stored on user)
 
 **changes in tech stack**
-  - None.
+  - ****: Added for push notifications.
+  - ****: Added to fix a crash with the deprecated Clipboard API.
+  - ****: Added to the backend to make HTTP requests to the Expo Push API.
 
 **All files of reference**
--   **/app/backend/server.py**: Heavily modified to add secure/auditable draw logic, fix create/update draw endpoints with Pydantic models, and add endpoints for app config and draw audits.
--   **/app/frontend/app/admin/draws.tsx**: Heavily modified to add date/time pickers, confirmation modals, edit/delete for draws and prizes, and dynamic currency.
--   **/app/frontend/src/store/adminStore.ts**: Updated with , , and  functions.
--   **/app/frontend/src/store/appConfigStore.ts**: New file created to manage global state like currency.
--   **/app/frontend/app/(tabs)/index.tsx**: Updated to use dynamic currency.
--   **/app/frontend/app/(tabs)/draws.tsx**: Updated to use dynamic currency.
--   **/app/frontend/src/components/ScanResult.tsx**: Updated to use dynamic currency.
--   **/app/frontend/app/admin/{analytics, fraud, scans, settings}.tsx**: Overwritten to use the new enterprise sidebar layout.
+-   **/app/frontend/app/landing.tsx**: **NEW/UPDATED**. Created and heavily revised to be a B2G-focused product page.
+-   **/app/frontend/app/(tabs)/referral.tsx**: **NEW**. The main UI for the user referral program.
+-   **/app/frontend/app/admin/notifications.tsx**: **NEW**. Admin interface for sending broadcast notifications.
+-   **/app/frontend/src/context/NotificationContext.tsx**: **NEW**. Handles registering for and managing push notifications.
+-   **/app/backend/server.py**: Heavily modified to add endpoints and logic for push notifications and the referral system. Refactored to fix an endpoint definition order bug.
+-   **/app/frontend/app/admin/draws.tsx**: Modified to add the View Audit button and the complete audit report modal.
+-   **/app/frontend/app/(tabs)/index.tsx**: Modified to add a banner linking to the new referral page.
+-   **/app/frontend/src/components/AdminSidebar.tsx**: Modified to add a link to the new admin notifications page.
+-   **/app/frontend/app.json**: Modified to add plugins and permissions for push notifications.
 
 **Areas that need refactoring**:
-- The  file has grown significantly and is now over 1500 lines. It should be broken down into multiple routers (e.g., , ) for better maintainability.
+- The  file is now extremely large and complex (likely over 2000 lines). It desperately needs to be broken down into multiple routers using  (e.g., , , , ) for maintainability.
 
 **key api endpoints**
--   : (Signature changed) Now accepts a JSON body defined by a Pydantic model.
--   : (Signature changed) Now accepts a JSON body.
--   : (Logic changed) Now uses cryptographically secure selection and creates an audit log.
--   : **(NEW)** Retrieves the audit report for a completed draw.
--   : **(NEW)** Provides global app configuration like the active country's currency.
+-   : **(NEW)** Registers a user's Expo push token.
+-   : **(NEW)** Admin endpoint to send a broadcast notification.
+-   : **(NEW)** Gets the current user's referral stats (entries earned, etc.).
+-   : **(NEW)** Lists the users referred by the current user.
+-   : **(Logic Changed)** Now triggers a check for referral milestones upon a valid scan.
 
 **Critical Info for New Agent**
--   **Your immediate task is to complete the secure draw feature.** The backend is done, but you need to build the frontend UI for it. Add a button for Completed draws in the admin panel that fetches and displays the audit report from the new  endpoint.
--   The player-facing web preview has a known authentication issue. While it needs to be fixed eventually, you can proceed with admin-facing features first. Use  to test authenticated user APIs if needed.
--   The entire admin portal has been successfully redesigned. Do not revert or change the new enterprise layout with the sidebar.
+-   **Your immediate task is to finalize the B2G landing page.** The user requested several changes, including renaming the product to Taxxa. The code has been updated, but you must visually verify the changes are correct using the screenshot tool and get user confirmation.
+-   After the landing page is approved, the next major feature in the queue is **Live Draw Animation**. Confirm this with the user before starting.
+-   The web preview has a **persistent authentication issue**. You will likely need to log in manually at the start of your testing flows and avoid page reloads. Do not spend time fixing this unless the user prioritizes it.
+-   The backend  file is very large. While refactoring is needed, focus on delivering the user's requested features first, but be mindful of the file's complexity when adding new code.
 
 **documents created in this job**
 - None.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Yes [confirming to implement cryptographically secure draws] (IN PROGRESS)
-2.  **User**: Whis is the best [asking for the best random draw method] (COMPLETED)
-3.  **User**: What modality do you use to perform random draws... (COMPLETED)
-4.  **User**: Put a space between TSh and the value (COMPLETED)
-5.  **User**: Every country should reflect its local currency on the user mobiele app and web app (COMPLETED)
-6.  **User**: Be able to edit prize and confrimation modal before deleting (COMPLETED)
-7.  **User**: Create draw button is not responding - also provide a confirmation modal on all actions... (COMPLETED)
-8.  **User**: Be able to delete and edit draws and the draws shouls reflect into the players interface... (COMPLETED)
-9.  **User**: Implement date picker and time picker which will then follow the period from the date picked (COMPLETED)
-10. **User**: Share the Admin Portal Web Preview Link (COMPLETED)
+- **10. Implement a web page...**: User requested the initial (consumer-facing) landing page. (COMPLETED)
+- **9. This page targets multiple countries...**: User provided critical feedback to pivot the landing page to a B2G audience. (IN PROGRESS)
+- **8. The solutions name is taxxa...**: User provided the final product name and further refinement requests for the B2G landing page. (IN PROGRESS)
+- **7. Resend link**: User asked for app links again. (COMPLETED)
+- **6. When the copy link is clicked the app crashes**: User reported a bug on the referral page. (COMPLETED)
+- **5. What is the referal code for?**: User asked for clarification on the referral system. (COMPLETED)
+- **4. How do I check if referral works well**: User asked how to test the E2E referral flow. (COMPLETED)
+- **3. Since the draws will be weekly...**: User asked for a recommendation on referral point expiration. (Awaiting user decision)
+- **2. App is not loading**: User reported the app was inaccessible. (COMPLETED - Restart fixed it)
+- **1. Share login. Redebtisls**: User asked for login credentials again. (COMPLETED)
 
 **Project Health Check:**
 - **Broken**:
-    - The player-facing web preview is unreliable for authenticated users due to a token persistence issue.
+    - Web preview authentication is not persistent across reloads.
 - **Mocked**:
-    - The Revenue Authority API for QR code validation in  remains a mock.
+    - The Revenue Authority API for QR code validation in  is still a mock.
 
 **3rd Party Integrations**
-- **Emergent LLM Key:** Available, but not currently used in the application.
+- **Expo Push Notifications**: Fully integrated for sending push notifications to user devices. Requires no special keys from the user.
+- **Emergent LLM Key**: Available, but not currently used in the application.
 
 **Testing status**
-  - Testing agent used after significant changes: NO
+  - Testing agent used after significant changes: YES (used for backend testing of the audit endpoint).
   - Troubleshoot agent used after agent stuck in loop: NO
   - Test files created: None.
-  - Known regressions: The player-facing web preview authentication is unreliable.
+  - Known regressions: The web preview authentication persistence issue remains.
 
 **Credentials to test flow:**
 -   **Admin User:**
     -   Username: 
     -   Password: 
--   **Mobile App User:**
-    -   Phone:  (new user created during the session)
-    -   Password: 
+-   **Mobile App Users:**
+    -   **User A (Referrer):**
+        -   Phone: 
+        -   Password: 
+    -   **User B (Referred by User A):**
+        -   Phone: 
+        -   Password: 
 
 **What agent forgot to execute**
-- The agent implemented the backend and API endpoint for the draw audit trail but did not build the corresponding frontend UI for admins to view this information.
+- The agent has not implemented the referral entry expiration logic that was discussed with the user. The user has not yet chosen an option.
+- The agent updated the product name to Taxxa on the landing page but likely did not update it in other project files like  or other UI elements. This should be done for consistency.
 
 </analysis>
