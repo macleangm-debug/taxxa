@@ -412,10 +412,10 @@ const styles = StyleSheet.create({
   tabTextActive: { color: '#fff' },
   // Steps
   stepsSection: { paddingHorizontal: 16, paddingBottom: 48 },
-  stepsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'center', maxWidth: 1000, alignSelf: 'center', width: '100%' },
+  stepsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'center', maxWidth: 960, alignSelf: 'center', width: '100%' },
   stepsGridMobile: { flexDirection: 'column' },
-  stepCard: { backgroundColor: '#fff', borderRadius: 12, padding: 16, flexBasis: '22%', minWidth: 200, borderWidth: 1, borderColor: '#E2E8F0' },
-  stepCardMobile: { width: '100%', flexBasis: '100%' },
+  stepCard: { backgroundColor: '#fff', borderRadius: 12, padding: 14, width: 220, borderWidth: 1, borderColor: '#E2E8F0' },
+  stepCardMobile: { width: '100%' },
   stepHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 },
   stepNumber: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#3B82F6', alignItems: 'center', justifyContent: 'center' },
   stepNumberText: { color: '#fff', fontWeight: '700', fontSize: 16 },
