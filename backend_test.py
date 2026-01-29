@@ -25,7 +25,7 @@ TEST_USER = {
 # Test QR data samples
 QR_DATA_JSON = {
     "qr_data": json.dumps({
-        "receipt_number": "INV-2026-001234",
+        "receipt_number": f"INV-2026-{int(time.time())}",  # Unique receipt number
         "merchant_tin": "12345678901",
         "merchant_name": "ABC Store Ltd",
         "total_amount": 150.50,
