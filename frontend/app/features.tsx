@@ -419,7 +419,7 @@ export default function FeaturesPage() {
 
       {/* Supported Jurisdictions */}
       <View style={styles.jurisdictionsSection}>
-        <Text style={styles.specsSectionTitle}>Supported Tax Authorities</Text>
+        <Text style={styles.specsSectionTitle}>Supported Tax Authorities - 8 African Countries</Text>
         <View style={[styles.jurisdictionsGrid, isMobile && styles.jurisdictionsGridMobile]}>
           <View style={styles.jurisdictionCard}>
             <View style={[styles.jurisdictionFlag, { backgroundColor: '#22C55E' }]}>
@@ -428,33 +428,69 @@ export default function FeaturesPage() {
             <View style={styles.jurisdictionInfo}>
               <Text style={styles.jurisdictionName}>Tanzania</Text>
               <Text style={styles.jurisdictionAuthority}>TRA - EFDMS/VFD</Text>
-              <View style={[styles.statusBadge, { backgroundColor: '#EFF6FF' }]}>
-                <Text style={[styles.statusText, { color: '#3B82F6' }]}>Integration Ready</Text>
-              </View>
             </View>
           </View>
           <View style={styles.jurisdictionCard}>
-            <View style={[styles.jurisdictionFlag, { backgroundColor: '#EF4444' }]}>
+            <View style={[styles.jurisdictionFlag, { backgroundColor: '#000000' }]}>
               <Text style={styles.jurisdictionFlagText}>KE</Text>
             </View>
             <View style={styles.jurisdictionInfo}>
               <Text style={styles.jurisdictionName}>Kenya</Text>
               <Text style={styles.jurisdictionAuthority}>KRA - eTIMS</Text>
-              <View style={[styles.statusBadge, { backgroundColor: '#EFF6FF' }]}>
-                <Text style={[styles.statusText, { color: '#3B82F6' }]}>Integration Ready</Text>
-              </View>
             </View>
           </View>
           <View style={styles.jurisdictionCard}>
-            <View style={[styles.jurisdictionFlag, { backgroundColor: '#64748B' }]}>
-              <Text style={styles.jurisdictionFlagText}>+</Text>
+            <View style={[styles.jurisdictionFlag, { backgroundColor: '#FBBF24' }]}>
+              <Text style={styles.jurisdictionFlagText}>UG</Text>
             </View>
             <View style={styles.jurisdictionInfo}>
-              <Text style={styles.jurisdictionName}>More Countries</Text>
-              <Text style={styles.jurisdictionAuthority}>Flexible Framework</Text>
-              <View style={[styles.statusBadge, { backgroundColor: '#FFFBEB' }]}>
-                <Text style={[styles.statusText, { color: '#F59E0B' }]}>On Request</Text>
-              </View>
+              <Text style={styles.jurisdictionName}>Uganda</Text>
+              <Text style={styles.jurisdictionAuthority}>URA - EFRIS</Text>
+            </View>
+          </View>
+          <View style={styles.jurisdictionCard}>
+            <View style={[styles.jurisdictionFlag, { backgroundColor: '#3B82F6' }]}>
+              <Text style={styles.jurisdictionFlagText}>RW</Text>
+            </View>
+            <View style={styles.jurisdictionInfo}>
+              <Text style={styles.jurisdictionName}>Rwanda</Text>
+              <Text style={styles.jurisdictionAuthority}>RRA - EBM</Text>
+            </View>
+          </View>
+          <View style={styles.jurisdictionCard}>
+            <View style={[styles.jurisdictionFlag, { backgroundColor: '#16A34A' }]}>
+              <Text style={styles.jurisdictionFlagText}>ET</Text>
+            </View>
+            <View style={styles.jurisdictionInfo}>
+              <Text style={styles.jurisdictionName}>Ethiopia</Text>
+              <Text style={styles.jurisdictionAuthority}>ERCA - E-Receipt</Text>
+            </View>
+          </View>
+          <View style={styles.jurisdictionCard}>
+            <View style={[styles.jurisdictionFlag, { backgroundColor: '#22C55E' }]}>
+              <Text style={styles.jurisdictionFlagText}>NG</Text>
+            </View>
+            <View style={styles.jurisdictionInfo}>
+              <Text style={styles.jurisdictionName}>Nigeria</Text>
+              <Text style={styles.jurisdictionAuthority}>FIRS - TaxPro</Text>
+            </View>
+          </View>
+          <View style={styles.jurisdictionCard}>
+            <View style={[styles.jurisdictionFlag, { backgroundColor: '#F97316' }]}>
+              <Text style={styles.jurisdictionFlagText}>ZA</Text>
+            </View>
+            <View style={styles.jurisdictionInfo}>
+              <Text style={styles.jurisdictionName}>South Africa</Text>
+              <Text style={styles.jurisdictionAuthority}>SARS - eFiling</Text>
+            </View>
+          </View>
+          <View style={styles.jurisdictionCard}>
+            <View style={[styles.jurisdictionFlag, { backgroundColor: '#EF4444' }]}>
+              <Text style={styles.jurisdictionFlagText}>GH</Text>
+            </View>
+            <View style={styles.jurisdictionInfo}>
+              <Text style={styles.jurisdictionName}>Ghana</Text>
+              <Text style={styles.jurisdictionAuthority}>GRA - E-VAT</Text>
             </View>
           </View>
         </View>
