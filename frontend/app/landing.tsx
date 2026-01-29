@@ -554,9 +554,15 @@ export default function LandingPage() {
         <View style={styles.caseStudiesGrid}>
           {caseStudies.map((study, index) => (
             <View key={index} style={styles.caseStudyCard}>
-              <Text style={styles.caseStudyIcon}>{study.icon}</Text>
-              <Text style={styles.caseStudyCountry}>{study.country}</Text>
-              <Text style={styles.caseStudyProgram}>{study.program}</Text>
+              <View style={styles.caseStudyHeader}>
+                <View style={[styles.countryBadge, { backgroundColor: study.color }]}>
+                  <Text style={styles.countryBadgeText}>{study.code}</Text>
+                </View>
+                <View style={styles.caseStudyInfo}>
+                  <Text style={styles.caseStudyCountry}>{study.country}</Text>
+                  <Text style={styles.caseStudyProgram}>{study.program}</Text>
+                </View>
+              </View>
               <Text style={styles.caseStudyResult}>{study.result}</Text>
             </View>
           ))}
