@@ -1107,7 +1107,7 @@ async def submit_receipt(
         {'status': 'active'},
         sort=[('draw_date', 1)]
     )
-    next_draw_date = next_draw['draw_date'] if next_draw else None
+    next_draw_date = next_draw.get('draw_date') or next_draw.get('end_date') if next_draw else None
     
     return SubmitResponse(
         success=validation_data['is_valid'],
