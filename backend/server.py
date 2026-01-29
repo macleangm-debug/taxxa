@@ -2886,8 +2886,36 @@ async def health_check():
     return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
 
 
+# ============== RECEIPT API ROUTER ==============
+# Import and configure the new Receipt API router
+from routers.receipts import router as receipts_router, set_database, set_auth_dependency
+
+# Helper function to get user from credentials with db access
+async def get_current_user_with_db(credentials: HTTPAuthorizationCredentials, db_instance):
+    """Validate JWT token and return user - for use by receipts router"""
+    try:
+        token = credentials.credentials
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        user_id = payload.get("user_id")
+        
+        user = await db_instance.users.find_one({"_id": ObjectId(user_id)})
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+        return user
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=str(e))
+
+# Configure the receipts router
+set_database(db)
+set_auth_dependency(get_current_user_with_db)
+
 # Include the router in the main app
 app.include_router(api_router)
+app.include_router(receipts_router)  # Add the new Receipt API
 
 app.add_middleware(
     CORSMiddleware,
