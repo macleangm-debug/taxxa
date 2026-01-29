@@ -439,7 +439,7 @@ export default function PilotOpportunitiesPage() {
 
               <Text style={styles.inputLabel}>Interested Program</Text>
               <View style={styles.pilotSelector}>
-                {['Proof of Concept', 'Regional Rollout', 'National Program'].map((type) => (
+                {['Proof of Concept', 'National Program'].map((type) => (
                   <TouchableOpacity
                     key={type}
                     style={[
