@@ -5,6 +5,12 @@ Supports multiple jurisdictions with configurable validation.
 Current Integrations:
 - Tanzania: TRA EFDMS/VFD System
 - Kenya: KRA eTIMS System
+- Uganda: URA EFRIS System
+- Rwanda: RRA EBM System
+- Ethiopia: ERCA System
+- Nigeria: FIRS System
+- South Africa: SARS System
+- Ghana: GRA System
 - Generic: For other jurisdictions
 
 Each integration provides:
@@ -28,6 +34,14 @@ logger = logging.getLogger(__name__)
 class Jurisdiction(str, Enum):
     """Supported tax jurisdictions"""
     TANZANIA = "TZ"
+    KENYA = "KE"
+    UGANDA = "UG"
+    RWANDA = "RW"
+    ETHIOPIA = "ET"
+    NIGERIA = "NG"
+    SOUTH_AFRICA = "ZA"
+    GHANA = "GH"
+    GENERIC = "GENERIC"
     KENYA = "KE"
     GENERIC = "GENERIC"
 
