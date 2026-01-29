@@ -325,7 +325,7 @@ export default function LandingPage() {
                 <Text style={styles.navLinkText}>How It Works</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.navLink} onPress={() => router.push('/case-studies')}>
-                <Text style={styles.navLinkText}>Case Studies</Text>
+                <Text style={styles.navLinkText}>Pilot Programs</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.navLink} onPress={() => router.push('/documentation')}>
                 <Text style={styles.navLinkText}>Documentation</Text>
@@ -358,7 +358,7 @@ export default function LandingPage() {
               <Text style={styles.mobileMenuItemText}>How It Works</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.mobileMenuItem} onPress={() => { setShowMobileMenu(false); router.push('/case-studies'); }}>
-              <Text style={styles.mobileMenuItemText}>Case Studies</Text>
+              <Text style={styles.mobileMenuItemText}>Pilot Programs</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.mobileMenuItem} onPress={() => { setShowMobileMenu(false); router.push('/documentation'); }}>
               <Text style={styles.mobileMenuItemText}>Documentation</Text>
