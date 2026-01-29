@@ -414,7 +414,7 @@ const styles = StyleSheet.create({
   stepsSection: { paddingHorizontal: 8, paddingBottom: 48 },
   stepsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center' },
   stepsGridMobile: { flexDirection: 'column' },
-  stepCard: { backgroundColor: '#fff', borderRadius: 12, padding: 14, width: 230, borderWidth: 1, borderColor: '#E2E8F0' },
+  stepCard: { backgroundColor: '#fff', borderRadius: 12, padding: 12, width: 210, borderWidth: 1, borderColor: '#E2E8F0' },
   stepCardMobile: { width: '100%' },
   stepHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 },
   stepNumber: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#3B82F6', alignItems: 'center', justifyContent: 'center' },
