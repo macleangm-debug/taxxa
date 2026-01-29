@@ -478,11 +478,14 @@ agent_communication:
     file: "/app/backend/routers/receipts.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "QR code decoding with auto-format detection. Tested JSON and pipe-delimited formats successfully."
+      - working: true
+        agent: "testing"
+        comment: "✅ Decode endpoint fully tested and working. JSON format decode ✅, Pipe-delimited format decode ✅. Auto-format detection working correctly with confidence scores. Successfully tested with both JSON format (confidence: 1.0) and pipe-delimited format (confidence: 1.0). Receipt data properly extracted including receipt number, merchant info, amounts, and currency."
 
   - task: "Receipt API - Validate Endpoint"
     implemented: true
@@ -490,32 +493,41 @@ agent_communication:
     file: "/app/backend/routers/receipts.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Receipt validation with format checks, business rules, duplicate detection, and mock Tax Authority validation."
+      - working: true
+        agent: "testing"
+        comment: "✅ Validate endpoint fully tested and working. All validation checks passing: receipt_number_format ✅, merchant_tin_format ✅, amount_valid ✅, currency_format ✅, date_not_future ✅, date_not_expired ✅, duplicate_check ✅, authority_validation (MOCK) ✅. Proper duplicate detection working - correctly identifies previously submitted receipts. Mock Tax Authority validation with 90% success rate functioning as expected."
 
   - task: "Receipt API - Submit Endpoint"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/routers/receipts.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Submit endpoint implemented, needs testing with authentication."
+      - working: true
+        agent: "testing"
+        comment: "✅ Submit endpoint fully tested and working with authentication. Fixed KeyError issue with draw_date field. Successfully submits valid receipts and awards entries (1 base entry + bonus entries based on amount). Proper authentication required and working. Returns correct receipt_id, status, entries_earned, bonus_entries, and total_entries. Handles both valid and duplicate receipts appropriately."
 
   - task: "Receipt API - List/Get Endpoints"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/routers/receipts.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Get receipt by ID and list receipts endpoints implemented, needs testing."
+      - working: true
+        agent: "testing"
+        comment: "✅ List and Get Receipt endpoints fully tested and working. List receipts ✅ - returns paginated list with receipt details, status, and entries earned. Get receipt details ✅ - returns full receipt information including validation details, entries, audit trail, and merchant info. Both endpoints properly require authentication and filter by user_id."
