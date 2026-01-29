@@ -308,31 +308,72 @@ export default function LandingPage() {
               <Ionicons name="receipt" size={24} color="#fff" />
             </View>
             <Text style={styles.logoText}>Taxxa</Text>
-            <View style={styles.logoBadge}>
-              <Text style={styles.logoBadgeText}>Enterprise</Text>
-            </View>
+            {!isMobile && (
+              <View style={styles.logoBadge}>
+                <Text style={styles.logoBadgeText}>Enterprise</Text>
+              </View>
+            )}
           </View>
-          <View style={styles.navLinks}>
-            <TouchableOpacity style={styles.navLink}>
-              <Text style={styles.navLinkText}>Solution</Text>
+          
+          {/* Desktop Navigation */}
+          {!isMobile ? (
+            <View style={styles.navLinks}>
+              <TouchableOpacity style={styles.navLink}>
+                <Text style={styles.navLinkText}>Solution</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.navLink}>
+                <Text style={styles.navLinkText}>How It Works</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.navLink}>
+                <Text style={styles.navLinkText}>Case Studies</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.navLink}>
+                <Text style={styles.navLinkText}>Documentation</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.navButtonPrimary}
+                onPress={() => setShowContactModal(true)}
+              >
+                <Text style={styles.navButtonPrimaryText}>Request Demo</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            /* Mobile Hamburger Menu */
+            <TouchableOpacity 
+              style={styles.mobileMenuButton}
+              onPress={() => setShowMobileMenu(!showMobileMenu)}
+            >
+              <Ionicons name={showMobileMenu ? "close" : "menu"} size={28} color="#1E293B" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.navLink}>
-              <Text style={styles.navLinkText}>How It Works</Text>
+          )}
+        </View>
+        
+        {/* Mobile Menu Dropdown */}
+        {isMobile && showMobileMenu && (
+          <View style={styles.mobileMenuDropdown}>
+            <TouchableOpacity style={styles.mobileMenuItem}>
+              <Text style={styles.mobileMenuItemText}>Solution</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.navLink}>
-              <Text style={styles.navLinkText}>Case Studies</Text>
+            <TouchableOpacity style={styles.mobileMenuItem}>
+              <Text style={styles.mobileMenuItemText}>How It Works</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.navLink}>
-              <Text style={styles.navLinkText}>Documentation</Text>
+            <TouchableOpacity style={styles.mobileMenuItem}>
+              <Text style={styles.mobileMenuItemText}>Case Studies</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.mobileMenuItem}>
+              <Text style={styles.mobileMenuItemText}>Documentation</Text>
             </TouchableOpacity>
             <TouchableOpacity 
-              style={styles.navButtonPrimary}
-              onPress={() => setShowContactModal(true)}
+              style={styles.mobileMenuCTA}
+              onPress={() => {
+                setShowMobileMenu(false);
+                setShowContactModal(true);
+              }}
             >
-              <Text style={styles.navButtonPrimaryText}>Request Demo</Text>
+              <Text style={styles.mobileMenuCTAText}>Request Demo</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        )}
       </View>
 
       {/* Hero Section */}
