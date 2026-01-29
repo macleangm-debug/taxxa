@@ -909,7 +909,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 32,
-    display: isWeb ? 'flex' : 'none',
   },
   navLink: {
     paddingVertical: 8,
@@ -930,6 +929,39 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#fff',
   },
+  // Mobile Menu
+  mobileMenuButton: {
+    padding: 8,
+  },
+  mobileMenuDropdown: {
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
+    paddingVertical: 8,
+    marginTop: 12,
+  },
+  mobileMenuItem: {
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+  },
+  mobileMenuItemText: {
+    fontSize: 16,
+    color: '#374151',
+    fontWeight: '500',
+  },
+  mobileMenuCTA: {
+    marginHorizontal: 16,
+    marginTop: 8,
+    backgroundColor: '#3B82F6',
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  mobileMenuCTAText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+  },
   // Hero
   hero: {
     flexDirection: isWeb ? 'row' : 'column',
@@ -938,9 +970,17 @@ const styles = StyleSheet.create({
     minHeight: isWeb ? 700 : 600,
     alignItems: 'center',
   },
+  heroMobile: {
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+    minHeight: 'auto',
+  },
   heroContent: {
     flex: 1,
     maxWidth: isWeb ? 600 : '100%',
+  },
+  heroContentMobile: {
+    maxWidth: '100%',
   },
   heroBadge: {
     flexDirection: 'row',
