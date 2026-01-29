@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { storage, STORAGE_KEYS } from '../utils/storage';
 import { authAPI, userAPI } from '../utils/api';
 
 interface User {
@@ -51,8 +51,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const response = await authAPI.createPassword(phone_number, password, name);
     const { access_token, user } = response.data;
     
-    await AsyncStorage.setItem('token', access_token);
-    await AsyncStorage.setItem('user', JSON.stringify(user));
+    // Use cross-platform storage
+    await storage.setItem(STORAGE_KEYS.TOKEN, access_token);
+    await storage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+    
+    console.log('[Auth] Password created, token saved');
     
     set({
       token: access_token,
@@ -65,8 +68,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const response = await authAPI.login(phone_number, password);
     const { access_token, user } = response.data;
     
-    await AsyncStorage.setItem('token', access_token);
-    await AsyncStorage.setItem('user', JSON.stringify(user));
+    // Use cross-platform storage
+    await storage.setItem(STORAGE_KEYS.TOKEN, access_token);
+    await storage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+    
+    console.log('[Auth] Login successful, token saved:', access_token.substring(0, 20) + '...');
     
     set({
       token: access_token,
@@ -76,8 +82,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: async () => {
-    await AsyncStorage.removeItem('token');
-    await AsyncStorage.removeItem('user');
+    await storage.removeItem(STORAGE_KEYS.TOKEN);
+    await storage.removeItem(STORAGE_KEYS.USER);
+    
+    console.log('[Auth] Logged out, tokens cleared');
     
     set({
       token: null,
@@ -89,8 +97,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   loadStoredAuth: async () => {
     set({ isLoading: true });
     try {
-      const token = await AsyncStorage.getItem('token');
-      const userStr = await AsyncStorage.getItem('user');
+      console.log('[Auth] Loading stored auth...');
+      
+      const token = await storage.getItem(STORAGE_KEYS.TOKEN);
+      const userStr = await storage.getItem(STORAGE_KEYS.USER);
+      
+      console.log('[Auth] Token found:', token ? 'Yes (' + token.substring(0, 20) + '...)' : 'No');
+      console.log('[Auth] User found:', userStr ? 'Yes' : 'No');
       
       if (token && userStr) {
         const user = JSON.parse(userStr);
@@ -101,13 +114,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           isLoading: false,
         });
         
+        console.log('[Auth] Auth restored successfully for user:', user.phone_number);
+        
         // Refresh profile in background
         get().refreshProfile();
       } else {
+        console.log('[Auth] No stored auth found');
         set({ isLoading: false });
       }
     } catch (error) {
-      console.error('Error loading auth:', error);
+      console.error('[Auth] Error loading auth:', error);
       set({ isLoading: false });
     }
   },
@@ -116,10 +132,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const response = await userAPI.getProfile();
       const user = response.data;
-      await AsyncStorage.setItem('user', JSON.stringify(user));
+      await storage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
       set({ user });
+      console.log('[Auth] Profile refreshed');
     } catch (error) {
-      console.error('Error refreshing profile:', error);
+      console.error('[Auth] Error refreshing profile:', error);
     }
   },
 }));
