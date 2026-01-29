@@ -1,28 +1,121 @@
+diff --git a/backend/routers/receipts.py b/backend/routers/receipts.py
+index ee5c290..97a1b7c 100644
+--- a/backend/routers/receipts.py
++++ b/backend/routers/receipts.py
+@@ -1107,7 +1107,7 @@ async def submit_receipt(
+         {'status': 'active'},
+         sort=[('draw_date', 1)]
+     )
+-    next_draw_date = next_draw['draw_date'] if next_draw else None
++    next_draw_date = next_draw.get('draw_date') or next_draw.get('end_date') if next_draw else None
+     
+     return SubmitResponse(
+         success=validation_data['is_valid'],
+diff --git a/model.patch b/model.patch
+index a24a484..e69de29 100644
+--- a/model.patch
++++ b/model.patch
+@@ -1,28 +0,0 @@
+-diff --git a/test_result.md b/test_result.md
+-index ea67ab7..49a8ed9 100644
+---- a/test_result.md
+-+++ b/test_result.md
+-@@ -455,6 +455,20 @@ test_plan:
+-   test_all: false
+-   test_priority: "high_first"
+- 
+-+  - task: "Draw Audit Report APIs"
+-+    implemented: true
+-+    working: true
+-+    file: "/app/backend/server.py"
+-+    stuck_count: 0
+-+    priority: "high"
+-+    needs_retesting: false
+-+    status_history:
+-+      - working: true
+-+        agent: "testing"
+-+        comment: "Draw audit report API endpoints fully tested and working. Admin login ✅, Get draws ✅, Create draw ✅, Complete draw with cryptographic audit ✅, Get audit data ✅, Export audit report ✅. All endpoints return 200 OK. Audit data contains cryptographic verification (seed, hashes), participants info, selection steps, winners, and verification status. Verification.is_valid returns true. Complete audit trail with CSPRNG winner selection verified."
+-+
+- agent_communication:
+-   - agent: "main"
+--    message: "MVP implementation complete. Backend APIs tested with curl, frontend screens verified with screenshots. All core flows working - registration, auth, scanning, draws, education."
+-\ No newline at end of file
+-+    message: "MVP implementation complete. Backend APIs tested with curl, frontend screens verified with screenshots. All core flows working - registration, auth, scanning, draws, education."
+-+  - agent: "testing"
+-+    message: "Draw Audit Report API endpoints comprehensively tested and verified working. Created test user with entries, completed draw with cryptographic audit trail, verified audit data structure contains all required fields (pre_draw seed/hash, participants info, selection steps, winners), and confirmed verification status is valid. Export endpoint returns complete JSON document ready for download. All security and transparency requirements met."
+-\ No newline at end of file
 diff --git a/test_result.md b/test_result.md
-index ea67ab7..49a8ed9 100644
+index c6d1261..c1c5ad4 100644
 --- a/test_result.md
 +++ b/test_result.md
-@@ -455,6 +455,20 @@ test_plan:
-   test_all: false
-   test_priority: "high_first"
- 
-+  - task: "Draw Audit Report APIs"
-+    implemented: true
-+    working: true
-+    file: "/app/backend/server.py"
-+    stuck_count: 0
-+    priority: "high"
+@@ -472,17 +472,22 @@ agent_communication:
+     message: "MVP implementation complete. Backend APIs tested with curl, frontend screens verified with screenshots. All core flows working - registration, auth, scanning, draws, education."
+   - agent: "testing"
+     message: "Draw Audit Report API endpoints comprehensively tested and verified working. Created test user with entries, completed draw with cryptographic audit trail, verified audit data structure contains all required fields (pre_draw seed/hash, participants info, selection steps, winners), and confirmed verification status is valid. Export endpoint returns complete JSON document ready for download. All security and transparency requirements met."
++  - agent: "testing"
++    message: "Receipt API v1 endpoints comprehensively tested and verified working. All endpoints passing: Decode ✅ (JSON & pipe-delimited formats with auto-detection), Validate ✅ (8 validation checks including duplicate detection and mock Tax Authority), Submit ✅ (with authentication, proper entry calculation), List ✅ (paginated user receipts), Get Details ✅ (full receipt info with audit trail). Fixed KeyError issue in submit endpoint. Multi-step flow working: decode → validate → submit → list/get. Authentication properly required for protected endpoints. Mock validation with 90% success rate functioning correctly."
+   - task: "Receipt API - Decode Endpoint"
+     implemented: true
+     working: true
+     file: "/app/backend/routers/receipts.py"
+     stuck_count: 0
+     priority: "high"
+-    needs_retesting: true
 +    needs_retesting: false
-+    status_history:
+     status_history:
+       - working: true
+         agent: "main"
+         comment: "QR code decoding with auto-format detection. Tested JSON and pipe-delimited formats successfully."
 +      - working: true
 +        agent: "testing"
-+        comment: "Draw audit report API endpoints fully tested and working. Admin login ✅, Get draws ✅, Create draw ✅, Complete draw with cryptographic audit ✅, Get audit data ✅, Export audit report ✅. All endpoints return 200 OK. Audit data contains cryptographic verification (seed, hashes), participants info, selection steps, winners, and verification status. Verification.is_valid returns true. Complete audit trail with CSPRNG winner selection verified."
-+
- agent_communication:
-   - agent: "main"
--    message: "MVP implementation complete. Backend APIs tested with curl, frontend screens verified with screenshots. All core flows working - registration, auth, scanning, draws, education."
-\ No newline at end of file
-+    message: "MVP implementation complete. Backend APIs tested with curl, frontend screens verified with screenshots. All core flows working - registration, auth, scanning, draws, education."
-+  - agent: "testing"
-+    message: "Draw Audit Report API endpoints comprehensively tested and verified working. Created test user with entries, completed draw with cryptographic audit trail, verified audit data structure contains all required fields (pre_draw seed/hash, participants info, selection steps, winners), and confirmed verification status is valid. Export endpoint returns complete JSON document ready for download. All security and transparency requirements met."
-\ No newline at end of file
++        comment: "✅ Decode endpoint fully tested and working. JSON format decode ✅, Pipe-delimited format decode ✅. Auto-format detection working correctly with confidence scores. Successfully tested with both JSON format (confidence: 1.0) and pipe-delimited format (confidence: 1.0). Receipt data properly extracted including receipt number, merchant info, amounts, and currency."
+ 
+   - task: "Receipt API - Validate Endpoint"
+     implemented: true
+@@ -490,32 +495,41 @@ agent_communication:
+     file: "/app/backend/routers/receipts.py"
+     stuck_count: 0
+     priority: "high"
+-    needs_retesting: true
++    needs_retesting: false
+     status_history:
+       - working: true
+         agent: "main"
+         comment: "Receipt validation with format checks, business rules, duplicate detection, and mock Tax Authority validation."
++      - working: true
++        agent: "testing"
++        comment: "✅ Validate endpoint fully tested and working. All validation checks passing: receipt_number_format ✅, merchant_tin_format ✅, amount_valid ✅, currency_format ✅, date_not_future ✅, date_not_expired ✅, duplicate_check ✅, authority_validation (MOCK) ✅. Proper duplicate detection working - correctly identifies previously submitted receipts. Mock Tax Authority validation with 90% success rate functioning as expected."
+ 
+   - task: "Receipt API - Submit Endpoint"
+     implemented: true
+-    working: "NA"
++    working: true
+     file: "/app/backend/routers/receipts.py"
+     stuck_count: 0
+     priority: "high"
+-    needs_retesting: true
++    needs_retesting: false
+     status_history:
+       - working: "NA"
+         agent: "main"
+         comment: "Submit endpoint implemented, needs testing with authentication."
++      - working: true
++        agent: "testing"
++        comment: "✅ Submit endpoint fully tested and working with authentication. Fixed KeyError issue with draw_date field. Successfully submits valid receipts and awards entries (1 base entry + bonus entries based on amount). Proper authentication required and working. Returns correct receipt_id, status, entries_earned, bonus_entries, and total_entries. Handles both valid and duplicate receipts appropriately."
+ 
+   - task: "Receipt API - List/Get Endpoints"
+     implemented: true
+-    working: "NA"
++    working: true
+     file: "/app/backend/routers/receipts.py"
+     stuck_count: 0
+     priority: "medium"
+-    needs_retesting: true
++    needs_retesting: false
+     status_history:
+       - working: "NA"
+         agent: "main"
+         comment: "Get receipt by ID and list receipts endpoints implemented, needs testing."
++      - working: true
++        agent: "testing"
++        comment: "✅ List and Get Receipt endpoints fully tested and working. List receipts ✅ - returns paginated list with receipt details, status, and entries earned. Get receipt details ✅ - returns full receipt information including validation details, entries, audit trail, and merchant info. Both endpoints properly require authentication and filter by user_id."
