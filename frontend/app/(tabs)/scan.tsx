@@ -11,73 +11,103 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import { scanAPI, testAPI } from '../../src/utils/api';
-import ScanResult from '../../src/components/ScanResult';
+import { receiptAPI, testAPI, DecodeResponse, ValidateResponse, SubmitResponse } from '../../src/utils/api';
+import EnhancedScanResult from '../../src/components/EnhancedScanResult';
 
 const { width } = Dimensions.get('window');
 const isWeb = Platform.OS === 'web';
 const SCAN_AREA_SIZE = Math.min(width * 0.7, 300);
 
-interface ScanResultData {
-  status: 'valid' | 'invalid' | 'duplicate' | 'expired';
-  message: string;
-  entries_earned: number;
-  receipt_data?: {
-    merchant_name?: string;
-    amount?: number;
-    tax_amount?: number;
-  };
-}
+type ProcessingStep = 'decoding' | 'validating' | 'submitting' | 'complete' | 'error';
 
 export default function ScanScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const [isScanning, setIsScanning] = useState(true);
   const [showResult, setShowResult] = useState(false);
-  const [scanResult, setScanResult] = useState<ScanResultData | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  
+  // Multi-step processing state
+  const [currentStep, setCurrentStep] = useState<ProcessingStep>('decoding');
+  const [decodeResult, setDecodeResult] = useState<DecodeResponse | null>(null);
+  const [validateResult, setValidateResult] = useState<ValidateResponse | null>(null);
+  const [submitResult, setSubmitResult] = useState<SubmitResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleBarCodeScanned = async ({ data }: { data: string }) => {
-    if (!isScanning || isProcessing) return;
-    
+  // Reset all state
+  const resetState = () => {
+    setDecodeResult(null);
+    setValidateResult(null);
+    setSubmitResult(null);
+    setError(null);
+    setCurrentStep('decoding');
+  };
+
+  // Process QR code through the 3-step flow
+  const processQRCode = async (qr_data: string) => {
+    resetState();
     setIsScanning(false);
     setIsProcessing(true);
+    setShowResult(true);
 
     try {
-      const response = await scanAPI.scan(data);
-      setScanResult(response.data);
-      setShowResult(true);
-    } catch (error: any) {
-      Alert.alert(
-        'Error',
-        error.response?.data?.detail || 'Failed to process scan'
-      );
-      setIsScanning(true);
+      // Step 1: Decode
+      setCurrentStep('decoding');
+      const decodeRes = await receiptAPI.decode(qr_data);
+      setDecodeResult(decodeRes.data);
+
+      if (!decodeRes.data.success) {
+        throw new Error(decodeRes.data.errors[0] || 'Failed to decode QR code');
+      }
+
+      // Step 2: Validate
+      setCurrentStep('validating');
+      const validateRes = await receiptAPI.validate(decodeRes.data.decode_id, 'mock');
+      setValidateResult(validateRes.data);
+
+      // Step 3: Submit (only if valid)
+      if (validateRes.data.is_valid) {
+        setCurrentStep('submitting');
+        const submitRes = await receiptAPI.submit(validateRes.data.validation_id);
+        setSubmitResult(submitRes.data);
+      }
+
+      setCurrentStep('complete');
+    } catch (err: any) {
+      console.error('Scan error:', err);
+      setError(err.response?.data?.detail || err.message || 'Failed to process scan');
+      setCurrentStep('error');
     } finally {
       setIsProcessing(false);
     }
   };
 
+  const handleBarCodeScanned = async ({ data }: { data: string }) => {
+    if (!isScanning || isProcessing) return;
+    await processQRCode(data);
+  };
+
   const handleCloseResult = () => {
     setShowResult(false);
-    setScanResult(null);
+    resetState();
+    setIsScanning(true);
+  };
+
+  const handleRetry = () => {
+    setShowResult(false);
+    resetState();
     setIsScanning(true);
   };
 
   // For testing - generate and scan a test QR
   const handleTestScan = async () => {
     try {
-      setIsProcessing(true);
-      const qrResponse = await testAPI.generateQR('MER-001', Math.random() * 500 + 50);
-      const response = await scanAPI.scan(qrResponse.data.qr_data);
-      setScanResult(response.data);
-      setShowResult(true);
-    } catch (error: any) {
-      Alert.alert(
-        'Error',
-        error.response?.data?.detail || 'Failed to process test scan'
+      const qrResponse = await testAPI.generateReceiptQR(
+        ['SuperMart', 'TechStore', 'Fashion Hub', 'Grocery Plus', 'Coffee Shop'][Math.floor(Math.random() * 5)],
+        Math.floor(Math.random() * 500) + 50
       );
-    } finally {
-      setIsProcessing(false);
+      await processQRCode(qrResponse.data.qr_data);
+    } catch (error: any) {
+      Alert.alert('Error', 'Failed to generate test scan');
     }
   };
 
@@ -141,6 +171,33 @@ export default function ScanScreen() {
       </View>
 
       <View style={styles.footer}>
+        {/* How it works info */}
+        <View style={styles.infoCard}>
+          <Text style={styles.infoTitle}>How it works</Text>
+          <View style={styles.infoSteps}>
+            <View style={styles.infoStep}>
+              <View style={styles.infoStepNumber}>
+                <Text style={styles.infoStepNumberText}>1</Text>
+              </View>
+              <Text style={styles.infoStepText}>Decode QR</Text>
+            </View>
+            <Ionicons name="arrow-forward" size={16} color="#64748B" />
+            <View style={styles.infoStep}>
+              <View style={styles.infoStepNumber}>
+                <Text style={styles.infoStepNumberText}>2</Text>
+              </View>
+              <Text style={styles.infoStepText}>Validate</Text>
+            </View>
+            <Ionicons name="arrow-forward" size={16} color="#64748B" />
+            <View style={styles.infoStep}>
+              <View style={styles.infoStepNumber}>
+                <Text style={styles.infoStepNumberText}>3</Text>
+              </View>
+              <Text style={styles.infoStepText}>Earn Entry</Text>
+            </View>
+          </View>
+        </View>
+
         <View style={styles.tips}>
           <Ionicons name="information-circle" size={20} color="#3B82F6" />
           <Text style={styles.tipsText}>
@@ -161,10 +218,15 @@ export default function ScanScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScanResult
+      <EnhancedScanResult
         visible={showResult}
-        result={scanResult}
+        currentStep={currentStep}
+        decodeResult={decodeResult}
+        validateResult={validateResult}
+        submitResult={submitResult}
+        error={error}
         onClose={handleCloseResult}
+        onRetry={handleRetry}
       />
     </SafeAreaView>
   );
@@ -263,6 +325,46 @@ const styles = StyleSheet.create({
     maxWidth: isWeb ? 400 : undefined,
     alignSelf: isWeb ? 'center' : undefined,
     width: isWeb ? '100%' : undefined,
+  },
+  infoCard: {
+    backgroundColor: '#1E293B',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+  },
+  infoTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#94A3B8',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  infoSteps: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+  },
+  infoStep: {
+    alignItems: 'center',
+    gap: 4,
+  },
+  infoStepNumber: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#3B82F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  infoStepNumberText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  infoStepText: {
+    fontSize: 12,
+    color: '#94A3B8',
   },
   tips: {
     flexDirection: 'row',
