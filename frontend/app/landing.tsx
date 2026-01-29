@@ -28,6 +28,47 @@ export default function LandingPage() {
     message: '',
   });
 
+  // Why traditional compliance fails
+  const whyComplianceFails = [
+    {
+      icon: 'close-circle',
+      title: 'No Consumer Incentive',
+      description: 'Consumers have no personal benefit from requesting receipts, so most don\'t bother - allowing businesses to underreport sales.',
+      color: '#EF4444',
+    },
+    {
+      icon: 'cash',
+      title: 'Penalty-Only Approach',
+      description: 'Traditional enforcement relies solely on penalties and audits, which are expensive, reactive, and create adversarial relationships.',
+      color: '#F97316',
+    },
+    {
+      icon: 'time',
+      title: 'Delayed Detection',
+      description: 'Tax evasion is typically discovered months or years later during audits, by which time significant revenue has already been lost.',
+      color: '#EAB308',
+    },
+    {
+      icon: 'analytics',
+      title: 'Information Asymmetry',
+      description: 'Tax authorities lack real-time visibility into retail transactions, relying on self-reported data from the very entities they\'re trying to regulate.',
+      color: '#8B5CF6',
+    },
+    {
+      icon: 'people',
+      title: 'Public Disengagement',
+      description: 'Citizens view tax compliance as the government\'s problem, not realizing they\'re indirect victims when businesses evade taxes.',
+      color: '#6366F1',
+    },
+    {
+      icon: 'wallet',
+      title: 'High Enforcement Costs',
+      description: 'Manual audits, investigations, and legal proceedings are resource-intensive, often costing more than the recovered revenue.',
+      color: '#EC4899',
+    },
+  ];
+
+  // The challenges we solve
   const challenges = [
     {
       icon: 'trending-down',
@@ -78,30 +119,58 @@ export default function LandingPage() {
     },
   ];
 
-  const howItWorks = [
+  const deploymentProcess = [
     {
-      step: 1,
-      title: 'Integration',
-      description: 'TaxDraw integrates with your existing tax receipt infrastructure via secure APIs. We support QR codes, barcodes, and digital receipt formats.',
-      icon: 'git-merge',
+      phase: 'Phase 1',
+      title: 'Discovery & Planning',
+      duration: '2-3 Weeks',
+      description: 'We assess your existing tax infrastructure, define integration requirements, and create a detailed implementation roadmap.',
+      tasks: [
+        'Technical infrastructure assessment',
+        'API specification review',
+        'Security & compliance requirements',
+        'Project timeline & milestones',
+      ],
+      icon: 'search',
     },
     {
-      step: 2,
-      title: 'Citizen Engagement',
-      description: 'Citizens download the free mobile app and begin scanning receipts from registered merchants. Each valid receipt earns draw entries.',
-      icon: 'phone-portrait',
+      phase: 'Phase 2',
+      title: 'Integration & Development',
+      duration: '4-6 Weeks',
+      description: 'Our team integrates Taxxa with your receipt verification systems and configures the platform for your jurisdiction.',
+      tasks: [
+        'API integration with tax authority systems',
+        'Custom branding & localization',
+        'Prize structure configuration',
+        'Admin portal setup & training',
+      ],
+      icon: 'code-slash',
     },
     {
-      step: 3,
-      title: 'Verification & Analytics',
-      description: 'Every scan is validated in real-time. Your dashboard displays transaction data, compliance metrics, and fraud detection alerts.',
-      icon: 'checkmark-circle',
+      phase: 'Phase 3',
+      title: 'Testing & Validation',
+      duration: '2-3 Weeks',
+      description: 'Comprehensive testing ensures system reliability, security, and seamless user experience before public launch.',
+      tasks: [
+        'End-to-end system testing',
+        'Security penetration testing',
+        'Load & performance testing',
+        'User acceptance testing (UAT)',
+      ],
+      icon: 'checkmark-done',
     },
     {
-      step: 4,
-      title: 'Transparent Draws',
-      description: 'Automated prize draws run on schedule using cryptographically secure random selection. Full audit reports are publicly available.',
-      icon: 'trophy',
+      phase: 'Phase 4',
+      title: 'Launch & Support',
+      duration: 'Ongoing',
+      description: 'We support your public launch with marketing materials, monitor system performance, and provide continuous optimization.',
+      tasks: [
+        'Public launch coordination',
+        'Real-time monitoring & alerts',
+        '24/7 technical support',
+        'Quarterly performance reviews',
+      ],
+      icon: 'rocket',
     },
   ];
 
@@ -217,7 +286,6 @@ export default function LandingPage() {
   ];
 
   const handleSubmitInquiry = () => {
-    // In a real implementation, this would send to a backend
     alert('Thank you for your inquiry. Our team will contact you within 24-48 hours.');
     setShowContactModal(false);
     setContactForm({ name: '', organization: '', email: '', country: '', message: '' });
@@ -232,7 +300,7 @@ export default function LandingPage() {
             <View style={styles.logoIcon}>
               <Ionicons name="receipt" size={24} color="#fff" />
             </View>
-            <Text style={styles.logoText}>TaxDraw</Text>
+            <Text style={styles.logoText}>Taxxa</Text>
             <View style={styles.logoBadge}>
               <Text style={styles.logoBadgeText}>Enterprise</Text>
             </View>
@@ -268,14 +336,14 @@ export default function LandingPage() {
         <View style={styles.heroContent}>
           <View style={styles.heroBadge}>
             <Ionicons name="globe" size={14} color="#60A5FA" />
-            <Text style={styles.heroBadgeText}>Deployed in 12+ Countries</Text>
+            <Text style={styles.heroBadgeText}>Trusted by Tax Authorities Worldwide</Text>
           </View>
           <Text style={styles.heroTitle}>
             Increase Tax Compliance{'\n'}
             <Text style={styles.heroTitleHighlight}>Through Citizen Engagement</Text>
           </Text>
           <Text style={styles.heroSubtitle}>
-            TaxDraw is a proven digital platform that incentivizes consumers to request tax receipts, 
+            Taxxa is a proven digital platform that incentivizes consumers to request tax receipts, 
             dramatically increasing compliance rates and providing tax authorities with unprecedented 
             transaction visibility.
           </Text>
@@ -323,7 +391,7 @@ export default function LandingPage() {
                   <View style={[styles.dot, { backgroundColor: '#F59E0B' }]} />
                   <View style={[styles.dot, { backgroundColor: '#10B981' }]} />
                 </View>
-                <Text style={styles.dashboardTitle}>TaxDraw Admin Portal</Text>
+                <Text style={styles.dashboardTitle}>Taxxa Admin Portal</Text>
               </View>
               <View style={styles.dashboardBody}>
                 <View style={styles.dashboardSidebar}>
@@ -333,18 +401,18 @@ export default function LandingPage() {
                   <View style={styles.sidebarItem}><Ionicons name="analytics" size={16} color="#64748B" /></View>
                 </View>
                 <View style={styles.dashboardContent}>
-                  <View style={styles.statsGrid}>
-                    <View style={styles.statCard}>
-                      <Text style={styles.statValue}>1.2M</Text>
-                      <Text style={styles.statLabel}>Scans Today</Text>
+                  <View style={styles.miniStatsGrid}>
+                    <View style={styles.miniStatCard}>
+                      <Text style={styles.miniStatValue}>1.2M</Text>
+                      <Text style={styles.miniStatLabel}>Scans Today</Text>
                     </View>
-                    <View style={styles.statCard}>
-                      <Text style={styles.statValue}>94%</Text>
-                      <Text style={styles.statLabel}>Compliance</Text>
+                    <View style={styles.miniStatCard}>
+                      <Text style={styles.miniStatValue}>94%</Text>
+                      <Text style={styles.miniStatLabel}>Compliance</Text>
                     </View>
-                    <View style={styles.statCard}>
-                      <Text style={styles.statValue}>+18%</Text>
-                      <Text style={styles.statLabel}>Revenue</Text>
+                    <View style={styles.miniStatCard}>
+                      <Text style={styles.miniStatValue}>+18%</Text>
+                      <Text style={styles.miniStatLabel}>Revenue</Text>
                     </View>
                   </View>
                   <View style={styles.chartPlaceholder}>
@@ -358,36 +426,39 @@ export default function LandingPage() {
         )}
       </LinearGradient>
 
-      {/* Problem Section */}
-      <View style={styles.section}>
+      {/* Why Compliance Fails Section */}
+      <View style={[styles.section, styles.sectionLight]}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTag}>THE CHALLENGE</Text>
-          <Text style={styles.sectionTitle}>Why Tax Compliance Struggles</Text>
+          <Text style={[styles.sectionTag, { color: '#EF4444' }]}>THE PROBLEM</Text>
+          <Text style={styles.sectionTitle}>Why Traditional Compliance Doesn't Work</Text>
           <Text style={styles.sectionSubtitle}>
-            Tax authorities worldwide face common challenges in ensuring accurate revenue collection 
-            from retail transactions.
+            Tax authorities worldwide struggle with the same fundamental challenges. 
+            Understanding why traditional approaches fail is the first step to solving the problem.
           </Text>
         </View>
-        <View style={styles.challengesGrid}>
-          {challenges.map((challenge, index) => (
-            <View key={index} style={styles.challengeCard}>
-              <View style={[styles.challengeIcon, { backgroundColor: challenge.color + '20' }]}>
-                <Ionicons name={challenge.icon as any} size={28} color={challenge.color} />
+        <View style={styles.failureGrid}>
+          {whyComplianceFails.map((item, index) => (
+            <View key={index} style={styles.failureCard}>
+              <View style={[styles.failureIcon, { backgroundColor: item.color + '15' }]}>
+                <Ionicons name={item.icon as any} size={24} color={item.color} />
               </View>
-              <Text style={styles.challengeTitle}>{challenge.title}</Text>
-              <Text style={styles.challengeDescription}>{challenge.description}</Text>
+              <View style={styles.failureContent}>
+                <Text style={styles.failureTitle}>{item.title}</Text>
+                <Text style={styles.failureDescription}>{item.description}</Text>
+              </View>
             </View>
           ))}
         </View>
       </View>
 
-      {/* Solution Section */}
+      {/* The Taxxa Solution */}
       <View style={[styles.section, styles.sectionDark]}>
         <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTag, { color: '#60A5FA' }]}>OUR SOLUTION</Text>
-          <Text style={[styles.sectionTitle, { color: '#fff' }]}>How TaxDraw Works</Text>
+          <Text style={[styles.sectionTag, { color: '#10B981' }]}>THE SOLUTION</Text>
+          <Text style={[styles.sectionTitle, { color: '#fff' }]}>How Taxxa Solves This</Text>
           <Text style={[styles.sectionSubtitle, { color: '#94A3B8' }]}>
-            A proven approach combining behavioral economics with modern technology.
+            Instead of fighting human nature, Taxxa works with it - turning citizens into active 
+            participants in tax compliance through incentives and engagement.
           </Text>
         </View>
         <View style={styles.solutionsGrid}>
@@ -403,31 +474,43 @@ export default function LandingPage() {
         </View>
       </View>
 
-      {/* Implementation Steps */}
+      {/* Deployment Process */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTag}>IMPLEMENTATION</Text>
-          <Text style={styles.sectionTitle}>Deployment Process</Text>
+          <Text style={styles.sectionTag}>DEPLOYMENT</Text>
+          <Text style={styles.sectionTitle}>Implementation Process</Text>
           <Text style={styles.sectionSubtitle}>
-            From integration to launch in as little as 8-12 weeks, depending on existing infrastructure.
+            From initial assessment to public launch in 8-12 weeks. Our proven deployment 
+            methodology ensures a smooth integration with your existing infrastructure.
           </Text>
         </View>
-        <View style={styles.stepsContainer}>
-          {howItWorks.map((item, index) => (
-            <View key={index} style={styles.stepItem}>
-              <View style={styles.stepLeft}>
-                <View style={styles.stepNumber}>
-                  <Text style={styles.stepNumberText}>{item.step}</Text>
+        <View style={styles.deploymentTimeline}>
+          {deploymentProcess.map((phase, index) => (
+            <View key={index} style={styles.deploymentPhase}>
+              <View style={styles.phaseHeader}>
+                <View style={styles.phaseIconContainer}>
+                  <Ionicons name={phase.icon as any} size={24} color="#fff" />
                 </View>
-                {index < howItWorks.length - 1 && <View style={styles.stepLine} />}
-              </View>
-              <View style={styles.stepContent}>
-                <View style={styles.stepIconContainer}>
-                  <Ionicons name={item.icon as any} size={28} color="#3B82F6" />
+                <View style={styles.phaseHeaderText}>
+                  <Text style={styles.phaseBadge}>{phase.phase}</Text>
+                  <Text style={styles.phaseTitle}>{phase.title}</Text>
+                  <Text style={styles.phaseDuration}>{phase.duration}</Text>
                 </View>
-                <Text style={styles.stepTitle}>{item.title}</Text>
-                <Text style={styles.stepDescription}>{item.description}</Text>
               </View>
+              <Text style={styles.phaseDescription}>{phase.description}</Text>
+              <View style={styles.phaseTasks}>
+                {phase.tasks.map((task, taskIndex) => (
+                  <View key={taskIndex} style={styles.taskItem}>
+                    <Ionicons name="checkmark" size={16} color="#10B981" />
+                    <Text style={styles.taskText}>{task}</Text>
+                  </View>
+                ))}
+              </View>
+              {index < deploymentProcess.length - 1 && (
+                <View style={styles.phaseConnector}>
+                  <Ionicons name="arrow-down" size={20} color="#CBD5E1" />
+                </View>
+              )}
             </View>
           ))}
         </View>
@@ -535,9 +618,9 @@ export default function LandingPage() {
       {/* CTA Section */}
       <View style={styles.ctaSection}>
         <View style={styles.ctaContent}>
-          <Text style={styles.ctaTitle}>Ready to Explore TaxDraw?</Text>
+          <Text style={styles.ctaTitle}>Ready to Transform Tax Compliance?</Text>
           <Text style={styles.ctaSubtitle}>
-            Schedule a personalized demonstration and learn how TaxDraw can be configured 
+            Schedule a personalized demonstration and learn how Taxxa can be configured 
             for your jurisdiction's specific requirements.
           </Text>
           <View style={styles.ctaButtons}>
@@ -558,7 +641,7 @@ export default function LandingPage() {
           </View>
           <View style={styles.ctaContact}>
             <Text style={styles.ctaContactText}>Or contact us directly:</Text>
-            <Text style={styles.ctaContactEmail}>partnerships@taxdraw.io</Text>
+            <Text style={styles.ctaContactEmail}>partnerships@taxxa.io</Text>
           </View>
         </View>
       </View>
@@ -571,7 +654,7 @@ export default function LandingPage() {
               <View style={styles.logoIcon}>
                 <Ionicons name="receipt" size={24} color="#fff" />
               </View>
-              <Text style={styles.logoTextWhite}>TaxDraw</Text>
+              <Text style={styles.logoTextWhite}>Taxxa</Text>
             </View>
             <Text style={styles.footerTagline}>
               Transforming tax compliance through citizen engagement and modern technology.
@@ -612,7 +695,7 @@ export default function LandingPage() {
         
         <View style={styles.footerBottom}>
           <Text style={styles.footerCopyright}>
-            © 2026 TaxDraw Technologies. All rights reserved.
+            © 2026 Taxxa Technologies. All rights reserved.
           </Text>
           <View style={styles.footerCerts}>
             <View style={styles.certBadge}>
@@ -682,7 +765,7 @@ export default function LandingPage() {
               <Text style={styles.inputLabel}>How can we help? *</Text>
               <TextInput
                 style={[styles.input, styles.textArea]}
-                placeholder="Tell us about your requirements, questions, or interest in TaxDraw..."
+                placeholder="Tell us about your requirements, questions, or interest in Taxxa..."
                 placeholderTextColor="#64748B"
                 multiline
                 numberOfLines={4}
@@ -948,24 +1031,24 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
-  statsGrid: {
+  miniStatsGrid: {
     flexDirection: 'row',
     gap: 12,
     marginBottom: 16,
   },
-  statCard: {
+  miniStatCard: {
     flex: 1,
     backgroundColor: '#0F172A',
     borderRadius: 8,
     padding: 16,
     alignItems: 'center',
   },
-  statValue: {
+  miniStatValue: {
     fontSize: 24,
     fontWeight: '700',
     color: '#fff',
   },
-  statLabel: {
+  miniStatLabel: {
     fontSize: 11,
     color: '#64748B',
     marginTop: 4,
@@ -1020,41 +1103,42 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 28,
   },
-  // Challenges
-  challengesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 24,
+  // Why Compliance Fails
+  failureGrid: {
     maxWidth: 1000,
     alignSelf: 'center',
   },
-  challengeCard: {
+  failureCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 28,
-    width: isWeb ? 280 : '100%',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: '#E2E8F0',
   },
-  challengeIcon: {
-    width: 56,
-    height: 56,
+  failureIcon: {
+    width: 48,
+    height: 48,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginRight: 16,
   },
-  challengeTitle: {
-    fontSize: 18,
+  failureContent: {
+    flex: 1,
+  },
+  failureTitle: {
+    fontSize: 17,
     fontWeight: '600',
     color: '#1E293B',
-    marginBottom: 8,
+    marginBottom: 6,
   },
-  challengeDescription: {
+  failureDescription: {
     fontSize: 15,
     color: '#64748B',
-    lineHeight: 24,
+    lineHeight: 22,
   },
   // Solutions
   solutionsGrid: {
@@ -1093,61 +1177,83 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
     lineHeight: 24,
   },
-  // Steps
-  stepsContainer: {
-    maxWidth: 700,
+  // Deployment Process
+  deploymentTimeline: {
+    maxWidth: 800,
     alignSelf: 'center',
   },
-  stepItem: {
+  deploymentPhase: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    position: 'relative',
+  },
+  phaseHeader: {
     flexDirection: 'row',
-    marginBottom: 24,
+    alignItems: 'flex-start',
+    marginBottom: 16,
   },
-  stepLeft: {
-    alignItems: 'center',
-    marginRight: 24,
-  },
-  stepNumber: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  phaseIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
     backgroundColor: '#3B82F6',
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: 16,
   },
-  stepNumberText: {
-    fontSize: 16,
+  phaseHeaderText: {
+    flex: 1,
+  },
+  phaseBadge: {
+    fontSize: 12,
     fontWeight: '700',
-    color: '#fff',
+    color: '#3B82F6',
+    marginBottom: 4,
   },
-  stepLine: {
-    width: 2,
-    flex: 1,
-    backgroundColor: '#E2E8F0',
-    marginTop: 8,
-  },
-  stepContent: {
-    flex: 1,
-    paddingBottom: 24,
-  },
-  stepIconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 12,
-    backgroundColor: '#EFF6FF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-  },
-  stepTitle: {
+  phaseTitle: {
     fontSize: 20,
     fontWeight: '600',
     color: '#1E293B',
-    marginBottom: 8,
+    marginBottom: 4,
   },
-  stepDescription: {
+  phaseDuration: {
+    fontSize: 14,
+    color: '#64748B',
+    fontWeight: '500',
+  },
+  phaseDescription: {
     fontSize: 15,
     color: '#64748B',
     lineHeight: 24,
+    marginBottom: 16,
+  },
+  phaseTasks: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 10,
+    padding: 16,
+  },
+  taskItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 10,
+  },
+  taskText: {
+    fontSize: 14,
+    color: '#475569',
+  },
+  phaseConnector: {
+    alignItems: 'center',
+    paddingVertical: 8,
+    position: 'absolute',
+    bottom: -28,
+    left: '50%',
+    marginLeft: -10,
+    zIndex: 1,
   },
   // Metrics
   metricsSection: {
