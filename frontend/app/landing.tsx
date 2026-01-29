@@ -379,32 +379,32 @@ export default function LandingPage() {
       {/* Hero Section */}
       <LinearGradient
         colors={['#0F172A', '#1E3A5F', '#0F172A']}
-        style={styles.hero}
+        style={[styles.hero, isMobile && styles.heroMobile]}
       >
-        <View style={styles.heroContent}>
+        <View style={[styles.heroContent, isMobile && styles.heroContentMobile]}>
           <View style={styles.heroBadge}>
             <Ionicons name="globe" size={14} color="#60A5FA" />
             <Text style={styles.heroBadgeText}>Trusted by Tax Authorities Worldwide</Text>
           </View>
-          <Text style={styles.heroTitle}>
+          <Text style={[styles.heroTitle, isMobile && styles.heroTitleMobile]}>
             Increase Tax Compliance{'\n'}
             <Text style={styles.heroTitleHighlight}>Through Citizen Engagement</Text>
           </Text>
-          <Text style={styles.heroSubtitle}>
+          <Text style={[styles.heroSubtitle, isMobile && styles.heroSubtitleMobile]}>
             Taxxa is a proven digital platform that incentivizes consumers to request tax receipts, 
             dramatically increasing compliance rates and providing tax authorities with unprecedented 
             transaction visibility.
           </Text>
-          <View style={styles.heroButtons}>
+          <View style={[styles.heroButtons, isMobile && styles.heroButtonsMobile]}>
             <TouchableOpacity 
-              style={styles.heroButtonPrimary}
+              style={[styles.heroButtonPrimary, isMobile && styles.heroButtonMobile]}
               onPress={() => setShowContactModal(true)}
             >
               <Ionicons name="calendar" size={20} color="#fff" />
               <Text style={styles.heroButtonPrimaryText}>Schedule a Demo</Text>
             </TouchableOpacity>
             <TouchableOpacity 
-              style={styles.heroButtonSecondary}
+              style={[styles.heroButtonSecondary, isMobile && styles.heroButtonMobile]}
               onPress={() => router.push('/admin')}
             >
               <Ionicons name="desktop" size={20} color="#3B82F6" />
@@ -413,7 +413,7 @@ export default function LandingPage() {
           </View>
           
           {/* Trust Indicators */}
-          <View style={styles.trustRow}>
+          <View style={[styles.trustRow, isMobile && styles.trustRowMobile]}>
             <View style={styles.trustItem}>
               <Ionicons name="shield-checkmark" size={20} color="#10B981" />
               <Text style={styles.trustText}>SOC 2 Ready</Text>
@@ -429,8 +429,8 @@ export default function LandingPage() {
           </View>
         </View>
         
-        {/* Dashboard Preview */}
-        {isWeb && (
+        {/* Dashboard Preview - Only show on desktop */}
+        {!isMobile && isWeb && (
           <View style={styles.heroImage}>
             <View style={styles.dashboardPreview}>
               <View style={styles.dashboardHeader}>
