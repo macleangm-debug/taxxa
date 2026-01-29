@@ -556,7 +556,7 @@ class ReceiptValidator:
         result['checks'].extend(business_checks)
         
         # Duplicate check
-        if db:
+        if db is not None:
             duplicate_check = await cls._check_duplicate(receipt, db)
             result['checks'].append(duplicate_check)
             if not duplicate_check['passed']:
