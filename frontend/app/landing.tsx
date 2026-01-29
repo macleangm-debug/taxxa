@@ -1174,83 +1174,102 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
     lineHeight: 24,
   },
-  // Deployment Process
-  deploymentTimeline: {
-    maxWidth: 800,
+  // Deployment Grid - Compact Cards
+  deploymentGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 16,
+    maxWidth: 1100,
     alignSelf: 'center',
   },
-  deploymentPhase: {
+  deploymentCard: {
     backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 16,
+    borderRadius: 12,
+    padding: 20,
+    width: isWeb ? 530 : '100%',
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    position: 'relative',
   },
-  phaseHeader: {
+  deploymentCardHeader: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     marginBottom: 16,
   },
-  phaseIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
+  deploymentPhaseNumber: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: '#3B82F6',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 16,
+    marginRight: 12,
   },
-  phaseHeaderText: {
+  deploymentPhaseNumberText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  deploymentHeaderInfo: {
     flex: 1,
   },
-  phaseBadge: {
-    fontSize: 12,
-    fontWeight: '700',
+  deploymentCardPhase: {
+    fontSize: 11,
+    fontWeight: '600',
     color: '#3B82F6',
-    marginBottom: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
-  phaseTitle: {
-    fontSize: 20,
+  deploymentCardTitle: {
+    fontSize: 17,
     fontWeight: '600',
     color: '#1E293B',
-    marginBottom: 4,
   },
-  phaseDuration: {
-    fontSize: 14,
-    color: '#64748B',
-    fontWeight: '500',
-  },
-  phaseDescription: {
-    fontSize: 15,
-    color: '#64748B',
-    lineHeight: 24,
-    marginBottom: 16,
-  },
-  phaseTasks: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: 10,
-    padding: 16,
-  },
-  taskItem: {
+  deploymentDuration: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    marginBottom: 10,
+    gap: 4,
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
   },
-  taskText: {
-    fontSize: 14,
-    color: '#475569',
+  deploymentDurationText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#64748B',
   },
-  phaseConnector: {
+  deploymentTasksRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  deploymentTaskChip: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
-    position: 'absolute',
-    bottom: -28,
-    left: '50%',
-    marginLeft: -10,
-    zIndex: 1,
+    gap: 6,
+    backgroundColor: '#F0FDF4',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+  },
+  deploymentTaskChipText: {
+    fontSize: 12,
+    color: '#166534',
+    fontWeight: '500',
+  },
+  deploymentTaskMore: {
+    backgroundColor: '#EFF6FF',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  deploymentTaskMoreText: {
+    fontSize: 12,
+    color: '#3B82F6',
+    fontWeight: '500',
   },
   // Metrics
   metricsSection: {
