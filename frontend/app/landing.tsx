@@ -1101,42 +1101,41 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 28,
   },
-  // Why Compliance Fails
-  failureGrid: {
-    maxWidth: 1000,
+  // Compact Cards for Why Compliance Fails
+  compactCardGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 16,
+    maxWidth: 1100,
     alignSelf: 'center',
   },
-  failureCard: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+  compactCard: {
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 20,
-    marginBottom: 12,
+    width: isWeb ? 340 : '100%',
     borderWidth: 1,
     borderColor: '#E2E8F0',
   },
-  failureIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
+  compactCardIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 16,
+    marginBottom: 12,
   },
-  failureContent: {
-    flex: 1,
-  },
-  failureTitle: {
-    fontSize: 17,
+  compactCardTitle: {
+    fontSize: 16,
     fontWeight: '600',
     color: '#1E293B',
     marginBottom: 6,
   },
-  failureDescription: {
-    fontSize: 15,
+  compactCardDesc: {
+    fontSize: 14,
     color: '#64748B',
-    lineHeight: 22,
+    lineHeight: 20,
   },
   // Solutions
   solutionsGrid: {
