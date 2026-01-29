@@ -705,6 +705,12 @@ class TaxAuthorityFactory:
     _authorities = {
         Jurisdiction.TANZANIA: TanzaniaTRA,
         Jurisdiction.KENYA: KenyaKRA,
+        Jurisdiction.UGANDA: UgandaURA,
+        Jurisdiction.RWANDA: RwandaRRA,
+        Jurisdiction.ETHIOPIA: EthiopiaERCA,
+        Jurisdiction.NIGERIA: NigeriaFIRS,
+        Jurisdiction.SOUTH_AFRICA: SouthAfricaSARS,
+        Jurisdiction.GHANA: GhanaGRA,
         Jurisdiction.GENERIC: GenericTaxAuthority
     }
     
@@ -714,7 +720,7 @@ class TaxAuthorityFactory:
         Get tax authority instance for a jurisdiction.
         
         Args:
-            jurisdiction: Country code (TZ, KE) or "GENERIC"
+            jurisdiction: Country code (TZ, KE, UG, RW, etc.) or "GENERIC"
         
         Returns:
             Tax authority instance
@@ -748,16 +754,29 @@ class TaxAuthorityFactory:
         if any(p in qr_lower for p in ["kra.go.ke", "etims", "itax"]):
             return Jurisdiction.KENYA
         
-        # Check TIN format
-        # Tanzania TIN: 9-digit number
-        tz_tin = re.search(r'\b\d{9}\b', qr_data)
-        if tz_tin:
-            return Jurisdiction.TANZANIA
+        # Uganda patterns
+        if any(p in qr_lower for p in ["ura.go.ug", "efris"]):
+            return Jurisdiction.UGANDA
         
-        # Kenya PIN: A followed by 9 digits and 1 letter
-        ke_pin = re.search(r'\b[AP]\d{9}[A-Z]\b', qr_data)
-        if ke_pin:
-            return Jurisdiction.KENYA
+        # Rwanda patterns
+        if any(p in qr_lower for p in ["rra.gov.rw", "ebm"]):
+            return Jurisdiction.RWANDA
+        
+        # Ethiopia patterns
+        if any(p in qr_lower for p in ["erca.gov.et", "etax"]):
+            return Jurisdiction.ETHIOPIA
+        
+        # Nigeria patterns
+        if any(p in qr_lower for p in ["firs.gov.ng", "taxpro"]):
+            return Jurisdiction.NIGERIA
+        
+        # South Africa patterns
+        if any(p in qr_lower for p in ["sars.gov.za", "efiling"]):
+            return Jurisdiction.SOUTH_AFRICA
+        
+        # Ghana patterns
+        if any(p in qr_lower for p in ["gra.gov.gh"]):
+            return Jurisdiction.GHANA
         
         return Jurisdiction.GENERIC
     
@@ -777,6 +796,48 @@ class TaxAuthorityFactory:
                 "name": "Kenya",
                 "authority": "Kenya Revenue Authority (KRA)",
                 "system": "eTIMS",
+                "status": "Supported"
+            },
+            {
+                "code": "UG",
+                "name": "Uganda",
+                "authority": "Uganda Revenue Authority (URA)",
+                "system": "EFRIS",
+                "status": "Supported"
+            },
+            {
+                "code": "RW",
+                "name": "Rwanda",
+                "authority": "Rwanda Revenue Authority (RRA)",
+                "system": "EBM",
+                "status": "Supported"
+            },
+            {
+                "code": "ET",
+                "name": "Ethiopia",
+                "authority": "Ethiopian Revenues & Customs Authority (ERCA)",
+                "system": "E-Receipt",
+                "status": "Supported"
+            },
+            {
+                "code": "NG",
+                "name": "Nigeria",
+                "authority": "Federal Inland Revenue Service (FIRS)",
+                "system": "TaxPro",
+                "status": "Supported"
+            },
+            {
+                "code": "ZA",
+                "name": "South Africa",
+                "authority": "South African Revenue Service (SARS)",
+                "system": "eFiling",
+                "status": "Supported"
+            },
+            {
+                "code": "GH",
+                "name": "Ghana",
+                "authority": "Ghana Revenue Authority (GRA)",
+                "system": "E-VAT",
                 "status": "Supported"
             }
         ]
