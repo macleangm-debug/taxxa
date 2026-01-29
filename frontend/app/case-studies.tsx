@@ -460,9 +460,9 @@ export default function PilotOpportunitiesPage() {
                 onChangeText={(text) => setContactForm({...contactForm, country: text})} 
               />
 
-              <Text style={styles.inputLabel}>Preferred Pilot Program</Text>
+              <Text style={styles.inputLabel}>Interested Program</Text>
               <View style={styles.pilotSelector}>
-                {['Discovery Pilot', 'Scale Pilot', 'National Pilot'].map((type) => (
+                {['Proof of Concept', 'Regional Rollout', 'National Program'].map((type) => (
                   <TouchableOpacity
                     key={type}
                     style={[
