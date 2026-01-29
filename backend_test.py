@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-TaxDraw Backend API Test Suite - Draw Audit Report Testing
-Testing the Draw Audit Report API endpoints as requested
+TaxDraw Backend API Test Suite - Receipt API v1 Testing
+Testing the new Receipt API v1 endpoints with multi-step flow
 """
 
 import requests
@@ -12,8 +12,32 @@ import time
 
 # Configuration
 BASE_URL = "https://tax-compliance-11.preview.emergentagent.com/api"
+RECEIPT_API_BASE = f"{BASE_URL}/v1/receipts"
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "taxdraw_admin_2024"
+
+# Test data
+TEST_USER = {
+    "phone_number": "0700000001",
+    "password": "password123"
+}
+
+# Test QR data samples
+QR_DATA_JSON = {
+    "qr_data": json.dumps({
+        "receipt_number": "INV-2026-001234",
+        "merchant_tin": "12345678901",
+        "merchant_name": "ABC Store Ltd",
+        "total_amount": 150.50,
+        "tax_amount": 22.58,
+        "transaction_date": "2026-01-28T10:30:00Z",
+        "currency": "USD"
+    })
+}
+
+QR_DATA_PIPE = {
+    "qr_data": "receipt_no=REC-2026-5678|tin=98765432101|merchant=XYZ Retail|total=250.00|tax=37.50|date=2026-01-27|currency=EUR"
+}
 
 class TaxDrawAPITester:
     def __init__(self):
