@@ -472,3 +472,50 @@ agent_communication:
     message: "MVP implementation complete. Backend APIs tested with curl, frontend screens verified with screenshots. All core flows working - registration, auth, scanning, draws, education."
   - agent: "testing"
     message: "Draw Audit Report API endpoints comprehensively tested and verified working. Created test user with entries, completed draw with cryptographic audit trail, verified audit data structure contains all required fields (pre_draw seed/hash, participants info, selection steps, winners), and confirmed verification status is valid. Export endpoint returns complete JSON document ready for download. All security and transparency requirements met."
+  - task: "Receipt API - Decode Endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/routers/receipts.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "QR code decoding with auto-format detection. Tested JSON and pipe-delimited formats successfully."
+
+  - task: "Receipt API - Validate Endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/routers/receipts.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Receipt validation with format checks, business rules, duplicate detection, and mock Tax Authority validation."
+
+  - task: "Receipt API - Submit Endpoint"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/routers/receipts.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Submit endpoint implemented, needs testing with authentication."
+
+  - task: "Receipt API - List/Get Endpoints"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/routers/receipts.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Get receipt by ID and list receipts endpoints implemented, needs testing."
