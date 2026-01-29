@@ -2922,6 +2922,11 @@ from routers.prizes import router as prizes_router, set_database as set_prizes_d
 set_prizes_db(db)
 app.include_router(prizes_router)
 
+# Webhook Router
+from routers.webhooks import router as webhooks_router, set_database as set_webhooks_db
+set_webhooks_db(db)
+app.include_router(webhooks_router)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
