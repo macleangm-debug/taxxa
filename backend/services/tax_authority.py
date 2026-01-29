@@ -481,6 +481,224 @@ class GenericTaxAuthority(BaseTaxAuthority):
         return receipt_data.get("verification_url")
 
 
+# ============== ADDITIONAL AFRICAN JURISDICTIONS ==============
+
+class UgandaURA(BaseTaxAuthority):
+    """
+    Uganda Revenue Authority (URA) EFRIS Integration
+    Electronic Fiscal Receipting and Invoicing Solution
+    """
+    
+    def __init__(self):
+        self.base_url = os.getenv("URA_API_URL", "https://efris.ura.go.ug/api")
+        self.api_key = os.getenv("URA_API_KEY")
+    
+    @property
+    def jurisdiction(self) -> Jurisdiction:
+        return Jurisdiction.UGANDA
+    
+    @property
+    def authority_name(self) -> str:
+        return "Uganda Revenue Authority (URA)"
+    
+    def parse_qr_code(self, qr_data: str) -> Dict[str, Any]:
+        return {"jurisdiction": "UG", "authority": "URA", "raw_data": qr_data}
+    
+    async def validate_receipt(self, receipt_data: Dict[str, Any]) -> ValidationResult:
+        import random
+        is_valid = random.random() > 0.1
+        return ValidationResult(
+            is_valid=is_valid,
+            authority_name=f"{self.authority_name} (MOCK)",
+            receipt_verified=is_valid,
+            merchant_registered=True,
+            message="EFRIS receipt verified (MOCK)" if is_valid else "Not found (MOCK)"
+        )
+    
+    def get_verification_url(self, receipt_data: Dict[str, Any]) -> Optional[str]:
+        return f"https://efris.ura.go.ug/verify"
+
+
+class RwandaRRA(BaseTaxAuthority):
+    """
+    Rwanda Revenue Authority (RRA) EBM Integration
+    Electronic Billing Machine System
+    """
+    
+    def __init__(self):
+        self.base_url = os.getenv("RRA_API_URL", "https://ebm.rra.gov.rw/api")
+        self.api_key = os.getenv("RRA_API_KEY")
+    
+    @property
+    def jurisdiction(self) -> Jurisdiction:
+        return Jurisdiction.RWANDA
+    
+    @property
+    def authority_name(self) -> str:
+        return "Rwanda Revenue Authority (RRA)"
+    
+    def parse_qr_code(self, qr_data: str) -> Dict[str, Any]:
+        return {"jurisdiction": "RW", "authority": "RRA", "raw_data": qr_data}
+    
+    async def validate_receipt(self, receipt_data: Dict[str, Any]) -> ValidationResult:
+        import random
+        is_valid = random.random() > 0.1
+        return ValidationResult(
+            is_valid=is_valid,
+            authority_name=f"{self.authority_name} (MOCK)",
+            receipt_verified=is_valid,
+            merchant_registered=True,
+            message="EBM receipt verified (MOCK)" if is_valid else "Not found (MOCK)"
+        )
+    
+    def get_verification_url(self, receipt_data: Dict[str, Any]) -> Optional[str]:
+        return f"https://ebm.rra.gov.rw/verify"
+
+
+class EthiopiaERCA(BaseTaxAuthority):
+    """
+    Ethiopian Revenues and Customs Authority (ERCA)
+    E-Receipt System
+    """
+    
+    def __init__(self):
+        self.base_url = os.getenv("ERCA_API_URL", "https://etax.erca.gov.et/api")
+        self.api_key = os.getenv("ERCA_API_KEY")
+    
+    @property
+    def jurisdiction(self) -> Jurisdiction:
+        return Jurisdiction.ETHIOPIA
+    
+    @property
+    def authority_name(self) -> str:
+        return "Ethiopian Revenues & Customs Authority (ERCA)"
+    
+    def parse_qr_code(self, qr_data: str) -> Dict[str, Any]:
+        return {"jurisdiction": "ET", "authority": "ERCA", "raw_data": qr_data}
+    
+    async def validate_receipt(self, receipt_data: Dict[str, Any]) -> ValidationResult:
+        import random
+        is_valid = random.random() > 0.1
+        return ValidationResult(
+            is_valid=is_valid,
+            authority_name=f"{self.authority_name} (MOCK)",
+            receipt_verified=is_valid,
+            merchant_registered=True,
+            message="E-Receipt verified (MOCK)" if is_valid else "Not found (MOCK)"
+        )
+    
+    def get_verification_url(self, receipt_data: Dict[str, Any]) -> Optional[str]:
+        return f"https://etax.erca.gov.et/verify"
+
+
+class NigeriaFIRS(BaseTaxAuthority):
+    """
+    Federal Inland Revenue Service (FIRS) Nigeria
+    TaxPro System
+    """
+    
+    def __init__(self):
+        self.base_url = os.getenv("FIRS_API_URL", "https://taxpromax.firs.gov.ng/api")
+        self.api_key = os.getenv("FIRS_API_KEY")
+    
+    @property
+    def jurisdiction(self) -> Jurisdiction:
+        return Jurisdiction.NIGERIA
+    
+    @property
+    def authority_name(self) -> str:
+        return "Federal Inland Revenue Service (FIRS)"
+    
+    def parse_qr_code(self, qr_data: str) -> Dict[str, Any]:
+        return {"jurisdiction": "NG", "authority": "FIRS", "raw_data": qr_data}
+    
+    async def validate_receipt(self, receipt_data: Dict[str, Any]) -> ValidationResult:
+        import random
+        is_valid = random.random() > 0.1
+        return ValidationResult(
+            is_valid=is_valid,
+            authority_name=f"{self.authority_name} (MOCK)",
+            receipt_verified=is_valid,
+            merchant_registered=True,
+            message="TaxPro receipt verified (MOCK)" if is_valid else "Not found (MOCK)"
+        )
+    
+    def get_verification_url(self, receipt_data: Dict[str, Any]) -> Optional[str]:
+        return f"https://taxpromax.firs.gov.ng/verify"
+
+
+class SouthAfricaSARS(BaseTaxAuthority):
+    """
+    South African Revenue Service (SARS)
+    eFiling System
+    """
+    
+    def __init__(self):
+        self.base_url = os.getenv("SARS_API_URL", "https://secure.sars.gov.za/api")
+        self.api_key = os.getenv("SARS_API_KEY")
+    
+    @property
+    def jurisdiction(self) -> Jurisdiction:
+        return Jurisdiction.SOUTH_AFRICA
+    
+    @property
+    def authority_name(self) -> str:
+        return "South African Revenue Service (SARS)"
+    
+    def parse_qr_code(self, qr_data: str) -> Dict[str, Any]:
+        return {"jurisdiction": "ZA", "authority": "SARS", "raw_data": qr_data}
+    
+    async def validate_receipt(self, receipt_data: Dict[str, Any]) -> ValidationResult:
+        import random
+        is_valid = random.random() > 0.1
+        return ValidationResult(
+            is_valid=is_valid,
+            authority_name=f"{self.authority_name} (MOCK)",
+            receipt_verified=is_valid,
+            merchant_registered=True,
+            message="eFiling receipt verified (MOCK)" if is_valid else "Not found (MOCK)"
+        )
+    
+    def get_verification_url(self, receipt_data: Dict[str, Any]) -> Optional[str]:
+        return f"https://secure.sars.gov.za/verify"
+
+
+class GhanaGRA(BaseTaxAuthority):
+    """
+    Ghana Revenue Authority (GRA)
+    E-VAT System
+    """
+    
+    def __init__(self):
+        self.base_url = os.getenv("GRA_API_URL", "https://taxpayerportal.gra.gov.gh/api")
+        self.api_key = os.getenv("GRA_API_KEY")
+    
+    @property
+    def jurisdiction(self) -> Jurisdiction:
+        return Jurisdiction.GHANA
+    
+    @property
+    def authority_name(self) -> str:
+        return "Ghana Revenue Authority (GRA)"
+    
+    def parse_qr_code(self, qr_data: str) -> Dict[str, Any]:
+        return {"jurisdiction": "GH", "authority": "GRA", "raw_data": qr_data}
+    
+    async def validate_receipt(self, receipt_data: Dict[str, Any]) -> ValidationResult:
+        import random
+        is_valid = random.random() > 0.1
+        return ValidationResult(
+            is_valid=is_valid,
+            authority_name=f"{self.authority_name} (MOCK)",
+            receipt_verified=is_valid,
+            merchant_registered=True,
+            message="E-VAT receipt verified (MOCK)" if is_valid else "Not found (MOCK)"
+        )
+    
+    def get_verification_url(self, receipt_data: Dict[str, Any]) -> Optional[str]:
+        return f"https://taxpayerportal.gra.gov.gh/verify"
+
+
 class TaxAuthorityFactory:
     """Factory for creating tax authority instances"""
     
