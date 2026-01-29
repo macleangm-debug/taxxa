@@ -360,7 +360,7 @@ def verify_webhook(payload, signature, secret):
                 <Text style={styles.navLinkText}>How It Works</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.navLink} onPress={() => router.push('/case-studies')}>
-                <Text style={styles.navLinkText}>Case Studies</Text>
+                <Text style={styles.navLinkText}>Pilot Programs</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[styles.navLink, styles.navLinkActive]} onPress={() => router.push('/documentation')}>
                 <Text style={[styles.navLinkText, styles.navLinkTextActive]}>Documentation</Text>
@@ -385,7 +385,7 @@ def verify_webhook(payload, signature, secret):
               <Text style={styles.mobileMenuItemText}>How It Works</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.mobileMenuItem} onPress={() => { setShowMobileMenu(false); router.push('/case-studies'); }}>
-              <Text style={styles.mobileMenuItemText}>Case Studies</Text>
+              <Text style={styles.mobileMenuItemText}>Pilot Programs</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.mobileMenuItem, styles.mobileMenuItemActive]} onPress={() => setShowMobileMenu(false)}>
               <Text style={[styles.mobileMenuItemText, styles.mobileMenuItemTextActive]}>Documentation</Text>
