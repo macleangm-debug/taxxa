@@ -34,55 +34,32 @@ export default function PilotOpportunitiesPage() {
 
   const pilotPrograms = [
     {
-      id: 'starter',
+      id: 'poc',
       name: 'Proof of Concept',
       duration: '30-60 Days',
-      description: 'Rapid validation in a controlled environment. See real results before full commitment.',
+      description: 'Validate the platform in your jurisdiction. See real results before full commitment.',
       icon: 'flask',
       color: '#3B82F6',
       features: [
-        'Single region deployment',
         'Full platform access',
-        'Integration support',
-        'Performance reporting',
+        'Integration with your systems',
+        'Real citizen engagement',
+        'Performance analytics',
         'Dedicated success manager',
       ],
       outcomes: [
-        'Validate citizen engagement',
+        'Validate citizen adoption',
         'Test system integration',
-        'Measure compliance lift',
+        'Measure compliance impact',
         'Build stakeholder confidence',
       ],
-      ideal: 'First step for any Revenue Authority',
-    },
-    {
-      id: 'growth',
-      name: 'Regional Rollout',
-      duration: '3-6 Months',
-      description: 'Expand across multiple regions. Measure real impact on tax revenue with comprehensive analytics.',
-      icon: 'trending-up',
-      color: '#8B5CF6',
-      features: [
-        'Multi-region deployment',
-        'Advanced analytics dashboard',
-        'Custom prize structures',
-        'API integration',
-        'Marketing support',
-        'Quarterly business reviews',
-      ],
-      outcomes: [
-        'Quantify revenue impact',
-        'Optimize prize economics',
-        'Identify growth opportunities',
-        'Prepare for national scale',
-      ],
-      ideal: 'Proven concept, ready to expand',
+      ideal: 'Perfect first step for any Revenue Authority',
     },
     {
       id: 'national',
       name: 'National Program',
       duration: 'Ongoing Partnership',
-      description: 'Full national deployment with white-glove support. Designed for maximum impact and long-term success.',
+      description: 'Full nationwide deployment with comprehensive support. Designed for maximum impact and long-term success.',
       icon: 'globe',
       color: '#10B981',
       features: [
@@ -100,7 +77,7 @@ export default function PilotOpportunitiesPage() {
         'Long-term citizen engagement',
         'Comprehensive data insights',
       ],
-      ideal: 'Full transformation commitment',
+      ideal: 'For authorities ready to transform tax compliance',
     },
   ];
 
