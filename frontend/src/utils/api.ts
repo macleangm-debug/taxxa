@@ -1,7 +1,9 @@
 import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
+import { storage, STORAGE_KEYS, syncStorage } from './storage';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://tax-compliance-11.preview.emergentagent.com';
+const isWeb = Platform.OS === 'web';
 
 const api = axios.create({
   baseURL: `${API_URL}/api`,
@@ -12,9 +14,28 @@ const api = axios.create({
 
 // Add auth token to requests
 api.interceptors.request.use(async (config) => {
-  const token = await AsyncStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  try {
+    // On web, try sync access first for better reliability
+    let token: string | null = null;
+    
+    if (isWeb) {
+      // Try synchronous access first (more reliable on web)
+      token = syncStorage.getItem(STORAGE_KEYS.TOKEN);
+    }
+    
+    // Fall back to async storage
+    if (!token) {
+      token = await storage.getItem(STORAGE_KEYS.TOKEN);
+    }
+    
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+      console.log('[API] Token attached to request:', token.substring(0, 20) + '...');
+    } else {
+      console.log('[API] No token found for request to:', config.url);
+    }
+  } catch (error) {
+    console.error('[API] Error getting token:', error);
   }
   return config;
 });
