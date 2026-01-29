@@ -157,16 +157,10 @@ export default function FeaturesPage() {
           status: 'live'
         },
         {
-          name: 'Tanzania TRA Integration',
-          description: 'EFD/VFD receipt validation via EFDMS API. Mock mode available.',
+          name: '8 African Jurisdictions',
+          description: 'Tanzania, Kenya, Uganda, Rwanda, Ethiopia, Nigeria, South Africa, Ghana.',
           icon: 'globe',
-          status: 'ready'
-        },
-        {
-          name: 'Kenya KRA Integration',
-          description: 'eTIMS electronic invoice validation. Mock mode available.',
-          icon: 'globe',
-          status: 'ready'
+          status: 'live'
         },
         {
           name: 'RESTful Endpoints',
