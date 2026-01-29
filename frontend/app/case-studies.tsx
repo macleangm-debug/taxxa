@@ -325,19 +325,16 @@ export default function PilotOpportunitiesPage() {
               </View>
 
               <View style={styles.pilotFooter}>
-                <View>
-                  <Text style={styles.pilotInvestmentLabel}>Investment Level</Text>
-                  <Text style={[styles.pilotInvestment, { color: pilot.color }]}>{pilot.investment}</Text>
-                </View>
                 <TouchableOpacity 
-                  style={[styles.pilotCTA, { backgroundColor: pilot.color }]}
+                  style={[styles.pilotCTA, { backgroundColor: pilot.color, flex: 1 }]}
                   onPress={() => openPilotModal(pilot.name)}
                 >
-                  <Text style={styles.pilotCTAText}>Apply Now</Text>
+                  <Ionicons name="chatbubble-ellipses" size={18} color="#fff" />
+                  <Text style={styles.pilotCTAText}>Get Pricing</Text>
                 </TouchableOpacity>
               </View>
 
-              <Text style={styles.pilotIdeal}>Ideal for: {pilot.ideal}</Text>
+              <Text style={styles.pilotIdeal}>{pilot.ideal}</Text>
             </View>
           ))}
         </View>
