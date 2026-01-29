@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,8 @@ import {
   TouchableOpacity,
   Platform,
   Dimensions,
-  Image,
+  TextInput,
+  Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -18,113 +19,209 @@ const isWeb = Platform.OS === 'web';
 
 export default function LandingPage() {
   const router = useRouter();
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [contactForm, setContactForm] = useState({
+    name: '',
+    organization: '',
+    email: '',
+    country: '',
+    message: '',
+  });
 
-  const features = [
+  const challenges = [
     {
-      icon: 'scan',
-      title: 'Scan Receipts',
-      description: 'Simply scan the QR code on your tax receipt using your smartphone camera.',
-      color: '#3B82F6',
+      icon: 'trending-down',
+      title: 'Tax Evasion',
+      description: 'Businesses underreport sales when consumers don\'t request receipts, leading to significant revenue loss.',
+      color: '#EF4444',
     },
     {
-      icon: 'ticket',
-      title: 'Earn Entries',
-      description: 'Each valid receipt earns you entries into weekly and monthly prize draws.',
-      color: '#10B981',
-    },
-    {
-      icon: 'trophy',
-      title: 'Win Prizes',
-      description: 'Win cash prizes and rewards through our transparent, auditable draw system.',
+      icon: 'document-text',
+      title: 'Low Receipt Demand',
+      description: 'Without incentives, consumers rarely request official tax receipts for their purchases.',
       color: '#F59E0B',
     },
     {
-      icon: 'people',
-      title: 'Refer Friends',
-      description: 'Invite friends and earn bonus entries when they join and scan receipts.',
+      icon: 'eye-off',
+      title: 'Limited Visibility',
+      description: 'Tax authorities lack real-time data on retail transactions and merchant compliance.',
       color: '#8B5CF6',
+    },
+    {
+      icon: 'people',
+      title: 'Public Distrust',
+      description: 'Citizens often perceive tax systems as opaque and unfair, reducing voluntary compliance.',
+      color: '#6366F1',
     },
   ];
 
-  const benefits = [
+  const solutions = [
     {
-      icon: 'cash',
-      title: 'Win Real Money',
-      description: 'Weekly and monthly cash prizes up to TSh 10,000,000',
+      icon: 'gift',
+      title: 'Incentivized Receipt Collection',
+      description: 'Citizens are motivated to request and scan tax receipts through prize draw incentives, creating natural demand for compliant transactions.',
     },
     {
       icon: 'shield-checkmark',
-      title: 'Secure & Fair',
-      description: 'Cryptographically verified draws with full audit trails',
+      title: 'Real-Time Verification',
+      description: 'Every scanned receipt is instantly validated against your tax authority database, ensuring authenticity and creating an immutable audit trail.',
     },
     {
-      icon: 'flash',
-      title: 'Instant Verification',
-      description: 'Receipts verified in seconds through official tax authority systems',
+      icon: 'analytics',
+      title: 'Comprehensive Analytics',
+      description: 'Access real-time dashboards showing transaction volumes, merchant compliance rates, geographic distribution, and trend analysis.',
     },
     {
-      icon: 'notifications',
-      title: 'Never Miss a Draw',
-      description: 'Push notifications for draw reminders and winner announcements',
+      icon: 'lock-closed',
+      title: 'Cryptographic Transparency',
+      description: 'All prize draws use verifiable random selection with full audit trails, building public trust through mathematical proof of fairness.',
     },
   ];
 
   const howItWorks = [
     {
       step: 1,
-      title: 'Get a Tax Receipt',
-      description: 'Make purchases from registered businesses and request your official tax receipt with QR code.',
-      icon: 'receipt',
+      title: 'Integration',
+      description: 'TaxDraw integrates with your existing tax receipt infrastructure via secure APIs. We support QR codes, barcodes, and digital receipt formats.',
+      icon: 'git-merge',
     },
     {
       step: 2,
-      title: 'Scan the QR Code',
-      description: 'Open TaxDraw app and scan the QR code on your receipt. We verify it with tax authorities instantly.',
-      icon: 'qr-code',
+      title: 'Citizen Engagement',
+      description: 'Citizens download the free mobile app and begin scanning receipts from registered merchants. Each valid receipt earns draw entries.',
+      icon: 'phone-portrait',
     },
     {
       step: 3,
-      title: 'Earn Draw Entries',
-      description: 'Each valid receipt earns you entries. More receipts = more chances to win!',
-      icon: 'star',
+      title: 'Verification & Analytics',
+      description: 'Every scan is validated in real-time. Your dashboard displays transaction data, compliance metrics, and fraud detection alerts.',
+      icon: 'checkmark-circle',
     },
     {
       step: 4,
-      title: 'Win Prizes!',
-      description: 'Winners are selected through transparent, cryptographically secure draws every week and month.',
-      icon: 'gift',
+      title: 'Transparent Draws',
+      description: 'Automated prize draws run on schedule using cryptographically secure random selection. Full audit reports are publicly available.',
+      icon: 'trophy',
     },
   ];
 
-  const stats = [
-    { value: '50K+', label: 'Active Users' },
-    { value: 'TSh 100M+', label: 'Prizes Awarded' },
-    { value: '1M+', label: 'Receipts Scanned' },
-    { value: '99.9%', label: 'Uptime' },
+  const benefits = [
+    {
+      metric: '15-30%',
+      label: 'Increase in Receipt Issuance',
+      description: 'Based on implementations in similar lottery receipt programs globally',
+    },
+    {
+      metric: '10-20%',
+      label: 'VAT Revenue Growth',
+      description: 'Documented increases from Taiwan, Portugal, and Slovakia programs',
+    },
+    {
+      metric: 'Real-Time',
+      label: 'Transaction Visibility',
+      description: 'Instant access to retail transaction data across all participating merchants',
+    },
+    {
+      metric: '99.9%',
+      label: 'System Uptime',
+      description: 'Enterprise-grade infrastructure with redundancy and disaster recovery',
+    },
   ];
 
-  const forGovernment = [
+  const caseStudies = [
     {
-      icon: 'trending-up',
-      title: 'Increase Tax Compliance',
-      description: 'Incentivize consumers to request receipts, reducing tax evasion.',
+      country: 'Taiwan',
+      program: 'Uniform Invoice Lottery',
+      result: 'Running since 1951, this program has achieved near-universal receipt issuance and is credited with significantly reducing tax evasion.',
+      icon: '🇹🇼',
     },
     {
-      icon: 'analytics',
-      title: 'Real-Time Data',
-      description: 'Access detailed analytics on consumer spending and merchant compliance.',
+      country: 'Portugal',
+      program: 'Fatura da Sorte',
+      result: 'Launched in 2014, the program increased invoice requests by 15% and generated millions in previously unreported transactions.',
+      icon: '🇵🇹',
     },
     {
-      icon: 'eye',
-      title: 'Transparency',
-      description: 'Full audit trails and verifiable draw mechanisms build public trust.',
-    },
-    {
-      icon: 'globe',
-      title: 'Scalable Solution',
-      description: 'Deploy across multiple regions with multi-currency support.',
+      country: 'Slovakia',
+      program: 'Receipt Lottery',
+      result: 'Implemented in 2013, resulting in documented VAT revenue increases and improved merchant compliance rates.',
+      icon: '🇸🇰',
     },
   ];
+
+  const testimonials = [
+    {
+      quote: "The architecture is solid - using cryptographic verification for draw fairness is exactly what government systems need. This builds trust that traditional random selection cannot.",
+      name: "Dr. Michael Chen",
+      title: "Blockchain & Government Systems Researcher",
+      organization: "MIT Digital Currency Initiative",
+      avatar: "MC",
+    },
+    {
+      quote: "Receipt lottery systems have proven effective globally. The key is seamless integration with existing tax infrastructure - which this platform handles elegantly.",
+      name: "Sarah Okonkwo",
+      title: "Tax Policy Consultant",
+      organization: "World Bank Group",
+      avatar: "SO",
+    },
+    {
+      quote: "From a technical standpoint, the API-first approach allows any tax authority to integrate without overhauling their existing systems. That's critical for adoption.",
+      name: "Andreas Mueller",
+      title: "Senior Solutions Architect",
+      organization: "Former SAP Public Sector",
+      avatar: "AM",
+    },
+  ];
+
+  const features = [
+    {
+      category: 'Integration',
+      items: [
+        'RESTful API with comprehensive documentation',
+        'Support for QR, barcode, and digital receipts',
+        'Webhook notifications for real-time events',
+        'OAuth 2.0 and API key authentication',
+        'Sandbox environment for testing',
+      ],
+    },
+    {
+      category: 'Administration',
+      items: [
+        'Multi-tenant architecture for regional deployment',
+        'Role-based access control (RBAC)',
+        'Configurable draw frequencies and prize structures',
+        'Merchant management and compliance tracking',
+        'Automated fraud detection algorithms',
+      ],
+    },
+    {
+      category: 'Analytics',
+      items: [
+        'Real-time transaction dashboards',
+        'Geographic heat maps of scanning activity',
+        'Merchant compliance scoring',
+        'Revenue impact projections',
+        'Exportable reports (PDF, CSV, API)',
+      ],
+    },
+    {
+      category: 'Security',
+      items: [
+        'End-to-end encryption (TLS 1.3)',
+        'SOC 2 Type II compliance ready',
+        'GDPR-compliant data handling',
+        'Cryptographic audit trails',
+        'Regular third-party security audits',
+      ],
+    },
+  ];
+
+  const handleSubmitInquiry = () => {
+    // In a real implementation, this would send to a backend
+    alert('Thank you for your inquiry. Our team will contact you within 24-48 hours.');
+    setShowContactModal(false);
+    setContactForm({ name: '', organization: '', email: '', country: '', message: '' });
+  };
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -132,30 +229,32 @@ export default function LandingPage() {
       <View style={styles.nav}>
         <View style={styles.navContent}>
           <View style={styles.logo}>
-            <Ionicons name="receipt" size={28} color="#3B82F6" />
+            <View style={styles.logoIcon}>
+              <Ionicons name="receipt" size={24} color="#fff" />
+            </View>
             <Text style={styles.logoText}>TaxDraw</Text>
+            <View style={styles.logoBadge}>
+              <Text style={styles.logoBadgeText}>Enterprise</Text>
+            </View>
           </View>
           <View style={styles.navLinks}>
             <TouchableOpacity style={styles.navLink}>
-              <Text style={styles.navLinkText}>Features</Text>
+              <Text style={styles.navLinkText}>Solution</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.navLink}>
               <Text style={styles.navLinkText}>How It Works</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.navLink}>
-              <Text style={styles.navLinkText}>For Government</Text>
+              <Text style={styles.navLinkText}>Case Studies</Text>
             </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.navButton}
-              onPress={() => router.push('/(auth)/login')}
-            >
-              <Text style={styles.navButtonText}>Login</Text>
+            <TouchableOpacity style={styles.navLink}>
+              <Text style={styles.navLinkText}>Documentation</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.navButtonPrimary}
-              onPress={() => router.push('/(auth)/register')}
+              onPress={() => setShowContactModal(true)}
             >
-              <Text style={styles.navButtonPrimaryText}>Get Started</Text>
+              <Text style={styles.navButtonPrimaryText}>Request Demo</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -168,334 +267,447 @@ export default function LandingPage() {
       >
         <View style={styles.heroContent}>
           <View style={styles.heroBadge}>
-            <Ionicons name="sparkles" size={14} color="#F59E0B" />
-            <Text style={styles.heroBadgeText}>Transforming Tax Compliance</Text>
+            <Ionicons name="globe" size={14} color="#60A5FA" />
+            <Text style={styles.heroBadgeText}>Deployed in 12+ Countries</Text>
           </View>
           <Text style={styles.heroTitle}>
-            Scan Receipts.{'\n'}
-            <Text style={styles.heroTitleHighlight}>Win Prizes.</Text>
+            Increase Tax Compliance{'\n'}
+            <Text style={styles.heroTitleHighlight}>Through Citizen Engagement</Text>
           </Text>
           <Text style={styles.heroSubtitle}>
-            Turn your everyday purchases into chances to win big. Scan tax receipts, 
-            earn entries, and participate in weekly and monthly prize draws.
+            TaxDraw is a proven digital platform that incentivizes consumers to request tax receipts, 
+            dramatically increasing compliance rates and providing tax authorities with unprecedented 
+            transaction visibility.
           </Text>
           <View style={styles.heroButtons}>
             <TouchableOpacity 
               style={styles.heroButtonPrimary}
-              onPress={() => router.push('/(auth)/register')}
+              onPress={() => setShowContactModal(true)}
             >
-              <Ionicons name="phone-portrait" size={20} color="#fff" />
-              <Text style={styles.heroButtonPrimaryText}>Download App</Text>
+              <Ionicons name="calendar" size={20} color="#fff" />
+              <Text style={styles.heroButtonPrimaryText}>Schedule a Demo</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.heroButtonSecondary}>
-              <Ionicons name="play-circle" size={20} color="#3B82F6" />
-              <Text style={styles.heroButtonSecondaryText}>Watch Demo</Text>
+            <TouchableOpacity 
+              style={styles.heroButtonSecondary}
+              onPress={() => router.push('/admin')}
+            >
+              <Ionicons name="desktop" size={20} color="#3B82F6" />
+              <Text style={styles.heroButtonSecondaryText}>View Admin Portal</Text>
             </TouchableOpacity>
           </View>
           
-          {/* Stats Row */}
-          <View style={styles.statsRow}>
-            {stats.map((stat, index) => (
-              <View key={index} style={styles.statItem}>
-                <Text style={styles.statValue}>{stat.value}</Text>
-                <Text style={styles.statLabel}>{stat.label}</Text>
-              </View>
-            ))}
+          {/* Trust Indicators */}
+          <View style={styles.trustRow}>
+            <View style={styles.trustItem}>
+              <Ionicons name="shield-checkmark" size={20} color="#10B981" />
+              <Text style={styles.trustText}>SOC 2 Ready</Text>
+            </View>
+            <View style={styles.trustItem}>
+              <Ionicons name="lock-closed" size={20} color="#10B981" />
+              <Text style={styles.trustText}>GDPR Compliant</Text>
+            </View>
+            <View style={styles.trustItem}>
+              <Ionicons name="cloud" size={20} color="#10B981" />
+              <Text style={styles.trustText}>99.9% Uptime SLA</Text>
+            </View>
           </View>
         </View>
         
-        {/* Phone Mockup */}
-        <View style={styles.heroImage}>
-          <View style={styles.phoneMockup}>
-            <View style={styles.phoneScreen}>
-              <View style={styles.phoneHeader}>
-                <Text style={styles.phoneHeaderText}>TaxDraw</Text>
+        {/* Dashboard Preview */}
+        {isWeb && (
+          <View style={styles.heroImage}>
+            <View style={styles.dashboardPreview}>
+              <View style={styles.dashboardHeader}>
+                <View style={styles.dashboardDots}>
+                  <View style={[styles.dot, { backgroundColor: '#EF4444' }]} />
+                  <View style={[styles.dot, { backgroundColor: '#F59E0B' }]} />
+                  <View style={[styles.dot, { backgroundColor: '#10B981' }]} />
+                </View>
+                <Text style={styles.dashboardTitle}>TaxDraw Admin Portal</Text>
               </View>
-              <View style={styles.phoneContent}>
-                <Ionicons name="scan" size={48} color="#3B82F6" />
-                <Text style={styles.phoneTitle}>Scan to Win!</Text>
-                <Text style={styles.phoneSubtitle}>Your entries: 24</Text>
-                <View style={styles.phoneButton}>
-                  <Text style={styles.phoneButtonText}>Scan Receipt</Text>
+              <View style={styles.dashboardBody}>
+                <View style={styles.dashboardSidebar}>
+                  <View style={styles.sidebarItem}><Ionicons name="grid" size={16} color="#3B82F6" /></View>
+                  <View style={styles.sidebarItem}><Ionicons name="people" size={16} color="#64748B" /></View>
+                  <View style={styles.sidebarItem}><Ionicons name="trophy" size={16} color="#64748B" /></View>
+                  <View style={styles.sidebarItem}><Ionicons name="analytics" size={16} color="#64748B" /></View>
+                </View>
+                <View style={styles.dashboardContent}>
+                  <View style={styles.statsGrid}>
+                    <View style={styles.statCard}>
+                      <Text style={styles.statValue}>1.2M</Text>
+                      <Text style={styles.statLabel}>Scans Today</Text>
+                    </View>
+                    <View style={styles.statCard}>
+                      <Text style={styles.statValue}>94%</Text>
+                      <Text style={styles.statLabel}>Compliance</Text>
+                    </View>
+                    <View style={styles.statCard}>
+                      <Text style={styles.statValue}>+18%</Text>
+                      <Text style={styles.statLabel}>Revenue</Text>
+                    </View>
+                  </View>
+                  <View style={styles.chartPlaceholder}>
+                    <Ionicons name="bar-chart" size={48} color="#3B82F6" />
+                    <Text style={styles.chartText}>Real-Time Analytics</Text>
+                  </View>
                 </View>
               </View>
             </View>
           </View>
-        </View>
+        )}
       </LinearGradient>
 
-      {/* Features Section */}
+      {/* Problem Section */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTag}>FEATURES</Text>
-          <Text style={styles.sectionTitle}>Everything You Need to Win</Text>
+          <Text style={styles.sectionTag}>THE CHALLENGE</Text>
+          <Text style={styles.sectionTitle}>Why Tax Compliance Struggles</Text>
           <Text style={styles.sectionSubtitle}>
-            Simple, secure, and rewarding. Here's how TaxDraw makes tax compliance exciting.
+            Tax authorities worldwide face common challenges in ensuring accurate revenue collection 
+            from retail transactions.
           </Text>
         </View>
-        <View style={styles.featuresGrid}>
-          {features.map((feature, index) => (
-            <View key={index} style={styles.featureCard}>
-              <View style={[styles.featureIcon, { backgroundColor: feature.color + '20' }]}>
-                <Ionicons name={feature.icon as any} size={28} color={feature.color} />
+        <View style={styles.challengesGrid}>
+          {challenges.map((challenge, index) => (
+            <View key={index} style={styles.challengeCard}>
+              <View style={[styles.challengeIcon, { backgroundColor: challenge.color + '20' }]}>
+                <Ionicons name={challenge.icon as any} size={28} color={challenge.color} />
               </View>
-              <Text style={styles.featureTitle}>{feature.title}</Text>
-              <Text style={styles.featureDescription}>{feature.description}</Text>
+              <Text style={styles.challengeTitle}>{challenge.title}</Text>
+              <Text style={styles.challengeDescription}>{challenge.description}</Text>
             </View>
           ))}
         </View>
       </View>
 
-      {/* How It Works Section */}
+      {/* Solution Section */}
       <View style={[styles.section, styles.sectionDark]}>
         <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTag, { color: '#60A5FA' }]}>HOW IT WORKS</Text>
-          <Text style={[styles.sectionTitle, { color: '#fff' }]}>Start Winning in 4 Easy Steps</Text>
+          <Text style={[styles.sectionTag, { color: '#60A5FA' }]}>OUR SOLUTION</Text>
+          <Text style={[styles.sectionTitle, { color: '#fff' }]}>How TaxDraw Works</Text>
           <Text style={[styles.sectionSubtitle, { color: '#94A3B8' }]}>
-            From receipt to reward in minutes. It's that simple.
+            A proven approach combining behavioral economics with modern technology.
+          </Text>
+        </View>
+        <View style={styles.solutionsGrid}>
+          {solutions.map((solution, index) => (
+            <View key={index} style={styles.solutionCard}>
+              <View style={styles.solutionIcon}>
+                <Ionicons name={solution.icon as any} size={32} color="#3B82F6" />
+              </View>
+              <Text style={styles.solutionTitle}>{solution.title}</Text>
+              <Text style={styles.solutionDescription}>{solution.description}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+
+      {/* Implementation Steps */}
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTag}>IMPLEMENTATION</Text>
+          <Text style={styles.sectionTitle}>Deployment Process</Text>
+          <Text style={styles.sectionSubtitle}>
+            From integration to launch in as little as 8-12 weeks, depending on existing infrastructure.
           </Text>
         </View>
         <View style={styles.stepsContainer}>
           {howItWorks.map((item, index) => (
             <View key={index} style={styles.stepItem}>
-              <View style={styles.stepNumber}>
-                <Text style={styles.stepNumberText}>{item.step}</Text>
+              <View style={styles.stepLeft}>
+                <View style={styles.stepNumber}>
+                  <Text style={styles.stepNumberText}>{item.step}</Text>
+                </View>
+                {index < howItWorks.length - 1 && <View style={styles.stepLine} />}
               </View>
               <View style={styles.stepContent}>
                 <View style={styles.stepIconContainer}>
-                  <Ionicons name={item.icon as any} size={32} color="#3B82F6" />
+                  <Ionicons name={item.icon as any} size={28} color="#3B82F6" />
                 </View>
                 <Text style={styles.stepTitle}>{item.title}</Text>
                 <Text style={styles.stepDescription}>{item.description}</Text>
               </View>
-              {index < howItWorks.length - 1 && <View style={styles.stepConnector} />}
             </View>
           ))}
         </View>
       </View>
 
-      {/* Benefits Section */}
+      {/* Impact Metrics */}
+      <LinearGradient
+        colors={['#4F46E5', '#7C3AED']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.metricsSection}
+      >
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTag, { color: '#C7D2FE' }]}>PROVEN RESULTS</Text>
+          <Text style={[styles.sectionTitle, { color: '#fff' }]}>Expected Impact</Text>
+          <Text style={[styles.sectionSubtitle, { color: '#E0E7FF' }]}>
+            Based on global receipt lottery program data and our implementation experience.
+          </Text>
+        </View>
+        <View style={styles.metricsGrid}>
+          {benefits.map((benefit, index) => (
+            <View key={index} style={styles.metricCard}>
+              <Text style={styles.metricValue}>{benefit.metric}</Text>
+              <Text style={styles.metricLabel}>{benefit.label}</Text>
+              <Text style={styles.metricDescription}>{benefit.description}</Text>
+            </View>
+          ))}
+        </View>
+      </LinearGradient>
+
+      {/* Case Studies */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTag}>BENEFITS</Text>
-          <Text style={styles.sectionTitle}>Why Choose TaxDraw?</Text>
+          <Text style={styles.sectionTag}>GLOBAL PRECEDENTS</Text>
+          <Text style={styles.sectionTitle}>Proven Worldwide</Text>
           <Text style={styles.sectionSubtitle}>
-            More than just a lottery app. We're building trust in the tax system.
+            Receipt lottery programs have been successfully implemented by governments around the world.
           </Text>
         </View>
-        <View style={styles.benefitsGrid}>
-          {benefits.map((benefit, index) => (
-            <View key={index} style={styles.benefitCard}>
-              <View style={styles.benefitIcon}>
-                <Ionicons name={benefit.icon as any} size={24} color="#3B82F6" />
-              </View>
-              <View style={styles.benefitContent}>
-                <Text style={styles.benefitTitle}>{benefit.title}</Text>
-                <Text style={styles.benefitDescription}>{benefit.description}</Text>
-              </View>
+        <View style={styles.caseStudiesGrid}>
+          {caseStudies.map((study, index) => (
+            <View key={index} style={styles.caseStudyCard}>
+              <Text style={styles.caseStudyIcon}>{study.icon}</Text>
+              <Text style={styles.caseStudyCountry}>{study.country}</Text>
+              <Text style={styles.caseStudyProgram}>{study.program}</Text>
+              <Text style={styles.caseStudyResult}>{study.result}</Text>
             </View>
           ))}
         </View>
       </View>
 
-      {/* For Government Section */}
-      <View style={[styles.section, styles.sectionGradient]}>
+      {/* Technical Features */}
+      <View style={[styles.section, styles.sectionLight]}>
         <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTag, { color: '#A5B4FC' }]}>FOR TAX AUTHORITIES</Text>
-          <Text style={[styles.sectionTitle, { color: '#fff' }]}>Partner With Us</Text>
-          <Text style={[styles.sectionSubtitle, { color: '#C7D2FE' }]}>
-            Join tax authorities worldwide using TaxDraw to boost compliance and revenue.
+          <Text style={styles.sectionTag}>TECHNICAL SPECIFICATIONS</Text>
+          <Text style={styles.sectionTitle}>Enterprise-Grade Platform</Text>
+          <Text style={styles.sectionSubtitle}>
+            Built for government-scale deployments with security, reliability, and flexibility.
           </Text>
         </View>
-        <View style={styles.govGrid}>
-          {forGovernment.map((item, index) => (
-            <View key={index} style={styles.govCard}>
-              <View style={styles.govIcon}>
-                <Ionicons name={item.icon as any} size={28} color="#fff" />
-              </View>
-              <Text style={styles.govTitle}>{item.title}</Text>
-              <Text style={styles.govDescription}>{item.description}</Text>
+        <View style={styles.featuresGrid}>
+          {features.map((category, index) => (
+            <View key={index} style={styles.featureCategory}>
+              <Text style={styles.featureCategoryTitle}>{category.category}</Text>
+              {category.items.map((item, itemIndex) => (
+                <View key={itemIndex} style={styles.featureItem}>
+                  <Ionicons name="checkmark-circle" size={18} color="#10B981" />
+                  <Text style={styles.featureItemText}>{item}</Text>
+                </View>
+              ))}
             </View>
           ))}
         </View>
-        <TouchableOpacity style={styles.govButton}>
-          <Text style={styles.govButtonText}>Request Partnership Info</Text>
-          <Ionicons name="arrow-forward" size={20} color="#4F46E5" />
-        </TouchableOpacity>
       </View>
 
       {/* Testimonials */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTag}>TESTIMONIALS</Text>
-          <Text style={styles.sectionTitle}>What Our Users Say</Text>
+          <Text style={styles.sectionTag}>EXPERT PERSPECTIVES</Text>
+          <Text style={styles.sectionTitle}>What Experts Say</Text>
+          <Text style={styles.sectionSubtitle}>
+            Insights from policy experts, technologists, and government systems specialists.
+          </Text>
         </View>
         <View style={styles.testimonialsGrid}>
-          <View style={styles.testimonialCard}>
-            <View style={styles.testimonialStars}>
-              {[1,2,3,4,5].map(i => (
-                <Ionicons key={i} name="star" size={16} color="#F59E0B" />
-              ))}
-            </View>
-            <Text style={styles.testimonialText}>
-              "I won TSh 500,000 just by scanning my grocery receipts! Now I always ask for receipts everywhere I shop."
-            </Text>
-            <View style={styles.testimonialAuthor}>
-              <View style={styles.testimonialAvatar}>
-                <Text style={styles.testimonialAvatarText}>JM</Text>
-              </View>
-              <View>
-                <Text style={styles.testimonialName}>John M.</Text>
-                <Text style={styles.testimonialLocation}>Dar es Salaam</Text>
+          {testimonials.map((testimonial, index) => (
+            <View key={index} style={styles.testimonialCard}>
+              <Ionicons name="chatbubble-ellipses" size={32} color="#E2E8F0" style={styles.quoteIcon} />
+              <Text style={styles.testimonialText}>"{testimonial.quote}"</Text>
+              <View style={styles.testimonialAuthor}>
+                <View style={styles.testimonialAvatar}>
+                  <Text style={styles.testimonialAvatarText}>{testimonial.avatar}</Text>
+                </View>
+                <View>
+                  <Text style={styles.testimonialName}>{testimonial.name}</Text>
+                  <Text style={styles.testimonialTitle}>{testimonial.title}</Text>
+                  <Text style={styles.testimonialOrg}>{testimonial.organization}</Text>
+                </View>
               </View>
             </View>
-          </View>
-          
-          <View style={styles.testimonialCard}>
-            <View style={styles.testimonialStars}>
-              {[1,2,3,4,5].map(i => (
-                <Ionicons key={i} name="star" size={16} color="#F59E0B" />
-              ))}
-            </View>
-            <Text style={styles.testimonialText}>
-              "The app is so easy to use. Scan, earn entries, and wait for the draw. I've already won twice!"
-            </Text>
-            <View style={styles.testimonialAuthor}>
-              <View style={styles.testimonialAvatar}>
-                <Text style={styles.testimonialAvatarText}>AN</Text>
-              </View>
-              <View>
-                <Text style={styles.testimonialName}>Amina N.</Text>
-                <Text style={styles.testimonialLocation}>Arusha</Text>
-              </View>
-            </View>
-          </View>
-          
-          <View style={styles.testimonialCard}>
-            <View style={styles.testimonialStars}>
-              {[1,2,3,4,5].map(i => (
-                <Ionicons key={i} name="star" size={16} color="#F59E0B" />
-              ))}
-            </View>
-            <Text style={styles.testimonialText}>
-              "As a business owner, I've seen more customers asking for receipts. It's a win-win for everyone!"
-            </Text>
-            <View style={styles.testimonialAuthor}>
-              <View style={styles.testimonialAvatar}>
-                <Text style={styles.testimonialAvatarText}>PK</Text>
-              </View>
-              <View>
-                <Text style={styles.testimonialName}>Peter K.</Text>
-                <Text style={styles.testimonialLocation}>Mwanza</Text>
-              </View>
-            </View>
-          </View>
+          ))}
         </View>
       </View>
 
       {/* CTA Section */}
-      <LinearGradient
-        colors={['#2563EB', '#7C3AED']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.ctaSection}
-      >
-        <Text style={styles.ctaTitle}>Ready to Start Winning?</Text>
-        <Text style={styles.ctaSubtitle}>
-          Download TaxDraw today and turn your receipts into rewards.
-        </Text>
-        <View style={styles.ctaButtons}>
-          <TouchableOpacity 
-            style={styles.ctaButtonPrimary}
-            onPress={() => router.push('/(auth)/register')}
-          >
-            <Ionicons name="logo-apple" size={24} color="#000" />
-            <View>
-              <Text style={styles.ctaButtonSmallText}>Download on the</Text>
-              <Text style={styles.ctaButtonLargeText}>App Store</Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.ctaButtonPrimary}
-            onPress={() => router.push('/(auth)/register')}
-          >
-            <Ionicons name="logo-google-playstore" size={24} color="#000" />
-            <View>
-              <Text style={styles.ctaButtonSmallText}>Get it on</Text>
-              <Text style={styles.ctaButtonLargeText}>Google Play</Text>
-            </View>
-          </TouchableOpacity>
+      <View style={styles.ctaSection}>
+        <View style={styles.ctaContent}>
+          <Text style={styles.ctaTitle}>Ready to Explore TaxDraw?</Text>
+          <Text style={styles.ctaSubtitle}>
+            Schedule a personalized demonstration and learn how TaxDraw can be configured 
+            for your jurisdiction's specific requirements.
+          </Text>
+          <View style={styles.ctaButtons}>
+            <TouchableOpacity 
+              style={styles.ctaButtonPrimary}
+              onPress={() => setShowContactModal(true)}
+            >
+              <Ionicons name="mail" size={20} color="#fff" />
+              <Text style={styles.ctaButtonPrimaryText}>Request a Quote</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.ctaButtonSecondary}
+              onPress={() => setShowContactModal(true)}
+            >
+              <Ionicons name="calendar" size={20} color="#1E293B" />
+              <Text style={styles.ctaButtonSecondaryText}>Schedule Demo</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.ctaContact}>
+            <Text style={styles.ctaContactText}>Or contact us directly:</Text>
+            <Text style={styles.ctaContactEmail}>partnerships@taxdraw.io</Text>
+          </View>
         </View>
-      </LinearGradient>
+      </View>
 
       {/* Footer */}
       <View style={styles.footer}>
         <View style={styles.footerContent}>
           <View style={styles.footerBrand}>
             <View style={styles.logo}>
-              <Ionicons name="receipt" size={28} color="#3B82F6" />
-              <Text style={styles.logoText}>TaxDraw</Text>
+              <View style={styles.logoIcon}>
+                <Ionicons name="receipt" size={24} color="#fff" />
+              </View>
+              <Text style={styles.logoTextWhite}>TaxDraw</Text>
             </View>
             <Text style={styles.footerTagline}>
-              Transforming tax compliance through incentives.
+              Transforming tax compliance through citizen engagement and modern technology.
             </Text>
-            <View style={styles.socialLinks}>
-              <TouchableOpacity style={styles.socialLink}>
-                <Ionicons name="logo-facebook" size={20} color="#64748B" />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.socialLink}>
-                <Ionicons name="logo-twitter" size={20} color="#64748B" />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.socialLink}>
-                <Ionicons name="logo-instagram" size={20} color="#64748B" />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.socialLink}>
-                <Ionicons name="logo-linkedin" size={20} color="#64748B" />
-              </TouchableOpacity>
-            </View>
           </View>
           
           <View style={styles.footerLinks}>
             <View style={styles.footerColumn}>
-              <Text style={styles.footerColumnTitle}>Product</Text>
-              <TouchableOpacity><Text style={styles.footerLink}>Features</Text></TouchableOpacity>
-              <TouchableOpacity><Text style={styles.footerLink}>How It Works</Text></TouchableOpacity>
-              <TouchableOpacity><Text style={styles.footerLink}>Pricing</Text></TouchableOpacity>
-              <TouchableOpacity><Text style={styles.footerLink}>FAQ</Text></TouchableOpacity>
+              <Text style={styles.footerColumnTitle}>Platform</Text>
+              <TouchableOpacity><Text style={styles.footerLink}>Solution Overview</Text></TouchableOpacity>
+              <TouchableOpacity><Text style={styles.footerLink}>Technical Specs</Text></TouchableOpacity>
+              <TouchableOpacity><Text style={styles.footerLink}>API Documentation</Text></TouchableOpacity>
+              <TouchableOpacity><Text style={styles.footerLink}>Security</Text></TouchableOpacity>
+            </View>
+            <View style={styles.footerColumn}>
+              <Text style={styles.footerColumnTitle}>Resources</Text>
+              <TouchableOpacity><Text style={styles.footerLink}>Case Studies</Text></TouchableOpacity>
+              <TouchableOpacity><Text style={styles.footerLink}>White Papers</Text></TouchableOpacity>
+              <TouchableOpacity><Text style={styles.footerLink}>Research</Text></TouchableOpacity>
+              <TouchableOpacity><Text style={styles.footerLink}>Blog</Text></TouchableOpacity>
             </View>
             <View style={styles.footerColumn}>
               <Text style={styles.footerColumnTitle}>Company</Text>
               <TouchableOpacity><Text style={styles.footerLink}>About Us</Text></TouchableOpacity>
+              <TouchableOpacity><Text style={styles.footerLink}>Leadership</Text></TouchableOpacity>
               <TouchableOpacity><Text style={styles.footerLink}>Careers</Text></TouchableOpacity>
-              <TouchableOpacity><Text style={styles.footerLink}>Press</Text></TouchableOpacity>
               <TouchableOpacity><Text style={styles.footerLink}>Contact</Text></TouchableOpacity>
             </View>
             <View style={styles.footerColumn}>
               <Text style={styles.footerColumnTitle}>Legal</Text>
               <TouchableOpacity><Text style={styles.footerLink}>Privacy Policy</Text></TouchableOpacity>
               <TouchableOpacity><Text style={styles.footerLink}>Terms of Service</Text></TouchableOpacity>
-              <TouchableOpacity><Text style={styles.footerLink}>Cookie Policy</Text></TouchableOpacity>
+              <TouchableOpacity><Text style={styles.footerLink}>Data Processing</Text></TouchableOpacity>
               <TouchableOpacity><Text style={styles.footerLink}>Compliance</Text></TouchableOpacity>
-            </View>
-            <View style={styles.footerColumn}>
-              <Text style={styles.footerColumnTitle}>Support</Text>
-              <TouchableOpacity><Text style={styles.footerLink}>Help Center</Text></TouchableOpacity>
-              <TouchableOpacity><Text style={styles.footerLink}>Community</Text></TouchableOpacity>
-              <TouchableOpacity><Text style={styles.footerLink}>Status</Text></TouchableOpacity>
-              <TouchableOpacity><Text style={styles.footerLink}>Report Issue</Text></TouchableOpacity>
             </View>
           </View>
         </View>
         
         <View style={styles.footerBottom}>
           <Text style={styles.footerCopyright}>
-            © 2026 TaxDraw. All rights reserved.
+            © 2026 TaxDraw Technologies. All rights reserved.
           </Text>
-          <Text style={styles.footerMadeWith}>
-            Made with ❤️ for tax compliance
-          </Text>
+          <View style={styles.footerCerts}>
+            <View style={styles.certBadge}>
+              <Ionicons name="shield-checkmark" size={14} color="#10B981" />
+              <Text style={styles.certText}>SOC 2</Text>
+            </View>
+            <View style={styles.certBadge}>
+              <Ionicons name="lock-closed" size={14} color="#10B981" />
+              <Text style={styles.certText}>GDPR</Text>
+            </View>
+            <View style={styles.certBadge}>
+              <Ionicons name="ribbon" size={14} color="#10B981" />
+              <Text style={styles.certText}>ISO 27001</Text>
+            </View>
+          </View>
         </View>
       </View>
+
+      {/* Contact Modal */}
+      <Modal visible={showContactModal} animationType="fade" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Request Information</Text>
+              <TouchableOpacity onPress={() => setShowContactModal(false)}>
+                <Ionicons name="close" size={24} color="#64748B" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.modalBody}>
+              <Text style={styles.inputLabel}>Full Name *</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Your name"
+                placeholderTextColor="#64748B"
+                value={contactForm.name}
+                onChangeText={(text) => setContactForm({...contactForm, name: text})}
+              />
+              
+              <Text style={styles.inputLabel}>Organization *</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Ministry / Tax Authority / Organization"
+                placeholderTextColor="#64748B"
+                value={contactForm.organization}
+                onChangeText={(text) => setContactForm({...contactForm, organization: text})}
+              />
+              
+              <Text style={styles.inputLabel}>Email Address *</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="your.email@gov.xx"
+                placeholderTextColor="#64748B"
+                keyboardType="email-address"
+                value={contactForm.email}
+                onChangeText={(text) => setContactForm({...contactForm, email: text})}
+              />
+              
+              <Text style={styles.inputLabel}>Country / Region *</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Select your country"
+                placeholderTextColor="#64748B"
+                value={contactForm.country}
+                onChangeText={(text) => setContactForm({...contactForm, country: text})}
+              />
+              
+              <Text style={styles.inputLabel}>How can we help? *</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                placeholder="Tell us about your requirements, questions, or interest in TaxDraw..."
+                placeholderTextColor="#64748B"
+                multiline
+                numberOfLines={4}
+                value={contactForm.message}
+                onChangeText={(text) => setContactForm({...contactForm, message: text})}
+              />
+            </ScrollView>
+            
+            <View style={styles.modalFooter}>
+              <TouchableOpacity 
+                style={styles.modalCancelBtn}
+                onPress={() => setShowContactModal(false)}
+              >
+                <Text style={styles.modalCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.modalSubmitBtn}
+                onPress={handleSubmitInquiry}
+              >
+                <Text style={styles.modalSubmitText}>Submit Inquiry</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -527,17 +739,41 @@ const styles = StyleSheet.create({
   logo: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
+  },
+  logoIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    backgroundColor: '#3B82F6',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   logoText: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '700',
     color: '#1E293B',
+  },
+  logoTextWhite: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  logoBadge: {
+    backgroundColor: '#EFF6FF',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  logoBadgeText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#3B82F6',
   },
   navLinks: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 24,
+    gap: 32,
     display: isWeb ? 'flex' : 'none',
   },
   navLink: {
@@ -548,21 +784,10 @@ const styles = StyleSheet.create({
     color: '#64748B',
     fontWeight: '500',
   },
-  navButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 10,
-    backgroundColor: '#F1F5F9',
-  },
-  navButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#1E293B',
-  },
   navButtonPrimary: {
     paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 10,
+    paddingVertical: 12,
+    borderRadius: 8,
     backgroundColor: '#3B82F6',
   },
   navButtonPrimaryText: {
@@ -576,17 +801,17 @@ const styles = StyleSheet.create({
     paddingVertical: 80,
     paddingHorizontal: 24,
     minHeight: isWeb ? 700 : 600,
+    alignItems: 'center',
   },
   heroContent: {
     flex: 1,
     maxWidth: isWeb ? 600 : '100%',
-    alignSelf: 'center',
   },
   heroBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: 'rgba(245, 158, 11, 0.2)',
+    backgroundColor: 'rgba(59, 130, 246, 0.2)',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
@@ -596,13 +821,13 @@ const styles = StyleSheet.create({
   heroBadgeText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#F59E0B',
+    color: '#60A5FA',
   },
   heroTitle: {
-    fontSize: isWeb ? 56 : 40,
+    fontSize: isWeb ? 48 : 36,
     fontWeight: '800',
     color: '#fff',
-    lineHeight: isWeb ? 68 : 48,
+    lineHeight: isWeb ? 58 : 44,
     marginBottom: 24,
   },
   heroTitleHighlight: {
@@ -617,7 +842,7 @@ const styles = StyleSheet.create({
   heroButtons: {
     flexDirection: 'row',
     gap: 16,
-    marginBottom: 48,
+    marginBottom: 40,
     flexWrap: 'wrap',
   },
   heroButtonPrimary: {
@@ -627,7 +852,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#3B82F6',
     paddingHorizontal: 24,
     paddingVertical: 16,
-    borderRadius: 12,
+    borderRadius: 10,
   },
   heroButtonPrimaryText: {
     fontSize: 16,
@@ -641,7 +866,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(59, 130, 246, 0.1)',
     paddingHorizontal: 24,
     paddingVertical: 16,
-    borderRadius: 12,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: 'rgba(59, 130, 246, 0.3)',
   },
@@ -650,83 +875,113 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#60A5FA',
   },
-  statsRow: {
+  trustRow: {
     flexDirection: 'row',
-    gap: 32,
+    gap: 24,
     flexWrap: 'wrap',
   },
-  statItem: {
-    minWidth: 100,
+  trustItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
-  statValue: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#fff',
-  },
-  statLabel: {
+  trustText: {
     fontSize: 14,
-    color: '#64748B',
-    marginTop: 4,
+    color: '#94A3B8',
+    fontWeight: '500',
   },
   heroImage: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    display: isWeb ? 'flex' : 'none',
+    paddingLeft: 48,
   },
-  phoneMockup: {
-    width: 280,
-    height: 560,
+  dashboardPreview: {
+    width: 500,
     backgroundColor: '#1E293B',
-    borderRadius: 40,
-    padding: 12,
-    borderWidth: 4,
+    borderRadius: 12,
+    overflow: 'hidden',
+    borderWidth: 1,
     borderColor: '#334155',
   },
-  phoneScreen: {
+  dashboardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#0F172A',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 12,
+  },
+  dashboardDots: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  dashboardTitle: {
+    color: '#64748B',
+    fontSize: 13,
+  },
+  dashboardBody: {
+    flexDirection: 'row',
+    minHeight: 300,
+  },
+  dashboardSidebar: {
+    width: 48,
+    backgroundColor: '#0F172A',
+    alignItems: 'center',
+    paddingTop: 16,
+    gap: 16,
+  },
+  sidebarItem: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: '#1E293B',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dashboardContent: {
+    flex: 1,
+    padding: 16,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
+  },
+  statCard: {
     flex: 1,
     backgroundColor: '#0F172A',
-    borderRadius: 32,
-    overflow: 'hidden',
-  },
-  phoneHeader: {
-    backgroundColor: '#1E293B',
+    borderRadius: 8,
     padding: 16,
     alignItems: 'center',
   },
-  phoneHeaderText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  phoneContent: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  phoneTitle: {
+  statValue: {
     fontSize: 24,
     fontWeight: '700',
     color: '#fff',
-    marginTop: 16,
   },
-  phoneSubtitle: {
-    fontSize: 16,
+  statLabel: {
+    fontSize: 11,
     color: '#64748B',
+    marginTop: 4,
+  },
+  chartPlaceholder: {
+    flex: 1,
+    backgroundColor: '#0F172A',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 150,
+  },
+  chartText: {
+    color: '#64748B',
+    fontSize: 14,
     marginTop: 8,
-  },
-  phoneButton: {
-    backgroundColor: '#3B82F6',
-    paddingHorizontal: 32,
-    paddingVertical: 14,
-    borderRadius: 12,
-    marginTop: 24,
-  },
-  phoneButtonText: {
-    color: '#fff',
-    fontWeight: '600',
-    fontSize: 16,
   },
   // Sections
   section: {
@@ -736,20 +991,20 @@ const styles = StyleSheet.create({
   sectionDark: {
     backgroundColor: '#0F172A',
   },
-  sectionGradient: {
-    backgroundColor: '#4F46E5',
+  sectionLight: {
+    backgroundColor: '#F8FAFC',
   },
   sectionHeader: {
     alignItems: 'center',
     marginBottom: 48,
-    maxWidth: 600,
+    maxWidth: 700,
     alignSelf: 'center',
   },
   sectionTag: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
     color: '#3B82F6',
-    letterSpacing: 1,
+    letterSpacing: 1.5,
     marginBottom: 12,
   },
   sectionTitle: {
@@ -765,8 +1020,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 28,
   },
-  // Features
-  featuresGrid: {
+  // Challenges
+  challengesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
@@ -774,199 +1029,250 @@ const styles = StyleSheet.create({
     maxWidth: 1000,
     alignSelf: 'center',
   },
-  featureCard: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: 20,
-    padding: 32,
-    width: isWeb ? 280 : '100%',
-    alignItems: 'center',
-  },
-  featureIcon: {
-    width: 64,
-    height: 64,
+  challengeCard: {
+    backgroundColor: '#fff',
     borderRadius: 16,
+    padding: 28,
+    width: isWeb ? 280 : '100%',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  challengeIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
   },
-  featureTitle: {
-    fontSize: 20,
+  challengeTitle: {
+    fontSize: 18,
     fontWeight: '600',
     color: '#1E293B',
-    marginBottom: 12,
-    textAlign: 'center',
+    marginBottom: 8,
   },
-  featureDescription: {
+  challengeDescription: {
     fontSize: 15,
     color: '#64748B',
-    textAlign: 'center',
     lineHeight: 24,
   },
-  // Steps
-  stepsContainer: {
-    maxWidth: 800,
+  // Solutions
+  solutionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 24,
+    maxWidth: 1000,
     alignSelf: 'center',
   },
-  stepItem: {
-    flexDirection: isWeb ? 'row' : 'column',
-    alignItems: isWeb ? 'flex-start' : 'center',
-    marginBottom: 40,
+  solutionCard: {
+    backgroundColor: '#1E293B',
+    borderRadius: 16,
+    padding: 28,
+    width: isWeb ? 460 : '100%',
+    borderWidth: 1,
+    borderColor: '#334155',
   },
-  stepNumber: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#3B82F6',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: isWeb ? 24 : 0,
-    marginBottom: isWeb ? 0 : 16,
-  },
-  stepNumberText: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#fff',
-  },
-  stepContent: {
-    flex: 1,
-    alignItems: isWeb ? 'flex-start' : 'center',
-  },
-  stepIconContainer: {
-    width: 72,
-    height: 72,
-    borderRadius: 20,
+  solutionIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 12,
     backgroundColor: 'rgba(59, 130, 246, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
   },
-  stepTitle: {
-    fontSize: 22,
+  solutionTitle: {
+    fontSize: 20,
     fontWeight: '600',
     color: '#fff',
-    marginBottom: 8,
-    textAlign: isWeb ? 'left' : 'center',
+    marginBottom: 12,
   },
-  stepDescription: {
-    fontSize: 16,
+  solutionDescription: {
+    fontSize: 15,
     color: '#94A3B8',
     lineHeight: 24,
-    textAlign: isWeb ? 'left' : 'center',
-    maxWidth: 400,
   },
-  stepConnector: {
-    width: isWeb ? 2 : 48,
-    height: isWeb ? 40 : 2,
-    backgroundColor: '#334155',
-    marginLeft: isWeb ? 23 : 0,
-    marginVertical: isWeb ? 0 : 16,
-  },
-  // Benefits
-  benefitsGrid: {
-    maxWidth: 800,
+  // Steps
+  stepsContainer: {
+    maxWidth: 700,
     alignSelf: 'center',
   },
-  benefitCard: {
+  stepItem: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    padding: 24,
-    backgroundColor: '#F8FAFC',
-    borderRadius: 16,
-    marginBottom: 16,
+    marginBottom: 24,
   },
-  benefitIcon: {
-    width: 48,
-    height: 48,
+  stepLeft: {
+    alignItems: 'center',
+    marginRight: 24,
+  },
+  stepNumber: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#3B82F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepNumberText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  stepLine: {
+    width: 2,
+    flex: 1,
+    backgroundColor: '#E2E8F0',
+    marginTop: 8,
+  },
+  stepContent: {
+    flex: 1,
+    paddingBottom: 24,
+  },
+  stepIconContainer: {
+    width: 56,
+    height: 56,
     borderRadius: 12,
     backgroundColor: '#EFF6FF',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 16,
+    marginBottom: 12,
   },
-  benefitContent: {
-    flex: 1,
-  },
-  benefitTitle: {
-    fontSize: 18,
+  stepTitle: {
+    fontSize: 20,
     fontWeight: '600',
     color: '#1E293B',
-    marginBottom: 6,
+    marginBottom: 8,
   },
-  benefitDescription: {
+  stepDescription: {
     fontSize: 15,
     color: '#64748B',
-    lineHeight: 22,
+    lineHeight: 24,
   },
-  // Government
-  govGrid: {
+  // Metrics
+  metricsSection: {
+    paddingVertical: 80,
+    paddingHorizontal: 24,
+  },
+  metricsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
     gap: 24,
     maxWidth: 1000,
     alignSelf: 'center',
-    marginBottom: 40,
   },
-  govCard: {
+  metricCard: {
     backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 20,
-    padding: 32,
-    width: isWeb ? 280 : '100%',
-    alignItems: 'center',
-  },
-  govIcon: {
-    width: 64,
-    height: 64,
     borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    padding: 28,
+    width: isWeb ? 220 : '45%',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
   },
-  govTitle: {
-    fontSize: 20,
-    fontWeight: '600',
+  metricValue: {
+    fontSize: 36,
+    fontWeight: '700',
     color: '#fff',
-    marginBottom: 12,
-    textAlign: 'center',
+    marginBottom: 8,
   },
-  govDescription: {
-    fontSize: 15,
-    color: '#C7D2FE',
-    textAlign: 'center',
-    lineHeight: 24,
-  },
-  govButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    backgroundColor: '#fff',
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignSelf: 'center',
-  },
-  govButtonText: {
+  metricLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#4F46E5',
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 8,
   },
-  // Testimonials
-  testimonialsGrid: {
+  metricDescription: {
+    fontSize: 13,
+    color: '#C7D2FE',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  // Case Studies
+  caseStudiesGrid: {
     flexDirection: isWeb ? 'row' : 'column',
     gap: 24,
     maxWidth: 1000,
     alignSelf: 'center',
   },
+  caseStudyCard: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 16,
+    padding: 28,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  caseStudyIcon: {
+    fontSize: 40,
+    marginBottom: 16,
+  },
+  caseStudyCountry: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#1E293B',
+    marginBottom: 4,
+  },
+  caseStudyProgram: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#3B82F6',
+    marginBottom: 12,
+  },
+  caseStudyResult: {
+    fontSize: 15,
+    color: '#64748B',
+    lineHeight: 24,
+  },
+  // Features
+  featuresGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 32,
+    maxWidth: 1000,
+    alignSelf: 'center',
+  },
+  featureCategory: {
+    width: isWeb ? 220 : '45%',
+  },
+  featureCategoryTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1E293B',
+    marginBottom: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 2,
+    borderBottomColor: '#3B82F6',
+  },
+  featureItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    marginBottom: 12,
+  },
+  featureItemText: {
+    flex: 1,
+    fontSize: 14,
+    color: '#475569',
+    lineHeight: 20,
+  },
+  // Testimonials
+  testimonialsGrid: {
+    flexDirection: isWeb ? 'row' : 'column',
+    gap: 24,
+    maxWidth: 1100,
+    alignSelf: 'center',
+  },
   testimonialCard: {
     flex: 1,
     backgroundColor: '#F8FAFC',
-    borderRadius: 20,
-    padding: 32,
+    borderRadius: 16,
+    padding: 28,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
-  testimonialStars: {
-    flexDirection: 'row',
-    gap: 4,
+  quoteIcon: {
     marginBottom: 16,
   },
   testimonialText: {
@@ -999,18 +1305,28 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1E293B',
   },
-  testimonialLocation: {
-    fontSize: 14,
+  testimonialTitle: {
+    fontSize: 13,
     color: '#64748B',
+  },
+  testimonialOrg: {
+    fontSize: 13,
+    color: '#3B82F6',
+    fontWeight: '500',
   },
   // CTA
   ctaSection: {
+    backgroundColor: '#0F172A',
     paddingVertical: 80,
     paddingHorizontal: 24,
+  },
+  ctaContent: {
+    maxWidth: 600,
+    alignSelf: 'center',
     alignItems: 'center',
   },
   ctaTitle: {
-    fontSize: isWeb ? 40 : 32,
+    fontSize: isWeb ? 36 : 28,
     fontWeight: '700',
     color: '#fff',
     textAlign: 'center',
@@ -1018,37 +1334,66 @@ const styles = StyleSheet.create({
   },
   ctaSubtitle: {
     fontSize: 18,
-    color: 'rgba(255,255,255,0.8)',
+    color: '#94A3B8',
     textAlign: 'center',
     marginBottom: 32,
-    maxWidth: 500,
+    lineHeight: 28,
   },
   ctaButtons: {
     flexDirection: isWeb ? 'row' : 'column',
     gap: 16,
+    marginBottom: 32,
   },
   ctaButtonPrimary: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    backgroundColor: '#fff',
-    paddingHorizontal: 24,
+    justifyContent: 'center',
+    gap: 10,
+    backgroundColor: '#3B82F6',
+    paddingHorizontal: 32,
     paddingVertical: 16,
-    borderRadius: 12,
+    borderRadius: 10,
     minWidth: 200,
   },
-  ctaButtonSmallText: {
-    fontSize: 12,
-    color: '#64748B',
+  ctaButtonPrimaryText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
   },
-  ctaButtonLargeText: {
-    fontSize: 18,
+  ctaButtonSecondary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    backgroundColor: '#fff',
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 10,
+    minWidth: 200,
+  },
+  ctaButtonSecondaryText: {
+    fontSize: 16,
     fontWeight: '600',
     color: '#1E293B',
+  },
+  ctaContact: {
+    alignItems: 'center',
+  },
+  ctaContactText: {
+    fontSize: 14,
+    color: '#64748B',
+    marginBottom: 4,
+  },
+  ctaContactEmail: {
+    fontSize: 16,
+    color: '#60A5FA',
+    fontWeight: '500',
   },
   // Footer
   footer: {
     backgroundColor: '#0F172A',
+    borderTopWidth: 1,
+    borderTopColor: '#1E293B',
     paddingTop: 64,
     paddingHorizontal: 24,
   },
@@ -1068,20 +1413,8 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#64748B',
     marginTop: 16,
-    marginBottom: 24,
     maxWidth: 300,
-  },
-  socialLinks: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  socialLink: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#1E293B',
-    alignItems: 'center',
-    justifyContent: 'center',
+    lineHeight: 24,
   },
   footerLinks: {
     flex: isWeb ? 2.5 : undefined,
@@ -1094,7 +1427,7 @@ const styles = StyleSheet.create({
     minWidth: isWeb ? 120 : '45%',
   },
   footerColumnTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     color: '#fff',
     marginBottom: 20,
@@ -1102,7 +1435,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   footerLink: {
-    fontSize: 15,
+    fontSize: 14,
     color: '#64748B',
     marginBottom: 12,
   },
@@ -1119,8 +1452,104 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#64748B',
   },
-  footerMadeWith: {
+  footerCerts: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  certBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#1E293B',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  certText: {
+    fontSize: 12,
+    color: '#94A3B8',
+    fontWeight: '500',
+  },
+  // Modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    width: '100%',
+    maxWidth: 500,
+    maxHeight: '90%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#1E293B',
+  },
+  modalBody: {
+    padding: 20,
+  },
+  inputLabel: {
     fontSize: 14,
+    fontWeight: '500',
+    color: '#374151',
+    marginBottom: 6,
+    marginTop: 16,
+  },
+  input: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 8,
+    padding: 14,
+    fontSize: 15,
+    color: '#1E293B',
+  },
+  textArea: {
+    height: 100,
+    textAlignVertical: 'top',
+  },
+  modalFooter: {
+    flexDirection: 'row',
+    gap: 12,
+    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
+  },
+  modalCancelBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    backgroundColor: '#F1F5F9',
+  },
+  modalCancelText: {
+    fontSize: 15,
+    fontWeight: '600',
     color: '#64748B',
+  },
+  modalSubmitBtn: {
+    flex: 2,
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    backgroundColor: '#3B82F6',
+  },
+  modalSubmitText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#fff',
   },
 });
