@@ -16,123 +16,156 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 const isWeb = Platform.OS === 'web';
 
-export default function CaseStudiesPage() {
+export default function PilotOpportunitiesPage() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
-  const [expandedStudy, setExpandedStudy] = useState<number | null>(null);
+  const [selectedPilot, setSelectedPilot] = useState<string | null>(null);
   const [contactForm, setContactForm] = useState({
     name: '',
     organization: '',
     email: '',
     country: '',
     message: '',
+    pilotType: '',
   });
 
-  const caseStudies = [
+  const pilotPrograms = [
     {
-      id: 1,
-      country: 'Kenya',
-      flag: '🇰🇪',
-      authority: 'Kenya Revenue Authority (KRA)',
-      program: 'EjijiPay Receipt Lottery',
-      tagline: 'From Compliance Problem to Citizen Movement',
-      revenueIncrease: '+23%',
-      users: '1.2M',
-      receipts: '15M+',
-      duration: '18 months',
-      color: '#059669',
-      challenge: 'Up to 40% of retail transactions were going unreported. Citizens had no incentive to request receipts.',
-      solution: 'Launched app + web scanning with weekly cash draws and monthly grand prizes including vehicles.',
-      results: [
-        { label: 'VAT Revenue', value: '+23%', detail: 'Year-over-year increase' },
-        { label: 'Compliance Rate', value: '92%', detail: 'Up from 67%' },
-        { label: 'Cost per Collection', value: '-45%', detail: 'Enforcement savings' },
+      id: 'starter',
+      name: 'Discovery Pilot',
+      duration: '3 Months',
+      description: 'Perfect for initial validation. Test the platform in a controlled environment with minimal commitment.',
+      icon: 'flask',
+      color: '#3B82F6',
+      features: [
+        'Single region deployment',
+        'Up to 10,000 users',
+        'Basic prize pool structure',
+        'Weekly performance reports',
+        'Dedicated success manager',
       ],
-      quote: '"Citizens now actively demand receipts. We turned consumers into our compliance partners."',
-      quoteAuthor: 'Commissioner General, KRA',
+      outcomes: [
+        'Validate citizen engagement',
+        'Test integration with your systems',
+        'Measure initial compliance lift',
+        'Build internal stakeholder buy-in',
+      ],
+      investment: 'Low',
+      ideal: 'Authorities seeking proof of concept',
     },
     {
-      id: 2,
-      country: 'Tanzania',
-      flag: '🇹🇿',
-      authority: 'Tanzania Revenue Authority (TRA)',
-      program: 'Bahati Yangu (My Luck)',
-      tagline: 'Real-Time Visibility, Real Results',
-      revenueIncrease: '+18%',
-      users: '850K',
-      receipts: '9M+',
-      duration: '12 months',
-      color: '#2563EB',
-      challenge: 'Cash-based economy with limited transaction visibility. Manual audits were expensive and slow.',
-      solution: 'Implemented browser-based scanning for maximum reach. Focus on urban retail centers.',
-      results: [
-        { label: 'Daily Scans', value: '45K', detail: 'Average per day' },
-        { label: 'Fraud Cases', value: '2,400', detail: 'Non-compliance detected' },
-        { label: 'Audit Costs', value: '-60%', detail: 'Reduction in manual audits' },
+      id: 'growth',
+      name: 'Scale Pilot',
+      duration: '6 Months',
+      description: 'Expand to multiple regions and measure real impact on tax revenue. Full feature access.',
+      icon: 'trending-up',
+      color: '#8B5CF6',
+      features: [
+        'Multi-region deployment',
+        'Up to 100,000 users',
+        'Tiered prize structures',
+        'Real-time analytics dashboard',
+        'API integration support',
+        'Marketing campaign support',
       ],
-      quote: '"The real-time data changed everything. We can now see transaction patterns instantly."',
-      quoteAuthor: 'Director of Domestic Revenue, TRA',
+      outcomes: [
+        'Quantify revenue impact',
+        'Identify high-compliance zones',
+        'Refine prize economics',
+        'Prepare for national rollout',
+      ],
+      investment: 'Medium',
+      ideal: 'Authorities ready to measure ROI',
     },
     {
-      id: 3,
-      country: 'Rwanda',
-      flag: '🇷🇼',
-      authority: 'Rwanda Revenue Authority (RRA)',
-      program: 'Sobanukirwa Initiative',
-      tagline: 'Digital-First, Results-Fast',
-      revenueIncrease: '+31%',
-      users: '620K',
-      receipts: '12M+',
-      duration: '24 months',
-      color: '#7C3AED',
-      challenge: 'EBM system had good coverage but citizen engagement was low.',
-      solution: 'Seamless integration with existing EBM infrastructure. Direct database validation.',
-      results: [
-        { label: 'Revenue Increase', value: '+31%', detail: 'Highest in our network' },
-        { label: 'Validation Speed', value: '<1s', detail: 'Real-time processing' },
-        { label: 'Annual Savings', value: '$2.4M', detail: 'Enforcement cost reduction' },
+      id: 'national',
+      name: 'National Pilot',
+      duration: '12 Months',
+      description: 'Full national deployment with comprehensive support. Designed for maximum impact and sustainability.',
+      icon: 'globe',
+      color: '#10B981',
+      features: [
+        'Nationwide deployment',
+        'Unlimited users',
+        'Custom prize programs',
+        'Advanced fraud detection',
+        'Full API & webhook access',
+        'Dedicated engineering team',
+        'Executive reporting suite',
       ],
-      quote: '"Integration was seamless. Taxxa enhanced our existing systems rather than replacing them."',
-      quoteAuthor: 'Deputy Commissioner, RRA',
-    },
-    {
-      id: 4,
-      country: 'Uganda',
-      flag: '🇺🇬',
-      authority: 'Uganda Revenue Authority (URA)',
-      program: 'EFRIS Rewards',
-      tagline: 'Citizen-Driven Merchant Compliance',
-      revenueIncrease: '+15%',
-      users: '480K',
-      receipts: '6M+',
-      duration: '10 months',
-      color: '#DC2626',
-      challenge: 'EFRIS adoption among merchants was slow. Needed consumer-side pressure.',
-      solution: 'Incentivized consumers to specifically request EFRIS-compliant receipts.',
-      results: [
-        { label: 'EFRIS Adoption', value: '+45%', detail: 'Merchant registration increase' },
-        { label: 'Receipt Requests', value: '3x', detail: 'Consumer demand increase' },
-        { label: 'Program ROI', value: '12:1', detail: 'Return on prize investment' },
+      outcomes: [
+        'Transform national compliance',
+        'Establish sustainable program',
+        'Build long-term citizen trust',
+        'Achieve measurable revenue growth',
       ],
-      quote: '"The behavioral change has been remarkable. Consumers now understand their role."',
-      quoteAuthor: 'Commissioner General, URA',
+      investment: 'Strategic Partnership',
+      ideal: 'Authorities committed to transformation',
     },
   ];
 
-  const aggregateStats = [
-    { value: '3.1M+', label: 'Active Citizens', icon: 'people' },
-    { value: '42M+', label: 'Receipts Scanned', icon: 'document-text' },
-    { value: '22%', label: 'Avg Revenue Increase', icon: 'trending-up' },
-    { value: '8', label: 'Countries Live', icon: 'globe' },
+  const projectedBenefits = [
+    {
+      metric: '15-30%',
+      label: 'Projected Revenue Increase',
+      description: 'Based on behavioral economics research and similar incentive programs globally',
+      icon: 'trending-up',
+    },
+    {
+      metric: '60 Days',
+      label: 'Time to First Results',
+      description: 'See measurable engagement within the first two months of deployment',
+      icon: 'time',
+    },
+    {
+      metric: '10:1',
+      label: 'Expected ROI',
+      description: 'Prize pool investment typically returns 10x in additional tax collection',
+      icon: 'cash',
+    },
+    {
+      metric: '90%+',
+      label: 'Target Citizen Satisfaction',
+      description: 'Citizens appreciate being rewarded for honest behavior',
+      icon: 'happy',
+    },
+  ];
+
+  const whyPilot = [
+    {
+      title: 'Zero Risk Validation',
+      description: 'Test the concept in your jurisdiction before full commitment. We share the risk.',
+      icon: 'shield-checkmark',
+    },
+    {
+      title: 'Data-Driven Decisions',
+      description: 'Get real performance data specific to your market to inform your strategy.',
+      icon: 'analytics',
+    },
+    {
+      title: 'Build Internal Support',
+      description: 'Demonstrate success to stakeholders and secure buy-in for national programs.',
+      icon: 'people',
+    },
+    {
+      title: 'Customized Approach',
+      description: 'We adapt the program to your legal framework, currency, and cultural context.',
+      icon: 'settings',
+    },
   ];
 
   const handleSubmitInquiry = () => {
-    alert('Thank you for your inquiry. Our team will contact you within 24-48 hours.');
+    alert('Thank you for your interest! Our partnerships team will contact you within 24 hours to discuss pilot opportunities.');
     setShowContactModal(false);
-    setContactForm({ name: '', organization: '', email: '', country: '', message: '' });
+    setContactForm({ name: '', organization: '', email: '', country: '', message: '', pilotType: '' });
+  };
+
+  const openPilotModal = (pilotType: string) => {
+    setContactForm({ ...contactForm, pilotType });
+    setShowContactModal(true);
   };
 
   return (
@@ -161,13 +194,13 @@ export default function CaseStudiesPage() {
                 <Text style={styles.navLinkText}>How It Works</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[styles.navLink, styles.navLinkActive]} onPress={() => router.push('/case-studies')}>
-                <Text style={[styles.navLinkText, styles.navLinkTextActive]}>Case Studies</Text>
+                <Text style={[styles.navLinkText, styles.navLinkTextActive]}>Pilot Programs</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.navLink} onPress={() => router.push('/documentation')}>
                 <Text style={styles.navLinkText}>Documentation</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.navButtonPrimary} onPress={() => setShowContactModal(true)}>
-                <Text style={styles.navButtonPrimaryText}>Request Demo</Text>
+                <Text style={styles.navButtonPrimaryText}>Become a Partner</Text>
               </TouchableOpacity>
             </View>
           ) : (
@@ -186,13 +219,13 @@ export default function CaseStudiesPage() {
               <Text style={styles.mobileMenuItemText}>How It Works</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.mobileMenuItem, styles.mobileMenuItemActive]} onPress={() => setShowMobileMenu(false)}>
-              <Text style={[styles.mobileMenuItemText, styles.mobileMenuItemTextActive]}>Case Studies</Text>
+              <Text style={[styles.mobileMenuItemText, styles.mobileMenuItemTextActive]}>Pilot Programs</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.mobileMenuItem} onPress={() => { setShowMobileMenu(false); router.push('/documentation'); }}>
               <Text style={styles.mobileMenuItemText}>Documentation</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.mobileMenuCTA} onPress={() => { setShowMobileMenu(false); setShowContactModal(true); }}>
-              <Text style={styles.mobileMenuCTAText}>Request Demo</Text>
+              <Text style={styles.mobileMenuCTAText}>Become a Partner</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -202,129 +235,169 @@ export default function CaseStudiesPage() {
       <LinearGradient colors={['#0F172A', '#1E3A5F', '#0F172A']} style={[styles.hero, isMobile && styles.heroMobile]}>
         <View style={[styles.heroContent, isMobile && styles.heroContentMobile]}>
           <View style={styles.heroBadge}>
-            <Ionicons name="trophy" size={14} color="#60A5FA" />
-            <Text style={styles.heroBadgeText}>Proven Track Record</Text>
+            <Ionicons name="rocket" size={14} color="#60A5FA" />
+            <Text style={styles.heroBadgeText}>Limited Partnership Slots Available</Text>
           </View>
           <Text style={[styles.heroTitle, isMobile && styles.heroTitleMobile]}>
-            Real Countries.{'\n'}
-            <Text style={styles.heroTitleHighlight}>Real Results.</Text>
+            Be a Pioneer.{'\n'}
+            <Text style={styles.heroTitleHighlight}>Lead the Change.</Text>
           </Text>
           <Text style={[styles.heroSubtitle, isMobile && styles.heroSubtitleMobile]}>
-            Don't take our word for it. See how Revenue Authorities across Africa are using Taxxa 
-            to transform tax compliance and boost collection rates.
+            Join forward-thinking Revenue Authorities transforming tax compliance. 
+            Launch a pilot program and see results in your jurisdiction within 60 days.
           </Text>
+          <TouchableOpacity style={styles.heroCTA} onPress={() => setShowContactModal(true)}>
+            <Ionicons name="calendar" size={20} color="#1E293B" />
+            <Text style={styles.heroCTAText}>Apply for Pilot Program</Text>
+          </TouchableOpacity>
         </View>
       </LinearGradient>
 
-      {/* Aggregate Stats */}
-      <View style={styles.statsSection}>
-        <View style={[styles.statsGrid, isMobile && styles.statsGridMobile]}>
-          {aggregateStats.map((stat, index) => (
-            <View key={index} style={[styles.statCard, isMobile && styles.statCardMobile]}>
-              <Ionicons name={stat.icon as any} size={24} color="#3B82F6" />
-              <Text style={styles.statValue}>{stat.value}</Text>
-              <Text style={styles.statLabel}>{stat.label}</Text>
+      {/* Projected Benefits */}
+      <View style={styles.benefitsSection}>
+        <Text style={styles.sectionTitle}>What You Can Expect</Text>
+        <Text style={styles.sectionSubtitle}>Projected outcomes based on behavioral economics research</Text>
+        
+        <View style={[styles.benefitsGrid, isMobile && styles.benefitsGridMobile]}>
+          {projectedBenefits.map((benefit, index) => (
+            <View key={index} style={[styles.benefitCard, isMobile && styles.benefitCardMobile]}>
+              <View style={styles.benefitIconWrap}>
+                <Ionicons name={benefit.icon as any} size={24} color="#3B82F6" />
+              </View>
+              <Text style={styles.benefitMetric}>{benefit.metric}</Text>
+              <Text style={styles.benefitLabel}>{benefit.label}</Text>
+              <Text style={styles.benefitDescription}>{benefit.description}</Text>
             </View>
           ))}
         </View>
       </View>
 
-      {/* Case Studies */}
-      <View style={styles.studiesSection}>
-        <Text style={styles.sectionTitle}>Success Stories</Text>
-        <Text style={styles.sectionSubtitle}>Click any card to see the full story</Text>
+      {/* Why Pilot Section */}
+      <View style={[styles.section, { backgroundColor: '#F8FAFC' }]}>
+        <Text style={styles.sectionTitle}>Why Start With a Pilot?</Text>
+        <Text style={styles.sectionSubtitle}>Smart leaders test before they invest</Text>
         
-        {caseStudies.map((study) => (
-          <TouchableOpacity
-            key={study.id}
-            style={styles.studyCard}
-            onPress={() => setExpandedStudy(expandedStudy === study.id ? null : study.id)}
-            activeOpacity={0.95}
-          >
-            {/* Header */}
-            <View style={[styles.studyHeader, isMobile && styles.studyHeaderMobile]}>
-              <View style={styles.studyHeaderLeft}>
-                <Text style={styles.studyFlag}>{study.flag}</Text>
+        <View style={[styles.whyGrid, isMobile && styles.whyGridMobile]}>
+          {whyPilot.map((item, index) => (
+            <View key={index} style={[styles.whyCard, isMobile && styles.whyCardMobile]}>
+              <View style={styles.whyIconWrap}>
+                <Ionicons name={item.icon as any} size={28} color="#3B82F6" />
+              </View>
+              <Text style={styles.whyTitle}>{item.title}</Text>
+              <Text style={styles.whyDescription}>{item.description}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+
+      {/* Pilot Programs */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Choose Your Pilot Program</Text>
+        <Text style={styles.sectionSubtitle}>Flexible options to match your readiness level</Text>
+        
+        <View style={[styles.pilotsGrid, isMobile && styles.pilotsGridMobile]}>
+          {pilotPrograms.map((pilot) => (
+            <View key={pilot.id} style={[styles.pilotCard, isMobile && styles.pilotCardMobile, { borderTopColor: pilot.color }]}>
+              <View style={[styles.pilotIconWrap, { backgroundColor: pilot.color + '15' }]}>
+                <Ionicons name={pilot.icon as any} size={32} color={pilot.color} />
+              </View>
+              <Text style={styles.pilotName}>{pilot.name}</Text>
+              <View style={[styles.pilotDuration, { backgroundColor: pilot.color + '15' }]}>
+                <Text style={[styles.pilotDurationText, { color: pilot.color }]}>{pilot.duration}</Text>
+              </View>
+              <Text style={styles.pilotDescription}>{pilot.description}</Text>
+              
+              <Text style={styles.pilotSectionLabel}>INCLUDES</Text>
+              <View style={styles.pilotFeatures}>
+                {pilot.features.map((feature, idx) => (
+                  <View key={idx} style={styles.pilotFeature}>
+                    <Ionicons name="checkmark" size={16} color="#10B981" />
+                    <Text style={styles.pilotFeatureText}>{feature}</Text>
+                  </View>
+                ))}
+              </View>
+
+              <Text style={styles.pilotSectionLabel}>OUTCOMES</Text>
+              <View style={styles.pilotOutcomes}>
+                {pilot.outcomes.map((outcome, idx) => (
+                  <View key={idx} style={styles.pilotOutcome}>
+                    <Ionicons name="arrow-forward" size={14} color={pilot.color} />
+                    <Text style={styles.pilotOutcomeText}>{outcome}</Text>
+                  </View>
+                ))}
+              </View>
+
+              <View style={styles.pilotFooter}>
                 <View>
-                  <Text style={styles.studyCountry}>{study.country}</Text>
-                  <Text style={styles.studyAuthority}>{study.authority}</Text>
+                  <Text style={styles.pilotInvestmentLabel}>Investment Level</Text>
+                  <Text style={[styles.pilotInvestment, { color: pilot.color }]}>{pilot.investment}</Text>
                 </View>
+                <TouchableOpacity 
+                  style={[styles.pilotCTA, { backgroundColor: pilot.color }]}
+                  onPress={() => openPilotModal(pilot.name)}
+                >
+                  <Text style={styles.pilotCTAText}>Apply Now</Text>
+                </TouchableOpacity>
               </View>
-              <View style={[styles.studyBadge, { backgroundColor: study.color + '15' }]}>
-                <Text style={[styles.studyBadgeText, { color: study.color }]}>{study.revenueIncrease} Revenue</Text>
-              </View>
+
+              <Text style={styles.pilotIdeal}>Ideal for: {pilot.ideal}</Text>
             </View>
+          ))}
+        </View>
+      </View>
 
-            {/* Title */}
-            <Text style={styles.studyProgram}>{study.program}</Text>
-            <Text style={styles.studyTagline}>{study.tagline}</Text>
-
-            {/* Quick Stats */}
-            <View style={[styles.quickStats, isMobile && styles.quickStatsMobile]}>
-              <View style={styles.quickStat}>
-                <Text style={styles.quickStatValue}>{study.users}</Text>
-                <Text style={styles.quickStatLabel}>Citizens</Text>
+      {/* Process Timeline */}
+      <View style={[styles.section, { backgroundColor: '#0F172A' }]}>
+        <Text style={[styles.sectionTitle, { color: '#fff' }]}>From Application to Launch</Text>
+        <Text style={[styles.sectionSubtitle, { color: '#94A3B8' }]}>A streamlined process to get you live quickly</Text>
+        
+        <View style={[styles.timelineGrid, isMobile && styles.timelineGridMobile]}>
+          {[
+            { week: 'Week 1-2', title: 'Discovery', description: 'We assess your systems, requirements, and goals', icon: 'search' },
+            { week: 'Week 3-4', title: 'Integration', description: 'Connect Taxxa to your Revenue Authority platform', icon: 'git-network' },
+            { week: 'Week 5-6', title: 'Configuration', description: 'Set up prize structures, branding, and rules', icon: 'settings' },
+            { week: 'Week 7-8', title: 'Launch', description: 'Go live with marketing support and monitoring', icon: 'rocket' },
+          ].map((step, index) => (
+            <View key={index} style={[styles.timelineStep, isMobile && styles.timelineStepMobile]}>
+              <View style={styles.timelineIcon}>
+                <Ionicons name={step.icon as any} size={24} color="#3B82F6" />
               </View>
-              <View style={styles.quickStatDivider} />
-              <View style={styles.quickStat}>
-                <Text style={styles.quickStatValue}>{study.receipts}</Text>
-                <Text style={styles.quickStatLabel}>Receipts</Text>
-              </View>
-              <View style={styles.quickStatDivider} />
-              <View style={styles.quickStat}>
-                <Text style={styles.quickStatValue}>{study.duration}</Text>
-                <Text style={styles.quickStatLabel}>Duration</Text>
-              </View>
+              <Text style={styles.timelineWeek}>{step.week}</Text>
+              <Text style={styles.timelineTitle}>{step.title}</Text>
+              <Text style={styles.timelineDescription}>{step.description}</Text>
             </View>
-
-            {/* Expanded Content */}
-            {expandedStudy === study.id && (
-              <View style={styles.expandedContent}>
-                <View style={styles.divider} />
-                
-                <Text style={styles.expandedLabel}>THE CHALLENGE</Text>
-                <Text style={styles.expandedText}>{study.challenge}</Text>
-                
-                <Text style={styles.expandedLabel}>OUR SOLUTION</Text>
-                <Text style={styles.expandedText}>{study.solution}</Text>
-                
-                <Text style={styles.expandedLabel}>KEY RESULTS</Text>
-                <View style={[styles.resultsGrid, isMobile && styles.resultsGridMobile]}>
-                  {study.results.map((result, index) => (
-                    <View key={index} style={[styles.resultCard, isMobile && styles.resultCardMobile, { borderLeftColor: study.color }]}>
-                      <Text style={[styles.resultValue, { color: study.color }]}>{result.value}</Text>
-                      <Text style={styles.resultLabel}>{result.label}</Text>
-                      <Text style={styles.resultDetail}>{result.detail}</Text>
-                    </View>
-                  ))}
-                </View>
-
-                {/* Quote */}
-                <View style={[styles.quoteCard, { backgroundColor: study.color + '10' }]}>
-                  <Ionicons name="chatbox-ellipses" size={24} color={study.color} />
-                  <Text style={styles.quoteText}>{study.quote}</Text>
-                  <Text style={[styles.quoteAuthor, { color: study.color }]}>— {study.quoteAuthor}</Text>
-                </View>
-              </View>
-            )}
-
-            {/* Expand Indicator */}
-            <View style={styles.expandIndicator}>
-              <Ionicons name={expandedStudy === study.id ? 'chevron-up' : 'chevron-down'} size={20} color="#64748B" />
-              <Text style={styles.expandText}>{expandedStudy === study.id ? 'Show Less' : 'Read Full Story'}</Text>
-            </View>
-          </TouchableOpacity>
-        ))}
+          ))}
+        </View>
       </View>
 
       {/* CTA Section */}
-      <LinearGradient colors={['#1E3A5F', '#0F172A']} style={styles.ctaSection}>
-        <Text style={[styles.ctaTitle, isMobile && styles.ctaTitleMobile]}>Want Similar Results?</Text>
-        <Text style={styles.ctaSubtitle}>Let's discuss how Taxxa can work for your jurisdiction</Text>
-        <TouchableOpacity style={styles.ctaButton} onPress={() => setShowContactModal(true)}>
-          <Ionicons name="calendar" size={20} color="#1E293B" />
-          <Text style={styles.ctaButtonText}>Schedule Consultation</Text>
-        </TouchableOpacity>
+      <LinearGradient colors={['#3B82F6', '#1D4ED8']} style={styles.ctaSection}>
+        <Text style={[styles.ctaTitle, isMobile && styles.ctaTitleMobile]}>Ready to Transform Tax Compliance?</Text>
+        <Text style={styles.ctaSubtitle}>Limited pilot slots available for 2025. Apply now to secure your position.</Text>
+        <View style={[styles.ctaButtons, isMobile && styles.ctaButtonsMobile]}>
+          <TouchableOpacity style={styles.ctaButtonPrimary} onPress={() => setShowContactModal(true)}>
+            <Ionicons name="paper-plane" size={20} color="#3B82F6" />
+            <Text style={styles.ctaButtonPrimaryText}>Apply for Pilot</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.ctaButtonSecondary} onPress={() => router.push('/demo')}>
+            <Ionicons name="play" size={20} color="#fff" />
+            <Text style={styles.ctaButtonSecondaryText}>See Demo First</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.trustIndicators}>
+          <View style={styles.trustItem}>
+            <Ionicons name="shield-checkmark" size={16} color="rgba(255,255,255,0.8)" />
+            <Text style={styles.trustText}>Enterprise Security</Text>
+          </View>
+          <View style={styles.trustItem}>
+            <Ionicons name="lock-closed" size={16} color="rgba(255,255,255,0.8)" />
+            <Text style={styles.trustText}>Data Sovereignty</Text>
+          </View>
+          <View style={styles.trustItem}>
+            <Ionicons name="ribbon" size={16} color="rgba(255,255,255,0.8)" />
+            <Text style={styles.trustText}>Compliance Ready</Text>
+          </View>
+        </View>
       </LinearGradient>
 
       {/* Footer */}
@@ -345,27 +418,90 @@ export default function CaseStudiesPage() {
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, isMobile && styles.modalContentMobile]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Request a Demo</Text>
+              <View>
+                <Text style={styles.modalTitle}>Apply for Pilot Program</Text>
+                {contactForm.pilotType && (
+                  <Text style={styles.modalSubtitle}>Selected: {contactForm.pilotType}</Text>
+                )}
+              </View>
               <TouchableOpacity onPress={() => setShowContactModal(false)}>
                 <Ionicons name="close" size={24} color="#64748B" />
               </TouchableOpacity>
             </View>
             <ScrollView style={styles.modalBody}>
               <Text style={styles.inputLabel}>Full Name *</Text>
-              <TextInput style={styles.input} placeholder="Your name" placeholderTextColor="#64748B" value={contactForm.name} onChangeText={(text) => setContactForm({...contactForm, name: text})} />
+              <TextInput 
+                style={styles.input} 
+                placeholder="Your name" 
+                placeholderTextColor="#94A3B8"
+                value={contactForm.name} 
+                onChangeText={(text) => setContactForm({...contactForm, name: text})} 
+              />
+              
               <Text style={styles.inputLabel}>Organization *</Text>
-              <TextInput style={styles.input} placeholder="Tax Authority / Ministry" placeholderTextColor="#64748B" value={contactForm.organization} onChangeText={(text) => setContactForm({...contactForm, organization: text})} />
-              <Text style={styles.inputLabel}>Email *</Text>
-              <TextInput style={styles.input} placeholder="your.email@gov.xx" placeholderTextColor="#64748B" keyboardType="email-address" value={contactForm.email} onChangeText={(text) => setContactForm({...contactForm, email: text})} />
+              <TextInput 
+                style={styles.input} 
+                placeholder="Revenue Authority / Ministry name" 
+                placeholderTextColor="#94A3B8"
+                value={contactForm.organization} 
+                onChangeText={(text) => setContactForm({...contactForm, organization: text})} 
+              />
+              
+              <Text style={styles.inputLabel}>Official Email *</Text>
+              <TextInput 
+                style={styles.input} 
+                placeholder="your.email@revenue.gov" 
+                placeholderTextColor="#94A3B8"
+                keyboardType="email-address" 
+                value={contactForm.email} 
+                onChangeText={(text) => setContactForm({...contactForm, email: text})} 
+              />
+              
               <Text style={styles.inputLabel}>Country *</Text>
-              <TextInput style={styles.input} placeholder="Your country" placeholderTextColor="#64748B" value={contactForm.country} onChangeText={(text) => setContactForm({...contactForm, country: text})} />
+              <TextInput 
+                style={styles.input} 
+                placeholder="Your country" 
+                placeholderTextColor="#94A3B8"
+                value={contactForm.country} 
+                onChangeText={(text) => setContactForm({...contactForm, country: text})} 
+              />
+
+              <Text style={styles.inputLabel}>Preferred Pilot Program</Text>
+              <View style={styles.pilotSelector}>
+                {['Discovery Pilot', 'Scale Pilot', 'National Pilot'].map((type) => (
+                  <TouchableOpacity
+                    key={type}
+                    style={[
+                      styles.pilotOption,
+                      contactForm.pilotType === type && styles.pilotOptionActive
+                    ]}
+                    onPress={() => setContactForm({...contactForm, pilotType: type})}
+                  >
+                    <Text style={[
+                      styles.pilotOptionText,
+                      contactForm.pilotType === type && styles.pilotOptionTextActive
+                    ]}>{type}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              
+              <Text style={styles.inputLabel}>Tell us about your goals</Text>
+              <TextInput 
+                style={[styles.input, styles.textArea]} 
+                placeholder="What challenges are you facing? What outcomes are you hoping to achieve?" 
+                placeholderTextColor="#94A3B8"
+                multiline 
+                numberOfLines={4} 
+                value={contactForm.message} 
+                onChangeText={(text) => setContactForm({...contactForm, message: text})} 
+              />
             </ScrollView>
             <View style={styles.modalFooter}>
               <TouchableOpacity style={styles.modalCancelBtn} onPress={() => setShowContactModal(false)}>
                 <Text style={styles.modalCancelText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.modalSubmitBtn} onPress={handleSubmitInquiry}>
-                <Text style={styles.modalSubmitText}>Submit</Text>
+                <Text style={styles.modalSubmitText}>Submit Application</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -405,69 +541,82 @@ const styles = StyleSheet.create({
   heroMobile: { paddingVertical: 48 },
   heroContent: { maxWidth: 800, alignSelf: 'center' },
   heroContentMobile: { alignItems: 'center' },
-  heroBadge: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(59, 130, 246, 0.1)', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, alignSelf: 'flex-start', marginBottom: 24 },
-  heroBadgeText: { color: '#60A5FA', fontSize: 14, fontWeight: '600' },
+  heroBadge: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(251, 191, 36, 0.2)', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, alignSelf: 'flex-start', marginBottom: 24 },
+  heroBadgeText: { color: '#FCD34D', fontSize: 14, fontWeight: '600' },
   heroTitle: { fontSize: 52, fontWeight: '800', color: '#fff', marginBottom: 20, lineHeight: 60 },
   heroTitleMobile: { fontSize: 32, lineHeight: 40, textAlign: 'center' },
   heroTitleHighlight: { color: '#60A5FA' },
-  heroSubtitle: { fontSize: 20, color: '#94A3B8', lineHeight: 32 },
+  heroSubtitle: { fontSize: 20, color: '#94A3B8', lineHeight: 32, marginBottom: 32 },
   heroSubtitleMobile: { fontSize: 16, textAlign: 'center', lineHeight: 26 },
-  // Stats
-  statsSection: { paddingVertical: 40, paddingHorizontal: 24, marginTop: -40, zIndex: 10 },
-  statsGrid: { flexDirection: 'row', justifyContent: 'center', gap: 16, maxWidth: 900, alignSelf: 'center' },
-  statsGridMobile: { flexDirection: 'column' },
-  statCard: { backgroundColor: '#fff', borderRadius: 16, padding: 24, alignItems: 'center', flex: 1, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12, elevation: 4 },
-  statCardMobile: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  statValue: { fontSize: 32, fontWeight: '700', color: '#1E293B', marginTop: 8 },
-  statLabel: { fontSize: 14, color: '#64748B', marginTop: 4 },
-  // Studies Section
-  studiesSection: { paddingHorizontal: 24, paddingBottom: 48, maxWidth: 900, alignSelf: 'center', width: '100%' },
-  sectionTitle: { fontSize: 36, fontWeight: '700', color: '#1E293B', textAlign: 'center', marginBottom: 12, marginTop: 24 },
-  sectionSubtitle: { fontSize: 18, color: '#64748B', textAlign: 'center', marginBottom: 32 },
-  // Study Card
-  studyCard: { backgroundColor: '#fff', borderRadius: 16, padding: 24, marginBottom: 20, borderWidth: 1, borderColor: '#E2E8F0' },
-  studyHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 },
-  studyHeaderMobile: { flexDirection: 'column', gap: 12 },
-  studyHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  studyFlag: { fontSize: 40 },
-  studyCountry: { fontSize: 18, fontWeight: '700', color: '#1E293B' },
-  studyAuthority: { fontSize: 13, color: '#64748B' },
-  studyBadge: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20 },
-  studyBadgeText: { fontSize: 14, fontWeight: '700' },
-  studyProgram: { fontSize: 24, fontWeight: '700', color: '#1E293B', marginBottom: 4 },
-  studyTagline: { fontSize: 16, color: '#64748B', marginBottom: 20 },
-  // Quick Stats
-  quickStats: { flexDirection: 'row', backgroundColor: '#F8FAFC', borderRadius: 12, padding: 16 },
-  quickStatsMobile: { flexDirection: 'column', gap: 12 },
-  quickStat: { flex: 1, alignItems: 'center' },
-  quickStatValue: { fontSize: 22, fontWeight: '700', color: '#1E293B' },
-  quickStatLabel: { fontSize: 13, color: '#64748B', marginTop: 2 },
-  quickStatDivider: { width: 1, backgroundColor: '#E2E8F0' },
-  // Expanded
-  expandedContent: { marginTop: 16 },
-  divider: { height: 1, backgroundColor: '#E2E8F0', marginBottom: 20 },
-  expandedLabel: { fontSize: 12, fontWeight: '700', color: '#64748B', letterSpacing: 1, marginBottom: 8, marginTop: 16 },
-  expandedText: { fontSize: 15, color: '#475569', lineHeight: 24 },
-  resultsGrid: { flexDirection: 'row', gap: 12, marginTop: 12 },
-  resultsGridMobile: { flexDirection: 'column' },
-  resultCard: { flex: 1, backgroundColor: '#F8FAFC', borderRadius: 12, padding: 16, borderLeftWidth: 4 },
-  resultCardMobile: { flex: 0 },
-  resultValue: { fontSize: 28, fontWeight: '700' },
-  resultLabel: { fontSize: 14, fontWeight: '600', color: '#1E293B', marginTop: 4 },
-  resultDetail: { fontSize: 12, color: '#64748B', marginTop: 2 },
-  quoteCard: { borderRadius: 12, padding: 20, marginTop: 20 },
-  quoteText: { fontSize: 16, fontStyle: 'italic', color: '#475569', lineHeight: 26, marginTop: 12 },
-  quoteAuthor: { fontSize: 14, fontWeight: '600', marginTop: 12 },
-  // Expand Indicator
-  expandIndicator: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: '#E2E8F0' },
-  expandText: { fontSize: 14, color: '#64748B', fontWeight: '500' },
+  heroCTA: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#fff', paddingHorizontal: 28, paddingVertical: 16, borderRadius: 8 },
+  heroCTAText: { color: '#1E293B', fontSize: 17, fontWeight: '600' },
+  // Benefits
+  benefitsSection: { paddingVertical: 60, paddingHorizontal: 24 },
+  sectionTitle: { fontSize: 36, fontWeight: '700', color: '#1E293B', textAlign: 'center', marginBottom: 12 },
+  sectionSubtitle: { fontSize: 18, color: '#64748B', textAlign: 'center', marginBottom: 48 },
+  benefitsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 20, justifyContent: 'center', maxWidth: 1100, alignSelf: 'center' },
+  benefitsGridMobile: { flexDirection: 'column' },
+  benefitCard: { backgroundColor: '#F8FAFC', borderRadius: 16, padding: 24, width: 240, alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0' },
+  benefitCardMobile: { width: '100%' },
+  benefitIconWrap: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#EFF6FF', alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
+  benefitMetric: { fontSize: 36, fontWeight: '700', color: '#1E293B' },
+  benefitLabel: { fontSize: 16, fontWeight: '600', color: '#1E293B', marginTop: 4, textAlign: 'center' },
+  benefitDescription: { fontSize: 13, color: '#64748B', textAlign: 'center', marginTop: 8, lineHeight: 20 },
+  // Why
+  section: { paddingVertical: 60, paddingHorizontal: 24 },
+  whyGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 20, justifyContent: 'center', maxWidth: 1000, alignSelf: 'center' },
+  whyGridMobile: { flexDirection: 'column' },
+  whyCard: { backgroundColor: '#fff', borderRadius: 16, padding: 24, width: 220, borderWidth: 1, borderColor: '#E2E8F0' },
+  whyCardMobile: { width: '100%' },
+  whyIconWrap: { width: 56, height: 56, borderRadius: 14, backgroundColor: '#EFF6FF', alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
+  whyTitle: { fontSize: 18, fontWeight: '700', color: '#1E293B', marginBottom: 8 },
+  whyDescription: { fontSize: 14, color: '#64748B', lineHeight: 22 },
+  // Pilots
+  pilotsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 24, justifyContent: 'center', maxWidth: 1200, alignSelf: 'center' },
+  pilotsGridMobile: { flexDirection: 'column' },
+  pilotCard: { backgroundColor: '#fff', borderRadius: 16, padding: 28, width: 340, borderWidth: 1, borderColor: '#E2E8F0', borderTopWidth: 4 },
+  pilotCardMobile: { width: '100%' },
+  pilotIconWrap: { width: 64, height: 64, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
+  pilotName: { fontSize: 24, fontWeight: '700', color: '#1E293B', marginBottom: 8 },
+  pilotDuration: { alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, marginBottom: 16 },
+  pilotDurationText: { fontSize: 14, fontWeight: '600' },
+  pilotDescription: { fontSize: 15, color: '#64748B', lineHeight: 24, marginBottom: 20 },
+  pilotSectionLabel: { fontSize: 11, fontWeight: '700', color: '#94A3B8', letterSpacing: 1, marginBottom: 12, marginTop: 8 },
+  pilotFeatures: { gap: 8, marginBottom: 16 },
+  pilotFeature: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  pilotFeatureText: { fontSize: 14, color: '#475569' },
+  pilotOutcomes: { gap: 8, marginBottom: 20 },
+  pilotOutcome: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  pilotOutcomeText: { fontSize: 14, color: '#475569', fontWeight: '500' },
+  pilotFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 20, borderTopWidth: 1, borderTopColor: '#E2E8F0' },
+  pilotInvestmentLabel: { fontSize: 12, color: '#94A3B8' },
+  pilotInvestment: { fontSize: 16, fontWeight: '700' },
+  pilotCTA: { paddingHorizontal: 20, paddingVertical: 12, borderRadius: 8 },
+  pilotCTAText: { color: '#fff', fontSize: 15, fontWeight: '600' },
+  pilotIdeal: { fontSize: 13, color: '#94A3B8', fontStyle: 'italic', marginTop: 16 },
+  // Timeline
+  timelineGrid: { flexDirection: 'row', gap: 20, justifyContent: 'center', maxWidth: 1000, alignSelf: 'center' },
+  timelineGridMobile: { flexDirection: 'column' },
+  timelineStep: { alignItems: 'center', width: 200 },
+  timelineStepMobile: { width: '100%', flexDirection: 'row', gap: 16, alignItems: 'flex-start' },
+  timelineIcon: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#1E3A5F', alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
+  timelineWeek: { fontSize: 13, color: '#60A5FA', fontWeight: '600', marginBottom: 4 },
+  timelineTitle: { fontSize: 18, fontWeight: '700', color: '#fff', marginBottom: 8 },
+  timelineDescription: { fontSize: 14, color: '#94A3B8', textAlign: 'center', lineHeight: 22 },
   // CTA
   ctaSection: { padding: 60, alignItems: 'center' },
   ctaTitle: { fontSize: 36, fontWeight: '700', color: '#fff', textAlign: 'center', marginBottom: 12 },
   ctaTitleMobile: { fontSize: 28 },
-  ctaSubtitle: { fontSize: 18, color: '#94A3B8', marginBottom: 32, textAlign: 'center' },
-  ctaButton: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#fff', paddingHorizontal: 32, paddingVertical: 18, borderRadius: 8 },
-  ctaButtonText: { color: '#1E293B', fontSize: 18, fontWeight: '600' },
+  ctaSubtitle: { fontSize: 18, color: 'rgba(255,255,255,0.85)', marginBottom: 32, textAlign: 'center' },
+  ctaButtons: { flexDirection: 'row', gap: 16, marginBottom: 32 },
+  ctaButtonsMobile: { flexDirection: 'column', width: '100%', alignItems: 'center' },
+  ctaButtonPrimary: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#fff', paddingHorizontal: 28, paddingVertical: 16, borderRadius: 8 },
+  ctaButtonPrimaryText: { color: '#3B82F6', fontSize: 17, fontWeight: '600' },
+  ctaButtonSecondary: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 28, paddingVertical: 16, borderRadius: 8, borderWidth: 2, borderColor: '#fff' },
+  ctaButtonSecondaryText: { color: '#fff', fontSize: 17, fontWeight: '600' },
+  trustIndicators: { flexDirection: 'row', gap: 24, flexWrap: 'wrap', justifyContent: 'center' },
+  trustItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  trustText: { color: 'rgba(255,255,255,0.8)', fontSize: 14 },
   // Footer
   footer: { backgroundColor: '#0F172A', paddingVertical: 32, paddingHorizontal: 24 },
   footerContent: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', maxWidth: 1200, alignSelf: 'center', width: '100%' },
@@ -477,13 +626,20 @@ const styles = StyleSheet.create({
   footerText: { color: '#64748B', fontSize: 14 },
   // Modal
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 24 },
-  modalContent: { backgroundColor: '#fff', borderRadius: 16, width: '100%', maxWidth: 480, maxHeight: '90%' },
+  modalContent: { backgroundColor: '#fff', borderRadius: 16, width: '100%', maxWidth: 520, maxHeight: '90%' },
   modalContentMobile: { maxWidth: '100%' },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: '#E2E8F0' },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', padding: 20, borderBottomWidth: 1, borderBottomColor: '#E2E8F0' },
   modalTitle: { fontSize: 20, fontWeight: '700', color: '#1E293B' },
+  modalSubtitle: { fontSize: 14, color: '#3B82F6', marginTop: 4 },
   modalBody: { padding: 20 },
-  inputLabel: { fontSize: 14, fontWeight: '600', color: '#374151', marginBottom: 6, marginTop: 12 },
+  inputLabel: { fontSize: 14, fontWeight: '600', color: '#374151', marginBottom: 6, marginTop: 16 },
   input: { backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 8, padding: 14, fontSize: 16, color: '#1E293B' },
+  textArea: { height: 100, textAlignVertical: 'top' },
+  pilotSelector: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 },
+  pilotOption: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: '#E2E8F0', backgroundColor: '#F8FAFC' },
+  pilotOptionActive: { borderColor: '#3B82F6', backgroundColor: '#EFF6FF' },
+  pilotOptionText: { fontSize: 14, color: '#64748B', fontWeight: '500' },
+  pilotOptionTextActive: { color: '#3B82F6' },
   modalFooter: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, padding: 20, borderTopWidth: 1, borderTopColor: '#E2E8F0' },
   modalCancelBtn: { paddingHorizontal: 20, paddingVertical: 12, borderRadius: 8, borderWidth: 1, borderColor: '#E2E8F0' },
   modalCancelText: { fontSize: 15, fontWeight: '600', color: '#64748B' },
