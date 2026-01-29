@@ -20,7 +20,10 @@ const isWeb = Platform.OS === 'web';
 
 export default function LandingPage() {
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const isMobile = width < 768;
   const [showContactModal, setShowContactModal] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [contactForm, setContactForm] = useState({
     name: '',
     organization: '',
