@@ -751,11 +751,26 @@ class ReceiptAPITester:
 
 def main():
     """Main test execution"""
-    tester = TaxDrawAPITester()
+    print("🧪 TaxDraw Backend API Test Suite")
+    print("=" * 60)
+    
+    # Test Receipt API v1 endpoints
+    receipt_tester = ReceiptAPITester()
     
     try:
-        success = tester.run_audit_tests()
-        sys.exit(0 if success else 1)
+        receipt_success = receipt_tester.run_full_test_flow()
+        
+        print("\n" + "=" * 60)
+        print("FINAL TEST SUMMARY")
+        print("=" * 60)
+        
+        if receipt_success:
+            print("🎉 All Receipt API v1 tests PASSED!")
+            sys.exit(0)
+        else:
+            print("❌ Some Receipt API v1 tests FAILED!")
+            sys.exit(1)
+            
     except KeyboardInterrupt:
         print("\n⚠️  Tests interrupted by user")
         sys.exit(1)
