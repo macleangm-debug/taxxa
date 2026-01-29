@@ -200,21 +200,24 @@ export default function LandingPage() {
   const caseStudies = [
     {
       country: 'Taiwan',
+      code: 'TW',
       program: 'Uniform Invoice Lottery',
       result: 'Running since 1951, this program has achieved near-universal receipt issuance and is credited with significantly reducing tax evasion.',
-      icon: '🇹🇼',
+      color: '#E53935',
     },
     {
       country: 'Portugal',
+      code: 'PT',
       program: 'Fatura da Sorte',
       result: 'Launched in 2014, the program increased invoice requests by 15% and generated millions in previously unreported transactions.',
-      icon: '🇵🇹',
+      color: '#43A047',
     },
     {
       country: 'Slovakia',
+      code: 'SK',
       program: 'Receipt Lottery',
       result: 'Implemented in 2013, resulting in documented VAT revenue increases and improved merchant compliance rates.',
-      icon: '🇸🇰',
+      color: '#1E88E5',
     },
   ];
 
