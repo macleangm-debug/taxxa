@@ -449,6 +449,306 @@ class TaxDrawAPITester:
             print("❌ No completed draw available for audit testing")
             return False
 
+
+class ReceiptAPITester:
+    """Test the new Receipt API v1 endpoints"""
+    
+    def __init__(self):
+        self.session = requests.Session()
+        self.auth_token = None
+        self.decode_id = None
+        self.validation_id = None
+        self.receipt_id = None
+        
+    def log(self, message, level="INFO"):
+        """Log test messages"""
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        print(f"[{timestamp}] {level}: {message}")
+        
+    def test_user_login(self):
+        """Test user authentication to get token"""
+        self.log("Testing user login...")
+        
+        try:
+            response = self.session.post(
+                f"{BASE_URL}/auth/login",
+                json=TEST_USER,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.auth_token = data.get("access_token")
+                self.log(f"✅ Login successful, token obtained")
+                return True
+            else:
+                self.log(f"❌ Login failed: {response.status_code} - {response.text}", "ERROR")
+                return False
+                
+        except Exception as e:
+            self.log(f"❌ Login error: {str(e)}", "ERROR")
+            return False
+    
+    def test_decode_endpoint(self):
+        """Test POST /api/v1/receipts/decode"""
+        self.log("Testing Receipt Decode endpoint...")
+        
+        # Test JSON format
+        try:
+            response = self.session.post(
+                f"{RECEIPT_API_BASE}/decode",
+                json=QR_DATA_JSON,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.decode_id = data.get("decode_id")
+                self.log(f"✅ JSON decode successful - ID: {self.decode_id}")
+                self.log(f"   Format detected: {data.get('detected_format')}")
+                self.log(f"   Confidence: {data.get('confidence_score')}")
+                
+                if data.get("receipt"):
+                    receipt = data["receipt"]
+                    self.log(f"   Receipt number: {receipt.get('receipt_number')}")
+                    self.log(f"   Merchant: {receipt.get('merchant', {}).get('name')}")
+                    self.log(f"   Amount: {receipt.get('total_amount')} {receipt.get('currency')}")
+                
+                json_success = True
+            else:
+                self.log(f"❌ JSON decode failed: {response.status_code} - {response.text}", "ERROR")
+                json_success = False
+                
+        except Exception as e:
+            self.log(f"❌ JSON decode error: {str(e)}", "ERROR")
+            json_success = False
+        
+        # Test pipe-delimited format
+        try:
+            response = self.session.post(
+                f"{RECEIPT_API_BASE}/decode",
+                json=QR_DATA_PIPE,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.log(f"✅ Pipe-delimited decode successful")
+                self.log(f"   Format detected: {data.get('detected_format')}")
+                self.log(f"   Confidence: {data.get('confidence_score')}")
+                pipe_success = True
+            else:
+                self.log(f"❌ Pipe-delimited decode failed: {response.status_code} - {response.text}", "ERROR")
+                pipe_success = False
+                
+        except Exception as e:
+            self.log(f"❌ Pipe-delimited decode error: {str(e)}", "ERROR")
+            pipe_success = False
+        
+        return json_success and pipe_success
+    
+    def test_validate_endpoint(self):
+        """Test POST /api/v1/receipts/validate"""
+        self.log("Testing Receipt Validate endpoint...")
+        
+        if not self.decode_id:
+            self.log("❌ No decode_id available for validation", "ERROR")
+            return False
+        
+        try:
+            response = self.session.post(
+                f"{RECEIPT_API_BASE}/validate",
+                json={
+                    "decode_id": self.decode_id,
+                    "validation_mode": "mock"
+                },
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.validation_id = data.get("validation_id")
+                self.log(f"✅ Validation successful - ID: {self.validation_id}")
+                self.log(f"   Status: {data.get('status')}")
+                self.log(f"   Is valid: {data.get('is_valid')}")
+                
+                checks = data.get("checks_performed", [])
+                self.log(f"   Checks performed: {len(checks)}")
+                for check in checks:
+                    status = "✅" if check.get("passed") else "❌"
+                    self.log(f"     {status} {check.get('name')}: {check.get('description')}")
+                
+                return True
+            else:
+                self.log(f"❌ Validation failed: {response.status_code} - {response.text}", "ERROR")
+                return False
+                
+        except Exception as e:
+            self.log(f"❌ Validation error: {str(e)}", "ERROR")
+            return False
+    
+    def test_submit_endpoint(self):
+        """Test POST /api/v1/receipts/submit (requires auth)"""
+        self.log("Testing Receipt Submit endpoint...")
+        
+        if not self.auth_token:
+            self.log("❌ No auth token available for submit", "ERROR")
+            return False
+            
+        if not self.validation_id:
+            self.log("❌ No validation_id available for submit", "ERROR")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.auth_token}"}
+            response = self.session.post(
+                f"{RECEIPT_API_BASE}/submit",
+                json={"validation_id": self.validation_id},
+                headers=headers,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.receipt_id = data.get("receipt_id")
+                self.log(f"✅ Submit successful - Receipt ID: {self.receipt_id}")
+                self.log(f"   Status: {data.get('status')}")
+                self.log(f"   Entries earned: {data.get('entries_earned')}")
+                self.log(f"   Bonus entries: {data.get('bonus_entries')}")
+                self.log(f"   Total entries: {data.get('total_entries')}")
+                self.log(f"   Message: {data.get('message')}")
+                return True
+            else:
+                self.log(f"❌ Submit failed: {response.status_code} - {response.text}", "ERROR")
+                return False
+                
+        except Exception as e:
+            self.log(f"❌ Submit error: {str(e)}", "ERROR")
+            return False
+    
+    def test_list_receipts_endpoint(self):
+        """Test GET /api/v1/receipts (requires auth)"""
+        self.log("Testing List Receipts endpoint...")
+        
+        if not self.auth_token:
+            self.log("❌ No auth token available for list", "ERROR")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.auth_token}"}
+            response = self.session.get(
+                f"{RECEIPT_API_BASE}",
+                headers=headers,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.log(f"✅ List receipts successful")
+                self.log(f"   Found {len(data)} receipts")
+                
+                for i, receipt in enumerate(data[:3]):  # Show first 3
+                    self.log(f"   Receipt {i+1}: {receipt.get('receipt_number')} - {receipt.get('status')} - {receipt.get('entries_earned')} entries")
+                
+                return True
+            else:
+                self.log(f"❌ List receipts failed: {response.status_code} - {response.text}", "ERROR")
+                return False
+                
+        except Exception as e:
+            self.log(f"❌ List receipts error: {str(e)}", "ERROR")
+            return False
+    
+    def test_get_receipt_endpoint(self):
+        """Test GET /api/v1/receipts/{receipt_id} (requires auth)"""
+        self.log("Testing Get Receipt Details endpoint...")
+        
+        if not self.auth_token:
+            self.log("❌ No auth token available for get receipt", "ERROR")
+            return False
+            
+        if not self.receipt_id:
+            self.log("❌ No receipt_id available for get receipt", "ERROR")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.auth_token}"}
+            response = self.session.get(
+                f"{RECEIPT_API_BASE}/{self.receipt_id}",
+                headers=headers,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.log(f"✅ Get receipt details successful")
+                self.log(f"   Receipt ID: {data.get('id')}")
+                self.log(f"   Status: {data.get('status')}")
+                self.log(f"   Entries earned: {data.get('entries_earned')}")
+                self.log(f"   Bonus entries: {data.get('bonus_entries')}")
+                
+                receipt = data.get("receipt", {})
+                self.log(f"   Receipt number: {receipt.get('receipt_number')}")
+                self.log(f"   Merchant: {receipt.get('merchant', {}).get('name')}")
+                self.log(f"   Amount: {receipt.get('total_amount')} {receipt.get('currency')}")
+                
+                return True
+            else:
+                self.log(f"❌ Get receipt details failed: {response.status_code} - {response.text}", "ERROR")
+                return False
+                
+        except Exception as e:
+            self.log(f"❌ Get receipt details error: {str(e)}", "ERROR")
+            return False
+    
+    def run_full_test_flow(self):
+        """Run the complete test flow"""
+        self.log("=" * 60)
+        self.log("Starting Receipt API v1 Test Suite")
+        self.log("=" * 60)
+        
+        results = {}
+        
+        # Step 1: Login
+        results["login"] = self.test_user_login()
+        
+        # Step 2: Decode QR code
+        results["decode"] = self.test_decode_endpoint()
+        
+        # Step 3: Validate receipt
+        results["validate"] = self.test_validate_endpoint()
+        
+        # Step 4: Submit receipt (requires auth)
+        results["submit"] = self.test_submit_endpoint()
+        
+        # Step 5: List receipts
+        results["list"] = self.test_list_receipts_endpoint()
+        
+        # Step 6: Get receipt details
+        results["get_receipt"] = self.test_get_receipt_endpoint()
+        
+        # Summary
+        self.log("=" * 60)
+        self.log("TEST RESULTS SUMMARY")
+        self.log("=" * 60)
+        
+        total_tests = len(results)
+        passed_tests = sum(1 for result in results.values() if result)
+        
+        for test_name, result in results.items():
+            status = "✅ PASS" if result else "❌ FAIL"
+            self.log(f"{test_name.upper()}: {status}")
+        
+        self.log(f"\nOverall: {passed_tests}/{total_tests} tests passed")
+        
+        if passed_tests == total_tests:
+            self.log("🎉 All Receipt API v1 tests PASSED!")
+            return True
+        else:
+            self.log(f"⚠️  {total_tests - passed_tests} test(s) FAILED")
+            return False
+
+
 def main():
     """Main test execution"""
     tester = TaxDrawAPITester()
