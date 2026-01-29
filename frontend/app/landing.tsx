@@ -471,43 +471,44 @@ export default function LandingPage() {
         </View>
       </View>
 
-      {/* Deployment Process */}
+      {/* Deployment Process - Compact Horizontal Cards */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTag}>DEPLOYMENT</Text>
           <Text style={styles.sectionTitle}>Implementation Process</Text>
           <Text style={styles.sectionSubtitle}>
-            From initial assessment to public launch in 8-12 weeks. Our proven deployment 
-            methodology ensures a smooth integration with your existing infrastructure.
+            From initial assessment to public launch in 8-12 weeks.
           </Text>
         </View>
-        <View style={styles.deploymentTimeline}>
+        <View style={styles.deploymentGrid}>
           {deploymentProcess.map((phase, index) => (
-            <View key={index} style={styles.deploymentPhase}>
-              <View style={styles.phaseHeader}>
-                <View style={styles.phaseIconContainer}>
-                  <Ionicons name={phase.icon as any} size={24} color="#fff" />
+            <View key={index} style={styles.deploymentCard}>
+              <View style={styles.deploymentCardHeader}>
+                <View style={styles.deploymentPhaseNumber}>
+                  <Text style={styles.deploymentPhaseNumberText}>{index + 1}</Text>
                 </View>
-                <View style={styles.phaseHeaderText}>
-                  <Text style={styles.phaseBadge}>{phase.phase}</Text>
-                  <Text style={styles.phaseTitle}>{phase.title}</Text>
-                  <Text style={styles.phaseDuration}>{phase.duration}</Text>
+                <View style={styles.deploymentHeaderInfo}>
+                  <Text style={styles.deploymentCardPhase}>{phase.phase}</Text>
+                  <Text style={styles.deploymentCardTitle}>{phase.title}</Text>
+                </View>
+                <View style={styles.deploymentDuration}>
+                  <Ionicons name="time-outline" size={14} color="#64748B" />
+                  <Text style={styles.deploymentDurationText}>{phase.duration}</Text>
                 </View>
               </View>
-              <Text style={styles.phaseDescription}>{phase.description}</Text>
-              <View style={styles.phaseTasks}>
-                {phase.tasks.map((task, taskIndex) => (
-                  <View key={taskIndex} style={styles.taskItem}>
-                    <Ionicons name="checkmark" size={16} color="#10B981" />
-                    <Text style={styles.taskText}>{task}</Text>
+              <View style={styles.deploymentTasksRow}>
+                {phase.tasks.slice(0, 3).map((task, taskIndex) => (
+                  <View key={taskIndex} style={styles.deploymentTaskChip}>
+                    <Ionicons name="checkmark-circle" size={14} color="#10B981" />
+                    <Text style={styles.deploymentTaskChipText}>{task}</Text>
                   </View>
                 ))}
+                {phase.tasks.length > 3 && (
+                  <View style={styles.deploymentTaskMore}>
+                    <Text style={styles.deploymentTaskMoreText}>+{phase.tasks.length - 3} more</Text>
+                  </View>
+                )}
               </View>
-              {index < deploymentProcess.length - 1 && (
-                <View style={styles.phaseConnector}>
-                  <Ionicons name="arrow-down" size={20} color="#CBD5E1" />
-                </View>
-              )}
             </View>
           ))}
         </View>
