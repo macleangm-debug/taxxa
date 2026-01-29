@@ -1005,6 +1005,11 @@ const styles = StyleSheet.create({
     lineHeight: isWeb ? 58 : 44,
     marginBottom: 24,
   },
+  heroTitleMobile: {
+    fontSize: 28,
+    lineHeight: 36,
+    marginBottom: 16,
+  },
   heroTitleHighlight: {
     color: '#60A5FA',
   },
@@ -1014,11 +1019,25 @@ const styles = StyleSheet.create({
     lineHeight: 28,
     marginBottom: 32,
   },
+  heroSubtitleMobile: {
+    fontSize: 15,
+    lineHeight: 24,
+    marginBottom: 24,
+  },
   heroButtons: {
     flexDirection: 'row',
     gap: 16,
     marginBottom: 40,
     flexWrap: 'wrap',
+  },
+  heroButtonsMobile: {
+    flexDirection: 'column',
+    gap: 12,
+    marginBottom: 24,
+  },
+  heroButtonMobile: {
+    width: '100%',
+    justifyContent: 'center',
   },
   heroButtonPrimary: {
     flexDirection: 'row',
@@ -1054,6 +1073,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 24,
     flexWrap: 'wrap',
+  },
+  trustRowMobile: {
+    gap: 16,
   },
   trustItem: {
     flexDirection: 'row',
