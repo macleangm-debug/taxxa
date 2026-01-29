@@ -426,26 +426,23 @@ export default function LandingPage() {
         )}
       </LinearGradient>
 
-      {/* Why Compliance Fails Section */}
+      {/* Why Compliance Fails Section - Compact Cards */}
       <View style={[styles.section, styles.sectionLight]}>
         <View style={styles.sectionHeader}>
           <Text style={[styles.sectionTag, { color: '#EF4444' }]}>THE PROBLEM</Text>
           <Text style={styles.sectionTitle}>Why Traditional Compliance Doesn't Work</Text>
           <Text style={styles.sectionSubtitle}>
-            Tax authorities worldwide struggle with the same fundamental challenges. 
-            Understanding why traditional approaches fail is the first step to solving the problem.
+            Tax authorities worldwide struggle with the same fundamental challenges.
           </Text>
         </View>
-        <View style={styles.failureGrid}>
+        <View style={styles.compactCardGrid}>
           {whyComplianceFails.map((item, index) => (
-            <View key={index} style={styles.failureCard}>
-              <View style={[styles.failureIcon, { backgroundColor: item.color + '15' }]}>
-                <Ionicons name={item.icon as any} size={24} color={item.color} />
+            <View key={index} style={styles.compactCard}>
+              <View style={[styles.compactCardIcon, { backgroundColor: item.color + '15' }]}>
+                <Ionicons name={item.icon as any} size={22} color={item.color} />
               </View>
-              <View style={styles.failureContent}>
-                <Text style={styles.failureTitle}>{item.title}</Text>
-                <Text style={styles.failureDescription}>{item.description}</Text>
-              </View>
+              <Text style={styles.compactCardTitle}>{item.title}</Text>
+              <Text style={styles.compactCardDesc}>{item.description}</Text>
             </View>
           ))}
         </View>
