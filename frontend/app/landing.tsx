@@ -318,16 +318,16 @@ export default function LandingPage() {
           {/* Desktop Navigation */}
           {!isMobile ? (
             <View style={styles.navLinks}>
-              <TouchableOpacity style={styles.navLink}>
+              <TouchableOpacity style={styles.navLink} onPress={() => router.push('/solution')}>
                 <Text style={styles.navLinkText}>Solution</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.navLink}>
+              <TouchableOpacity style={styles.navLink} onPress={() => router.push('/how-it-works')}>
                 <Text style={styles.navLinkText}>How It Works</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.navLink}>
+              <TouchableOpacity style={styles.navLink} onPress={() => router.push('/case-studies')}>
                 <Text style={styles.navLinkText}>Case Studies</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.navLink}>
+              <TouchableOpacity style={styles.navLink} onPress={() => router.push('/documentation')}>
                 <Text style={styles.navLinkText}>Documentation</Text>
               </TouchableOpacity>
               <TouchableOpacity 
@@ -351,16 +351,16 @@ export default function LandingPage() {
         {/* Mobile Menu Dropdown */}
         {isMobile && showMobileMenu && (
           <View style={styles.mobileMenuDropdown}>
-            <TouchableOpacity style={styles.mobileMenuItem}>
+            <TouchableOpacity style={styles.mobileMenuItem} onPress={() => { setShowMobileMenu(false); router.push('/solution'); }}>
               <Text style={styles.mobileMenuItemText}>Solution</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.mobileMenuItem}>
+            <TouchableOpacity style={styles.mobileMenuItem} onPress={() => { setShowMobileMenu(false); router.push('/how-it-works'); }}>
               <Text style={styles.mobileMenuItemText}>How It Works</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.mobileMenuItem}>
+            <TouchableOpacity style={styles.mobileMenuItem} onPress={() => { setShowMobileMenu(false); router.push('/case-studies'); }}>
               <Text style={styles.mobileMenuItemText}>Case Studies</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.mobileMenuItem}>
+            <TouchableOpacity style={styles.mobileMenuItem} onPress={() => { setShowMobileMenu(false); router.push('/documentation'); }}>
               <Text style={styles.mobileMenuItemText}>Documentation</Text>
             </TouchableOpacity>
             <TouchableOpacity 
