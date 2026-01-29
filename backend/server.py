@@ -2917,6 +2917,11 @@ set_auth_dependency(get_current_user_with_db)
 app.include_router(api_router)
 app.include_router(receipts_router)  # Add the new Receipt API
 
+# Prize Disbursement Router
+from routers.prizes import router as prizes_router, set_database as set_prizes_db
+set_prizes_db(db)
+app.include_router(prizes_router)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
