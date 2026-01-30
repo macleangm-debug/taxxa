@@ -293,16 +293,19 @@ export default function FeaturesPage() {
           {supportedCountries.map((country, index) => (
             <View key={index} style={[styles.countryCard, isMobile && styles.countryCardMobile]}>
               <View style={styles.countryHeader}>
-                <Text style={styles.countryFlag}>{country.flag}</Text>
+                <Image 
+                  source={{ uri: `https://flagcdn.com/w80/${country.code.toLowerCase()}.png` }}
+                  style={styles.countryFlagImage}
+                />
                 <View style={[
                   styles.countryStatus,
-                  { backgroundColor: country.status === 'ready' ? '#DCFCE7' : '#FEF3C7' }
+                  { backgroundColor: '#DCFCE7' }
                 ]}>
                   <Text style={[
                     styles.countryStatusText,
-                    { color: country.status === 'ready' ? '#166534' : '#92400E' }
+                    { color: '#166534' }
                   ]}>
-                    {country.status === 'ready' ? 'Ready' : 'Coming Soon'}
+                    Ready
                   </Text>
                 </View>
               </View>
