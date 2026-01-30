@@ -359,6 +359,9 @@ def verify_webhook(payload, signature, secret):
               <TouchableOpacity style={styles.navLink} onPress={() => router.push('/how-it-works')}>
                 <Text style={styles.navLinkText}>How It Works</Text>
               </TouchableOpacity>
+              <TouchableOpacity style={styles.navLink} onPress={() => router.push('/features')}>
+                <Text style={styles.navLinkText}>Features</Text>
+              </TouchableOpacity>
               <TouchableOpacity style={styles.navLink} onPress={() => router.push('/case-studies')}>
                 <Text style={styles.navLinkText}>Pilot Programs</Text>
               </TouchableOpacity>
@@ -383,6 +386,9 @@ def verify_webhook(payload, signature, secret):
             </TouchableOpacity>
             <TouchableOpacity style={styles.mobileMenuItem} onPress={() => { setShowMobileMenu(false); router.push('/how-it-works'); }}>
               <Text style={styles.mobileMenuItemText}>How It Works</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.mobileMenuItem} onPress={() => { setShowMobileMenu(false); router.push('/features'); }}>
+              <Text style={styles.mobileMenuItemText}>Features</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.mobileMenuItem} onPress={() => { setShowMobileMenu(false); router.push('/case-studies'); }}>
               <Text style={styles.mobileMenuItemText}>Pilot Programs</Text>
