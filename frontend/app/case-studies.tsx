@@ -167,6 +167,9 @@ export default function PilotOpportunitiesPage() {
               <TouchableOpacity style={styles.navLink} onPress={() => router.push('/how-it-works')}>
                 <Text style={styles.navLinkText}>How It Works</Text>
               </TouchableOpacity>
+              <TouchableOpacity style={styles.navLink} onPress={() => router.push('/features')}>
+                <Text style={styles.navLinkText}>Features</Text>
+              </TouchableOpacity>
               <TouchableOpacity style={[styles.navLink, styles.navLinkActive]} onPress={() => router.push('/case-studies')}>
                 <Text style={[styles.navLinkText, styles.navLinkTextActive]}>Pilot Programs</Text>
               </TouchableOpacity>
@@ -191,6 +194,9 @@ export default function PilotOpportunitiesPage() {
             </TouchableOpacity>
             <TouchableOpacity style={styles.mobileMenuItem} onPress={() => { setShowMobileMenu(false); router.push('/how-it-works'); }}>
               <Text style={styles.mobileMenuItemText}>How It Works</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.mobileMenuItem} onPress={() => { setShowMobileMenu(false); router.push('/features'); }}>
+              <Text style={styles.mobileMenuItemText}>Features</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.mobileMenuItem, styles.mobileMenuItemActive]} onPress={() => setShowMobileMenu(false)}>
               <Text style={[styles.mobileMenuItemText, styles.mobileMenuItemTextActive]}>Pilot Programs</Text>
