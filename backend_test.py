@@ -90,8 +90,8 @@ class TaxxaAPITester:
             if response.status_code == 200:
                 data = response.json()
                 
-                # Verify expected structure
-                expected_keys = ["status", "components"]
+                # Verify expected structure (uses 'checks' not 'components')
+                expected_keys = ["status", "checks"]
                 missing_keys = [key for key in expected_keys if key not in data]
                 
                 if missing_keys:
@@ -103,24 +103,33 @@ class TaxxaAPITester:
                     )
                     return False
                 
-                # Check component statuses
-                components = data.get("components", {})
-                mongodb_status = components.get("mongodb", {}).get("status")
+                # Check component statuses from checks array
+                checks = data.get("checks", [])
+                mongodb_check = next((c for c in checks if c.get("component") == "mongodb"), {})
+                redis_check = next((c for c in checks if c.get("component") == "redis"), {})
+                
+                mongodb_healthy = mongodb_check.get("healthy", False)
+                redis_status = redis_check.get("message", "unknown")
+                
+                # Overall status should be "ready" if MongoDB is healthy
+                overall_ready = data.get("status") == "ready" and mongodb_healthy
                 
                 self.log_result(
                     "Health Readiness Check",
-                    True,
+                    overall_ready,
                     "Readiness endpoint responding with component checks",
                     {
                         "status_code": response.status_code,
                         "response_time_header": response_time_header,
                         "overall_status": data.get("status"),
-                        "mongodb_status": mongodb_status,
-                        "cache_status": components.get("cache", {}).get("status"),
-                        "components": list(components.keys())
+                        "mongodb_healthy": mongodb_healthy,
+                        "mongodb_latency": mongodb_check.get("latency_ms"),
+                        "redis_status": redis_status,
+                        "components_checked": len(checks),
+                        "all_components": [c.get("component") for c in checks]
                     }
                 )
-                return True
+                return overall_ready
             else:
                 self.log_result(
                     "Health Readiness Check",
