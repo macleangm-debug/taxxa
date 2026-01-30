@@ -276,6 +276,47 @@ export default function FeaturesPage() {
         </View>
       </View>
 
+      {/* Supported Countries Section */}
+      <View style={styles.countriesSection}>
+        <View style={styles.sectionHeader}>
+          <View style={styles.sectionBadge}>
+            <Ionicons name="globe" size={16} color="#3B82F6" />
+            <Text style={styles.sectionBadgeText}>Global Reach</Text>
+          </View>
+          <Text style={styles.sectionTitle}>8 African Tax Authorities</Text>
+          <Text style={styles.sectionSubtitle}>
+            Pre-built integrations ready for deployment. Connect to your existing tax infrastructure in weeks, not months.
+          </Text>
+        </View>
+        
+        <View style={[styles.countriesGrid, isMobile && styles.countriesGridMobile]}>
+          {supportedCountries.map((country, index) => (
+            <View key={index} style={[styles.countryCard, isMobile && styles.countryCardMobile]}>
+              <View style={styles.countryHeader}>
+                <Text style={styles.countryFlag}>{country.flag}</Text>
+                <View style={[
+                  styles.countryStatus,
+                  { backgroundColor: country.status === 'ready' ? '#DCFCE7' : '#FEF3C7' }
+                ]}>
+                  <Text style={[
+                    styles.countryStatusText,
+                    { color: country.status === 'ready' ? '#166534' : '#92400E' }
+                  ]}>
+                    {country.status === 'ready' ? 'Ready' : 'Coming Soon'}
+                  </Text>
+                </View>
+              </View>
+              <Text style={styles.countryName}>{country.name}</Text>
+              <View style={styles.countryDetails}>
+                <Text style={styles.countryAuthority}>{country.authority}</Text>
+                <Text style={styles.countryDot}>•</Text>
+                <Text style={styles.countrySystem}>{country.system}</Text>
+              </View>
+            </View>
+          ))}
+        </View>
+      </View>
+
       {/* Summary Stats */}
       <View style={[styles.summarySection, { backgroundColor: '#F8FAFC' }]}>
         <Text style={styles.summaryTitle}>Platform Overview</Text>
