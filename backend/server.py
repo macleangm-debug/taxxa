@@ -3013,11 +3013,32 @@ async def get_education_content():
 
 @api_router.get("/")
 async def root():
-    return {"message": "TaxDraw API is running", "version": "1.0.0"}
+    return {"message": "TAXXA API is running", "version": "2.0.0", "environment": "production-ready"}
 
 @api_router.get("/health")
 async def health_check():
-    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
+    """Simple liveness probe for load balancers"""
+    return await health_service.liveness_check()
+
+@api_router.get("/health/ready")
+async def readiness_check():
+    """Readiness probe - checks all dependencies"""
+    return await health_service.readiness_check(db, cache)
+
+@api_router.get("/health/status")
+async def detailed_status():
+    """Detailed system status for monitoring dashboards"""
+    return await health_service.detailed_status(db, cache, rate_limiter)
+
+@api_router.get("/health/metrics")
+async def get_metrics_endpoint():
+    """Get request metrics"""
+    return metrics.get_metrics()
+
+@api_router.get("/health/cache")
+async def cache_status():
+    """Get cache status and statistics"""
+    return await cache.get_cache_stats()
 
 
 # ============== RECEIPT API ROUTER ==============
