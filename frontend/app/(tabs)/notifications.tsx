@@ -15,7 +15,7 @@ import { useRouter } from 'expo-router';
 import { useNotifications } from '../../src/context/NotificationContext';
 import { useAuthStore } from '../../src/store/authStore';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://winnerscan.preview.emergentagent.com';
+const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://taxlottery.preview.emergentagent.com';
 
 export default function NotificationsSettings() {
   const router = useRouter();

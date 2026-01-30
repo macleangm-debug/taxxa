@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 import time
 
 # Configuration
-BASE_URL = "https://winnerscan.preview.emergentagent.com/api"
+BASE_URL = "https://taxlottery.preview.emergentagent.com/api"
 RECEIPT_API_BASE = f"{BASE_URL}/v1/receipts"
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "taxdraw_admin_2024"

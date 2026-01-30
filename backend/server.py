@@ -208,7 +208,7 @@ def generate_referral_code(user_id: str) -> str:
 
 def get_referral_link(referral_code: str) -> str:
     """Get the full referral link"""
-    base_url = os.environ.get('APP_URL', 'https://winnerscan.preview.emergentagent.com')
+    base_url = os.environ.get('APP_URL', 'https://taxlottery.preview.emergentagent.com')
     return f"{base_url}/ref/{referral_code}"
 
 async def check_and_reward_referral(referred_user_id: str, scans_count: int):

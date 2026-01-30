@@ -18,7 +18,7 @@ import { useAuthStore } from '../../src/store/authStore';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Clipboard from 'expo-clipboard';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://winnerscan.preview.emergentagent.com';
+const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://taxlottery.preview.emergentagent.com';
 
 interface ReferralStats {
   referral_code: string;

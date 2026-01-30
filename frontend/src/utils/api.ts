@@ -2,7 +2,7 @@ import axios from 'axios';
 import { Platform } from 'react-native';
 import { storage, STORAGE_KEYS, syncStorage } from './storage';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://winnerscan.preview.emergentagent.com';
+const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://taxlottery.preview.emergentagent.com';
 const isWeb = Platform.OS === 'web';
 
 const api = axios.create({
