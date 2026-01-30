@@ -101,14 +101,14 @@ export default function FeaturesPage() {
   };
 
   const supportedCountries = [
-    { name: 'Tanzania', authority: 'TRA', system: 'EFDMS', flag: '🇹🇿', status: 'ready', color: '#10B981' },
-    { name: 'Kenya', authority: 'KRA', system: 'eTIMS', flag: '🇰🇪', status: 'ready', color: '#3B82F6' },
-    { name: 'Uganda', authority: 'URA', system: 'EFRIS', flag: '🇺🇬', status: 'ready', color: '#F59E0B' },
-    { name: 'Rwanda', authority: 'RRA', system: 'EBM', flag: '🇷🇼', status: 'ready', color: '#8B5CF6' },
-    { name: 'Ethiopia', authority: 'ERCA', system: 'E-Tax', flag: '🇪🇹', status: 'coming', color: '#06B6D4' },
-    { name: 'Nigeria', authority: 'FIRS', system: 'TaxPro', flag: '🇳🇬', status: 'coming', color: '#22C55E' },
-    { name: 'South Africa', authority: 'SARS', system: 'eFiling', flag: '🇿🇦', status: 'coming', color: '#EF4444' },
-    { name: 'Ghana', authority: 'GRA', system: 'E-VAT', flag: '🇬🇭', status: 'coming', color: '#EC4899' },
+    { name: 'Tanzania', authority: 'TRA', system: 'EFDMS', code: 'TZ', status: 'ready', color: '#10B981' },
+    { name: 'Kenya', authority: 'KRA', system: 'eTIMS', code: 'KE', status: 'ready', color: '#3B82F6' },
+    { name: 'Uganda', authority: 'URA', system: 'EFRIS', code: 'UG', status: 'ready', color: '#F59E0B' },
+    { name: 'Rwanda', authority: 'RRA', system: 'EBM', code: 'RW', status: 'ready', color: '#8B5CF6' },
+    { name: 'Ethiopia', authority: 'ERCA', system: 'E-Tax', code: 'ET', status: 'ready', color: '#06B6D4' },
+    { name: 'Nigeria', authority: 'FIRS', system: 'TaxPro', code: 'NG', status: 'ready', color: '#22C55E' },
+    { name: 'South Africa', authority: 'SARS', system: 'eFiling', code: 'ZA', status: 'ready', color: '#EF4444' },
+    { name: 'Ghana', authority: 'GRA', system: 'E-VAT', code: 'GH', status: 'ready', color: '#EC4899' },
   ];
 
   const currentFeatures = features[activeTab] || [];
