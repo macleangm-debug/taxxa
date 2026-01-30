@@ -126,6 +126,9 @@ export default function HowItWorksPage() {
               <TouchableOpacity style={[styles.navLink, styles.navLinkActive]} onPress={() => router.push('/how-it-works')}>
                 <Text style={[styles.navLinkText, styles.navLinkTextActive]}>How It Works</Text>
               </TouchableOpacity>
+              <TouchableOpacity style={styles.navLink} onPress={() => router.push('/features')}>
+                <Text style={styles.navLinkText}>Features</Text>
+              </TouchableOpacity>
               <TouchableOpacity style={styles.navLink} onPress={() => router.push('/case-studies')}>
                 <Text style={styles.navLinkText}>Pilot Programs</Text>
               </TouchableOpacity>
@@ -150,6 +153,9 @@ export default function HowItWorksPage() {
             </TouchableOpacity>
             <TouchableOpacity style={[styles.mobileMenuItem, styles.mobileMenuItemActive]} onPress={() => setShowMobileMenu(false)}>
               <Text style={[styles.mobileMenuItemText, styles.mobileMenuItemTextActive]}>How It Works</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.mobileMenuItem} onPress={() => { setShowMobileMenu(false); router.push('/features'); }}>
+              <Text style={styles.mobileMenuItemText}>Features</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.mobileMenuItem} onPress={() => { setShowMobileMenu(false); router.push('/case-studies'); }}>
               <Text style={styles.mobileMenuItemText}>Pilot Programs</Text>
