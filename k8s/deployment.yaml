@@ -1,0 +1,316 @@
+# ===============================================
+# TAXXA Kubernetes Deployment Configuration
+# ===============================================
+# 
+# Production-ready Kubernetes manifests for deploying 
+# TAXXA at national scale (60M+ population)
+#
+# Apply with:
+#   kubectl apply -f k8s/
+#
+# ===============================================
+
+---
+# Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: taxxa
+  labels:
+    app: taxxa
+    environment: production
+
+---
+# ConfigMap for application configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: taxxa-config
+  namespace: taxxa
+data:
+  ENVIRONMENT: "production"
+  DB_NAME: "taxxa"
+  MONGO_MAX_POOL_SIZE: "100"
+  MONGO_MIN_POOL_SIZE: "10"
+  MONGO_CONNECT_TIMEOUT_MS: "5000"
+  MONGO_SOCKET_TIMEOUT_MS: "30000"
+  LOG_LEVEL: "INFO"
+
+---
+# Secret for sensitive configuration (create manually or use sealed-secrets)
+# kubectl create secret generic taxxa-secrets \
+#   --from-literal=JWT_SECRET=your_jwt_secret \
+#   --from-literal=MONGO_URL=mongodb://... \
+#   --from-literal=REDIS_URL=redis://... \
+#   -n taxxa
+apiVersion: v1
+kind: Secret
+metadata:
+  name: taxxa-secrets
+  namespace: taxxa
+type: Opaque
+stringData:
+  JWT_SECRET: "REPLACE_WITH_SECURE_SECRET"
+  # MONGO_URL and REDIS_URL should be set during deployment
+
+---
+# API Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: taxxa-api
+  namespace: taxxa
+  labels:
+    app: taxxa-api
+    version: v2.0.0
+spec:
+  replicas: 10  # Start with 10, HPA will scale to 50
+  selector:
+    matchLabels:
+      app: taxxa-api
+  template:
+    metadata:
+      labels:
+        app: taxxa-api
+        version: v2.0.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8001"
+        prometheus.io/path: "/api/health/metrics"
+    spec:
+      # Anti-affinity to spread pods across nodes
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - taxxa-api
+                topologyKey: kubernetes.io/hostname
+      
+      containers:
+        - name: api
+          image: taxxa-api:v2.0.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8001
+              name: http
+          
+          # Resource limits
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "2000m"
+              memory: "2Gi"
+          
+          # Environment variables
+          envFrom:
+            - configMapRef:
+                name: taxxa-config
+            - secretRef:
+                name: taxxa-secrets
+          
+          # Liveness probe - is the app running?
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 8001
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          
+          # Readiness probe - should the pod receive traffic?
+          readinessProbe:
+            httpGet:
+              path: /api/health/ready
+              port: 8001
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          
+          # Startup probe - give time for slow starts
+          startupProbe:
+            httpGet:
+              path: /api/health
+              port: 8001
+            failureThreshold: 30
+            periodSeconds: 10
+          
+          # Security context
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+          
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      
+      # Graceful shutdown
+      terminationGracePeriodSeconds: 30
+
+---
+# Horizontal Pod Autoscaler
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: taxxa-api-hpa
+  namespace: taxxa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: taxxa-api
+  minReplicas: 10
+  maxReplicas: 50
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300  # Wait 5 min before scaling down
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0  # Scale up immediately
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+        - type: Pods
+          value: 4
+          periodSeconds: 15
+
+---
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: taxxa-api
+  namespace: taxxa
+  labels:
+    app: taxxa-api
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8001
+      protocol: TCP
+      name: http
+  selector:
+    app: taxxa-api
+
+---
+# Ingress (using nginx-ingress controller)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: taxxa-api-ingress
+  namespace: taxxa
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  tls:
+    - hosts:
+        - api.taxxa.io
+      secretName: taxxa-api-tls
+  rules:
+    - host: api.taxxa.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: taxxa-api
+                port:
+                  number: 80
+
+---
+# Pod Disruption Budget - ensure availability during updates
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: taxxa-api-pdb
+  namespace: taxxa
+spec:
+  minAvailable: 80%
+  selector:
+    matchLabels:
+      app: taxxa-api
+
+---
+# Network Policy - restrict traffic
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: taxxa-api-network-policy
+  namespace: taxxa
+spec:
+  podSelector:
+    matchLabels:
+      app: taxxa-api
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8001
+  egress:
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+    # Allow MongoDB (adjust based on your setup)
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8  # Internal network
+      ports:
+        - protocol: TCP
+          port: 27017
+    # Allow Redis
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+      ports:
+        - protocol: TCP
+          port: 6379
