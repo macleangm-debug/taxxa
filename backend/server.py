@@ -1,10 +1,14 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, status
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, Request, Response
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.middleware.gzip import GZipMiddleware
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
+from contextlib import asynccontextmanager
 import os
 import logging
+import time
 from pathlib import Path
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
@@ -18,12 +22,27 @@ import hashlib
 import json
 from bson import ObjectId
 
+# Production services imports
+from services.cache_service import cache, CacheService
+from services.rate_limiter import rate_limiter, RateLimiterService, get_client_ip
+from services.health_check import health_service, metrics, HealthCheckService, MetricsCollector
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
+# MongoDB connection with optimized settings
 mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
+client = AsyncIOMotorClient(
+    mongo_url,
+    maxPoolSize=100,
+    minPoolSize=10,
+    maxIdleTimeMS=30000,
+    connectTimeoutMS=5000,
+    serverSelectionTimeoutMS=5000,
+    socketTimeoutMS=30000,
+    retryWrites=True,
+    retryReads=True,
+)
 db = client[os.environ['DB_NAME']]
 
 # JWT Configuration
@@ -31,8 +50,94 @@ JWT_SECRET = os.environ.get('JWT_SECRET', 'taxdraw_secret_key_2024')
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_HOURS = 24 * 7  # 7 days
 
-# Create the main app
-app = FastAPI(title="TaxDraw API", version="1.0.0")
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+
+# ============== APPLICATION LIFECYCLE ==============
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application startup and shutdown lifecycle"""
+    # Startup
+    logger.info("🚀 Starting TAXXA API Server...")
+    
+    # Initialize cache (Redis)
+    try:
+        await cache.connect()
+    except Exception as e:
+        logger.warning(f"Cache initialization skipped: {e}")
+    
+    # Initialize rate limiter
+    try:
+        await rate_limiter.connect()
+    except Exception as e:
+        logger.warning(f"Rate limiter initialization skipped: {e}")
+    
+    # Test database connection
+    try:
+        await client.admin.command('ping')
+        logger.info("✅ MongoDB connection verified")
+    except Exception as e:
+        logger.error(f"❌ MongoDB connection failed: {e}")
+    
+    # Create database indexes
+    await ensure_indexes()
+    
+    logger.info("✅ TAXXA API Server ready for requests")
+    
+    yield
+    
+    # Shutdown
+    logger.info("Shutting down TAXXA API Server...")
+    await cache.disconnect()
+    await rate_limiter.disconnect()
+    client.close()
+    logger.info("Server shutdown complete")
+
+
+async def ensure_indexes():
+    """Ensure production database indexes exist"""
+    try:
+        # Users collection
+        await db.users.create_index("phone_number", unique=True, sparse=True)
+        await db.users.create_index("referral_code", sparse=True)
+        await db.users.create_index("created_at")
+        await db.users.create_index("status")
+        
+        # Scans collection
+        await db.scans.create_index("receipt_id")
+        await db.scans.create_index([("user_id", 1), ("timestamp", -1)])
+        await db.scans.create_index("timestamp")
+        await db.scans.create_index("status")
+        
+        # Draw entries
+        await db.draw_entries.create_index([("draw_id", 1), ("user_id", 1)], unique=True)
+        await db.draw_entries.create_index([("draw_id", 1), ("entries", -1)])
+        
+        # Draws
+        await db.draws.create_index("status")
+        await db.draws.create_index([("status", 1), ("draw_date", -1)])
+        
+        # OTPs with TTL
+        await db.otps.create_index("expires_at", expireAfterSeconds=0)
+        
+        logger.info("✅ Database indexes ensured")
+    except Exception as e:
+        logger.warning(f"Index creation warning: {e}")
+
+
+# Create the main app with lifecycle
+app = FastAPI(
+    title="TAXXA API", 
+    version="2.0.0",
+    description="Production-Ready Tax Compliance Incentive Platform API",
+    lifespan=lifespan
+)
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
@@ -40,12 +145,41 @@ api_router = APIRouter(prefix="/api")
 # Security
 security = HTTPBearer()
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+
+# ============== MIDDLEWARE ==============
+
+# GZip compression for responses > 500 bytes
+app.add_middleware(GZipMiddleware, minimum_size=500)
+
+
+class RequestMetricsMiddleware(BaseHTTPMiddleware):
+    """Middleware to track request metrics"""
+    
+    async def dispatch(self, request: Request, call_next):
+        start_time = time.time()
+        
+        response = await call_next(request)
+        
+        # Record metrics
+        duration_ms = (time.time() - start_time) * 1000
+        endpoint = request.url.path
+        method = request.method
+        
+        metrics.record_request(
+            endpoint=endpoint,
+            method=method,
+            status_code=response.status_code,
+            duration_ms=duration_ms
+        )
+        
+        # Add performance headers
+        response.headers["X-Response-Time"] = f"{duration_ms:.2f}ms"
+        
+        return response
+
+
+# Add metrics middleware
+app.add_middleware(RequestMetricsMiddleware)
 
 
 # ============== PYDANTIC MODELS ==============
