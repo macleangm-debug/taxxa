@@ -1501,6 +1501,413 @@ async def admin_login(data: AdminLogin):
     return AdminTokenResponse(access_token=token)
 
 
+# ============== SUPER ADMIN ENDPOINTS ==============
+
+def get_current_super_admin(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Verify Super Admin JWT token"""
+    try:
+        token = credentials.credentials
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        
+        if payload.get("role") != AdminRole.SUPER_ADMIN:
+            raise HTTPException(status_code=403, detail="Super Admin access required")
+        
+        return payload
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+
+def get_current_authority_admin(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Verify Tax Authority Admin JWT token"""
+    try:
+        token = credentials.credentials
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        
+        if payload.get("role") not in [AdminRole.SUPER_ADMIN, AdminRole.TAX_AUTHORITY]:
+            raise HTTPException(status_code=403, detail="Admin access required")
+        
+        return payload
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+
+@api_router.post("/super-admin/login")
+async def super_admin_login(data: SuperAdminLogin):
+    """Super Admin login - TAXXA team only"""
+    if data.email != SUPER_ADMIN_CREDENTIALS["email"] or data.password != SUPER_ADMIN_CREDENTIALS["password"]:
+        raise HTTPException(status_code=401, detail="Invalid Super Admin credentials")
+    
+    payload = {
+        "email": data.email,
+        "role": AdminRole.SUPER_ADMIN,
+        "exp": datetime.utcnow() + timedelta(hours=24),
+        "iat": datetime.utcnow()
+    }
+    token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "role": AdminRole.SUPER_ADMIN,
+        "email": data.email
+    }
+
+
+@api_router.post("/super-admin/tax-authorities")
+async def create_tax_authority(
+    data: TaxAuthorityCreate,
+    admin: dict = Depends(get_current_super_admin)
+):
+    """Create a new Tax Authority account - Super Admin only"""
+    # Check if authority code already exists
+    existing = await db.tax_authorities.find_one({"code": data.code.upper()})
+    if existing:
+        raise HTTPException(status_code=400, detail=f"Tax Authority with code {data.code} already exists")
+    
+    # Check if email already exists
+    existing_email = await db.tax_authorities.find_one({"admin_email": data.admin_email})
+    if existing_email:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    # Create tax authority
+    authority = {
+        "name": data.name,
+        "code": data.code.upper(),
+        "country": data.country,
+        "country_code": data.country_code.upper(),
+        "admin_email": data.admin_email,
+        "admin_password_hash": hash_password(data.admin_password),
+        "currency": data.currency,
+        "currency_symbol": data.currency_symbol,
+        "timezone": data.timezone,
+        "efd_system": data.efd_system,
+        "api_endpoint": data.api_endpoint,
+        "is_active": data.is_active,
+        "created_at": datetime.utcnow(),
+        "created_by": admin.get("email"),
+        "settings": {
+            "draw_types": ["weekly", "monthly", "quarterly"],
+            "max_scans_per_day": 100,
+            "referral_enabled": True
+        }
+    }
+    
+    result = await db.tax_authorities.insert_one(authority)
+    
+    # Log the action
+    await db.audit_logs.insert_one({
+        "action": "tax_authority_created",
+        "authority_code": data.code.upper(),
+        "performed_by": admin.get("email"),
+        "timestamp": datetime.utcnow(),
+        "details": {"name": data.name, "country": data.country}
+    })
+    
+    return {
+        "message": f"Tax Authority {data.name} created successfully",
+        "id": str(result.inserted_id),
+        "code": data.code.upper()
+    }
+
+
+@api_router.get("/super-admin/tax-authorities")
+async def list_tax_authorities(admin: dict = Depends(get_current_super_admin)):
+    """List all Tax Authorities - Super Admin only"""
+    authorities = await db.tax_authorities.find({}).to_list(100)
+    
+    result = []
+    for auth in authorities:
+        # Get stats for each authority
+        authority_code = auth["code"]
+        
+        # Count users, scans, etc. for this authority
+        user_count = await db.users.count_documents({"authority_code": authority_code})
+        scan_count = await db.scans.count_documents({"authority_code": authority_code})
+        draw_count = await db.draws.count_documents({"authority_code": authority_code})
+        
+        result.append({
+            "id": str(auth["_id"]),
+            "name": auth["name"],
+            "code": auth["code"],
+            "country": auth["country"],
+            "country_code": auth["country_code"],
+            "admin_email": auth["admin_email"],
+            "currency": auth["currency"],
+            "currency_symbol": auth["currency_symbol"],
+            "timezone": auth["timezone"],
+            "efd_system": auth.get("efd_system"),
+            "is_active": auth["is_active"],
+            "created_at": auth["created_at"],
+            "stats": {
+                "users": user_count,
+                "scans": scan_count,
+                "draws": draw_count
+            }
+        })
+    
+    return {"authorities": result, "total": len(result)}
+
+
+@api_router.get("/super-admin/tax-authorities/{authority_code}")
+async def get_tax_authority(
+    authority_code: str,
+    admin: dict = Depends(get_current_super_admin)
+):
+    """Get Tax Authority details - Super Admin only"""
+    authority = await db.tax_authorities.find_one({"code": authority_code.upper()})
+    if not authority:
+        raise HTTPException(status_code=404, detail="Tax Authority not found")
+    
+    # Get detailed stats
+    code = authority["code"]
+    
+    now = datetime.utcnow()
+    today_start = datetime(now.year, now.month, now.day)
+    month_start = today_start - timedelta(days=30)
+    
+    stats = {
+        "total_users": await db.users.count_documents({"authority_code": code}),
+        "users_today": await db.users.count_documents({"authority_code": code, "created_at": {"$gte": today_start}}),
+        "users_this_month": await db.users.count_documents({"authority_code": code, "created_at": {"$gte": month_start}}),
+        "total_scans": await db.scans.count_documents({"authority_code": code}),
+        "scans_today": await db.scans.count_documents({"authority_code": code, "timestamp": {"$gte": today_start}}),
+        "valid_scans": await db.scans.count_documents({"authority_code": code, "status": "valid"}),
+        "total_draws": await db.draws.count_documents({"authority_code": code}),
+        "active_draws": await db.draws.count_documents({"authority_code": code, "status": "active"}),
+        "completed_draws": await db.draws.count_documents({"authority_code": code, "status": "completed"}),
+    }
+    
+    return {
+        "id": str(authority["_id"]),
+        "name": authority["name"],
+        "code": authority["code"],
+        "country": authority["country"],
+        "country_code": authority["country_code"],
+        "admin_email": authority["admin_email"],
+        "currency": authority["currency"],
+        "currency_symbol": authority["currency_symbol"],
+        "timezone": authority["timezone"],
+        "efd_system": authority.get("efd_system"),
+        "api_endpoint": authority.get("api_endpoint"),
+        "is_active": authority["is_active"],
+        "created_at": authority["created_at"],
+        "settings": authority.get("settings", {}),
+        "stats": stats
+    }
+
+
+@api_router.put("/super-admin/tax-authorities/{authority_code}")
+async def update_tax_authority(
+    authority_code: str,
+    updates: Dict[str, Any],
+    admin: dict = Depends(get_current_super_admin)
+):
+    """Update Tax Authority - Super Admin only"""
+    authority = await db.tax_authorities.find_one({"code": authority_code.upper()})
+    if not authority:
+        raise HTTPException(status_code=404, detail="Tax Authority not found")
+    
+    # Fields that can be updated
+    allowed_fields = [
+        "name", "admin_email", "currency", "currency_symbol", 
+        "timezone", "efd_system", "api_endpoint", "is_active", "settings"
+    ]
+    
+    update_data = {k: v for k, v in updates.items() if k in allowed_fields}
+    update_data["updated_at"] = datetime.utcnow()
+    update_data["updated_by"] = admin.get("email")
+    
+    await db.tax_authorities.update_one(
+        {"code": authority_code.upper()},
+        {"$set": update_data}
+    )
+    
+    # Log the action
+    await db.audit_logs.insert_one({
+        "action": "tax_authority_updated",
+        "authority_code": authority_code.upper(),
+        "performed_by": admin.get("email"),
+        "timestamp": datetime.utcnow(),
+        "details": {"updated_fields": list(update_data.keys())}
+    })
+    
+    return {"message": f"Tax Authority {authority_code} updated successfully"}
+
+
+@api_router.delete("/super-admin/tax-authorities/{authority_code}")
+async def deactivate_tax_authority(
+    authority_code: str,
+    admin: dict = Depends(get_current_super_admin)
+):
+    """Deactivate Tax Authority (soft delete) - Super Admin only"""
+    authority = await db.tax_authorities.find_one({"code": authority_code.upper()})
+    if not authority:
+        raise HTTPException(status_code=404, detail="Tax Authority not found")
+    
+    await db.tax_authorities.update_one(
+        {"code": authority_code.upper()},
+        {"$set": {"is_active": False, "deactivated_at": datetime.utcnow(), "deactivated_by": admin.get("email")}}
+    )
+    
+    # Log the action
+    await db.audit_logs.insert_one({
+        "action": "tax_authority_deactivated",
+        "authority_code": authority_code.upper(),
+        "performed_by": admin.get("email"),
+        "timestamp": datetime.utcnow()
+    })
+    
+    return {"message": f"Tax Authority {authority_code} deactivated"}
+
+
+@api_router.get("/super-admin/consolidated-dashboard")
+async def get_consolidated_dashboard(admin: dict = Depends(get_current_super_admin)):
+    """Get consolidated dashboard across all Tax Authorities - Super Admin only"""
+    now = datetime.utcnow()
+    today_start = datetime(now.year, now.month, now.day)
+    week_start = today_start - timedelta(days=7)
+    month_start = today_start - timedelta(days=30)
+    
+    # Get all authorities
+    authorities = await db.tax_authorities.find({"is_active": True}).to_list(100)
+    
+    # Global stats
+    total_users = await db.users.count_documents({})
+    total_scans = await db.scans.count_documents({})
+    valid_scans = await db.scans.count_documents({"status": "valid"})
+    total_draws = await db.draws.count_documents({})
+    completed_draws = await db.draws.count_documents({"status": "completed"})
+    
+    # Today's stats
+    users_today = await db.users.count_documents({"created_at": {"$gte": today_start}})
+    scans_today = await db.scans.count_documents({"timestamp": {"$gte": today_start}})
+    
+    # This month's stats
+    users_this_month = await db.users.count_documents({"created_at": {"$gte": month_start}})
+    scans_this_month = await db.scans.count_documents({"timestamp": {"$gte": month_start}})
+    
+    # Per-authority breakdown
+    authority_stats = []
+    for auth in authorities:
+        code = auth["code"]
+        auth_users = await db.users.count_documents({"authority_code": code})
+        auth_scans = await db.scans.count_documents({"authority_code": code})
+        auth_draws = await db.draws.count_documents({"authority_code": code})
+        auth_scans_today = await db.scans.count_documents({"authority_code": code, "timestamp": {"$gte": today_start}})
+        
+        authority_stats.append({
+            "code": code,
+            "name": auth["name"],
+            "country": auth["country"],
+            "country_code": auth["country_code"],
+            "currency": auth["currency"],
+            "users": auth_users,
+            "scans": auth_scans,
+            "scans_today": auth_scans_today,
+            "draws": auth_draws,
+            "is_active": auth["is_active"]
+        })
+    
+    # Sort by scans (most active first)
+    authority_stats.sort(key=lambda x: x["scans"], reverse=True)
+    
+    return {
+        "timestamp": now.isoformat(),
+        "global_stats": {
+            "total_authorities": len(authorities),
+            "total_users": total_users,
+            "total_scans": total_scans,
+            "valid_scans": valid_scans,
+            "scan_validity_rate": round(valid_scans / total_scans * 100, 1) if total_scans > 0 else 0,
+            "total_draws": total_draws,
+            "completed_draws": completed_draws
+        },
+        "today": {
+            "new_users": users_today,
+            "scans": scans_today
+        },
+        "this_month": {
+            "new_users": users_this_month,
+            "scans": scans_this_month
+        },
+        "by_authority": authority_stats
+    }
+
+
+@api_router.get("/super-admin/audit-logs")
+async def get_audit_logs(
+    limit: int = 100,
+    authority_code: Optional[str] = None,
+    action: Optional[str] = None,
+    admin: dict = Depends(get_current_super_admin)
+):
+    """Get audit logs - Super Admin only"""
+    query = {}
+    if authority_code:
+        query["authority_code"] = authority_code.upper()
+    if action:
+        query["action"] = action
+    
+    logs = await db.audit_logs.find(query).sort("timestamp", -1).limit(limit).to_list(limit)
+    
+    return {
+        "logs": [
+            {
+                "id": str(log["_id"]),
+                "action": log["action"],
+                "authority_code": log.get("authority_code"),
+                "performed_by": log.get("performed_by"),
+                "timestamp": log["timestamp"],
+                "details": log.get("details", {})
+            }
+            for log in logs
+        ],
+        "total": len(logs)
+    }
+
+
+@api_router.post("/authority/login")
+async def tax_authority_login(data: TaxAuthorityLogin):
+    """Tax Authority Admin login"""
+    authority = await db.tax_authorities.find_one({"admin_email": data.email})
+    
+    if not authority:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    if not authority.get("is_active", False):
+        raise HTTPException(status_code=403, detail="Tax Authority account is deactivated")
+    
+    if not verify_password(data.password, authority["admin_password_hash"]):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    payload = {
+        "email": data.email,
+        "authority_code": authority["code"],
+        "authority_name": authority["name"],
+        "role": AdminRole.TAX_AUTHORITY,
+        "exp": datetime.utcnow() + timedelta(hours=24),
+        "iat": datetime.utcnow()
+    }
+    token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "role": AdminRole.TAX_AUTHORITY,
+        "authority": {
+            "code": authority["code"],
+            "name": authority["name"],
+            "country": authority["country"],
+            "currency": authority["currency"],
+            "currency_symbol": authority["currency_symbol"]
+        }
+    }
+
+
 # ============== ADMIN DASHBOARD ==============
 
 @api_router.get("/admin/dashboard")
