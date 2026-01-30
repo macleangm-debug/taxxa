@@ -291,9 +291,68 @@ class ReferralItem(BaseModel):
 
 class AdminRole:
     """Admin role definitions"""
-    SUPER_ADMIN = "super_admin"      # TAXXA team only
-    TAX_AUTHORITY = "tax_authority"  # Country tax authority admin
-    AUDITOR = "auditor"              # Read-only access
+    SUPER_ADMIN = "super_admin"           # TAXXA team only - full platform access
+    TAX_AUTHORITY = "tax_authority"       # Country tax authority admin - full authority access
+    MANAGER = "manager"                   # Can manage draws, approve prizes
+    AUDITOR = "auditor"                   # Read-only access, audit logs
+    SUPPORT = "support"                   # Can view users, handle claims
+
+# Role permissions
+ROLE_PERMISSIONS = {
+    AdminRole.SUPER_ADMIN: ["*"],  # All permissions
+    AdminRole.TAX_AUTHORITY: [
+        "users:read", "users:write",
+        "scans:read",
+        "draws:read", "draws:write", "draws:execute",
+        "prizes:read", "prizes:write", "prizes:disburse",
+        "reports:read", "reports:export",
+        "settings:read", "settings:write",
+        "staff:read", "staff:write",
+    ],
+    AdminRole.MANAGER: [
+        "users:read",
+        "scans:read",
+        "draws:read", "draws:write", "draws:execute",
+        "prizes:read", "prizes:write",
+        "reports:read",
+    ],
+    AdminRole.AUDITOR: [
+        "users:read",
+        "scans:read",
+        "draws:read",
+        "prizes:read",
+        "reports:read",
+        "audit:read",
+    ],
+    AdminRole.SUPPORT: [
+        "users:read",
+        "scans:read",
+        "prizes:read", "prizes:claim",
+        "reports:read",
+    ],
+}
+
+class StaffMemberCreate(BaseModel):
+    """Create a staff member for a tax authority"""
+    email: str
+    password: str
+    full_name: str
+    role: str  # manager, auditor, support
+    phone: Optional[str] = None
+    department: Optional[str] = None
+
+class StaffMemberResponse(BaseModel):
+    """Staff member response"""
+    id: str
+    email: str
+    full_name: str
+    role: str
+    authority_code: str
+    phone: Optional[str]
+    department: Optional[str]
+    is_active: bool
+    created_at: datetime
+    last_login: Optional[datetime]
 
 class TaxAuthorityCreate(BaseModel):
     """Create a new Tax Authority account"""
