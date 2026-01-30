@@ -287,6 +287,76 @@ class ReferralItem(BaseModel):
     joined_at: datetime
 
 
+# ============== MULTI-TENANT / RBAC MODELS ==============
+
+class AdminRole:
+    """Admin role definitions"""
+    SUPER_ADMIN = "super_admin"      # TAXXA team only
+    TAX_AUTHORITY = "tax_authority"  # Country tax authority admin
+    AUDITOR = "auditor"              # Read-only access
+
+class TaxAuthorityCreate(BaseModel):
+    """Create a new Tax Authority account"""
+    name: str                        # e.g., "Tanzania Revenue Authority"
+    code: str                        # e.g., "TRA"
+    country: str                     # e.g., "Tanzania"
+    country_code: str                # e.g., "TZ"
+    admin_email: str
+    admin_password: str
+    currency: str = "TZS"
+    currency_symbol: str = "TSh"
+    timezone: str = "Africa/Dar_es_Salaam"
+    efd_system: Optional[str] = None # e.g., "EFDMS", "eTIMS"
+    api_endpoint: Optional[str] = None
+    is_active: bool = True
+
+class TaxAuthorityResponse(BaseModel):
+    """Tax Authority response"""
+    id: str
+    name: str
+    code: str
+    country: str
+    country_code: str
+    admin_email: str
+    currency: str
+    currency_symbol: str
+    timezone: str
+    efd_system: Optional[str]
+    is_active: bool
+    created_at: datetime
+    stats: Optional[Dict[str, Any]] = None
+
+class SuperAdminLogin(BaseModel):
+    """Super Admin login"""
+    email: str
+    password: str
+
+class TaxAuthorityLogin(BaseModel):
+    """Tax Authority admin login"""
+    email: str
+    password: str
+    authority_code: Optional[str] = None  # Optional, for multi-authority users
+
+class ConsolidatedStats(BaseModel):
+    """Consolidated stats across all tax authorities"""
+    total_authorities: int
+    total_users: int
+    total_scans: int
+    total_entries: int
+    total_draws: int
+    total_winners: int
+    total_prize_value: float
+    by_authority: List[Dict[str, Any]]
+
+
+# Super Admin credentials (in production, store securely)
+SUPER_ADMIN_CREDENTIALS = {
+    "email": os.environ.get("SUPER_ADMIN_EMAIL", "admin@taxxa.io"),
+    "password": os.environ.get("SUPER_ADMIN_PASSWORD", "TaxxaSuperAdmin2025!"),
+    "role": AdminRole.SUPER_ADMIN
+}
+
+
 # ============== HELPER FUNCTIONS ==============
 
 def generate_otp():
