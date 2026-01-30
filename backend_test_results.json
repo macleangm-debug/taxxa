@@ -1,8 +1,8 @@
 {
   "total_tests": 8,
-  "passed": 7,
-  "success_rate": 87.5,
-  "health_endpoints": "3/4",
+  "passed": 8,
+  "success_rate": 100.0,
+  "health_endpoints": "4/4",
   "core_api": "3/3",
   "performance": "1/1",
   "all_results": [
@@ -10,57 +10,50 @@
       "test": "Health Liveness Check",
       "success": true,
       "message": "Liveness endpoint responding correctly",
-      "timestamp": "2026-01-30T12:16:25.666969",
+      "timestamp": "2026-01-30T12:17:23.129209",
       "details": {
         "status_code": 200,
-        "response_time_header": "0.45ms",
+        "response_time_header": "0.41ms",
         "response_data": {
           "status": "ok",
-          "timestamp": "2026-01-30T12:16:25.664151",
-          "uptime": "4m"
+          "timestamp": "2026-01-30T12:17:23.125877",
+          "uptime": "5m"
         }
       }
     },
     {
       "test": "Health Readiness Check",
-      "success": false,
-      "message": "Missing expected keys: ['components']",
-      "timestamp": "2026-01-30T12:16:25.688489",
+      "success": true,
+      "message": "Readiness endpoint responding with component checks",
+      "timestamp": "2026-01-30T12:17:23.143059",
       "details": {
-        "response_data": {
-          "status": "ready",
-          "timestamp": "2026-01-30T12:16:25.685848",
-          "checks": [
-            {
-              "component": "mongodb",
-              "healthy": true,
-              "latency_ms": 0.71,
-              "message": "Connected"
-            },
-            {
-              "component": "redis",
-              "healthy": true,
-              "latency_ms": 0.0,
-              "message": "Not configured (optional)"
-            }
-          ]
-        }
+        "status_code": 200,
+        "response_time_header": "1.06ms",
+        "overall_status": "ready",
+        "mongodb_healthy": true,
+        "mongodb_latency": 0.65,
+        "redis_status": "Not configured (optional)",
+        "components_checked": 2,
+        "all_components": [
+          "mongodb",
+          "redis"
+        ]
       }
     },
     {
       "test": "Health Detailed Status",
       "success": true,
       "message": "Detailed status endpoint responding correctly",
-      "timestamp": "2026-01-30T12:16:25.738283",
+      "timestamp": "2026-01-30T12:17:23.198577",
       "details": {
         "status_code": 200,
-        "response_time_header": "1.04ms",
+        "response_time_header": "0.92ms",
         "overall_status": "healthy",
         "mongodb_healthy": false,
         "cache_status": "connected",
         "rate_limiter_status": null,
         "rate_limiter_backend": "memory",
-        "system_uptime": "4m",
+        "system_uptime": "5m",
         "missing_keys": []
       }
     },
@@ -68,24 +61,33 @@
       "test": "Health Metrics",
       "success": true,
       "message": "Metrics endpoint responding correctly",
-      "timestamp": "2026-01-30T12:16:25.790726",
+      "timestamp": "2026-01-30T12:17:23.213228",
       "details": {
         "status_code": 200,
-        "response_time_header": "0.55ms",
-        "total_requests": null,
-        "requests_by_status": {},
-        "avg_response_time": null,
-        "has_endpoint_metrics": false
+        "response_time_header": "0.59ms",
+        "total_requests": 21,
+        "error_rate_percent": 9.52,
+        "uptime_seconds": 301.0,
+        "endpoints_tracked": 10,
+        "has_requests_data": true,
+        "response_structure": [
+          "total_requests",
+          "total_errors",
+          "error_rate_percent",
+          "uptime_seconds",
+          "requests_per_second",
+          "endpoints"
+        ]
       }
     },
     {
       "test": "Authentication Login",
       "success": true,
       "message": "Login successful with valid token",
-      "timestamp": "2026-01-30T12:16:26.060918",
+      "timestamp": "2026-01-30T12:17:23.485254",
       "details": {
         "status_code": 200,
-        "response_time_header": "258.83ms",
+        "response_time_header": "223.20ms",
         "token_type": "bearer",
         "user_id": "696f57dbc529f9fb9872bbe2",
         "user_phone": "0700000001",
@@ -96,10 +98,10 @@
       "test": "User Stats",
       "success": true,
       "message": "User stats retrieved successfully",
-      "timestamp": "2026-01-30T12:16:26.088240",
+      "timestamp": "2026-01-30T12:17:23.501037",
       "details": {
         "status_code": 200,
-        "response_time_header": "15.59ms",
+        "response_time_header": "5.16ms",
         "total_scans": 4,
         "valid_scans": 4,
         "total_entries": 15,
@@ -118,10 +120,10 @@
       "test": "Active Draws",
       "success": true,
       "message": "Active draws retrieved successfully (5 draws)",
-      "timestamp": "2026-01-30T12:16:26.142708",
+      "timestamp": "2026-01-30T12:17:23.552873",
       "details": {
         "status_code": 200,
-        "response_time_header": "4.23ms",
+        "response_time_header": "3.57ms",
         "draw_count": 5,
         "sample_draws": [
           {
@@ -152,7 +154,7 @@
       "test": "Response Time Headers",
       "success": true,
       "message": "X-Response-Time header found on 3/3 endpoints",
-      "timestamp": "2026-01-30T12:16:26.212097",
+      "timestamp": "2026-01-30T12:17:23.629291",
       "details": {
         "endpoints_tested": 3,
         "headers_found": 3,
