@@ -100,6 +100,17 @@ export default function FeaturesPage() {
     ],
   };
 
+  const supportedCountries = [
+    { name: 'Tanzania', authority: 'TRA', system: 'EFDMS', flag: '🇹🇿', status: 'ready', color: '#10B981' },
+    { name: 'Kenya', authority: 'KRA', system: 'eTIMS', flag: '🇰🇪', status: 'ready', color: '#3B82F6' },
+    { name: 'Uganda', authority: 'URA', system: 'EFRIS', flag: '🇺🇬', status: 'ready', color: '#F59E0B' },
+    { name: 'Rwanda', authority: 'RRA', system: 'EBM', flag: '🇷🇼', status: 'ready', color: '#8B5CF6' },
+    { name: 'Ethiopia', authority: 'ERCA', system: 'E-Tax', flag: '🇪🇹', status: 'coming', color: '#06B6D4' },
+    { name: 'Nigeria', authority: 'FIRS', system: 'TaxPro', flag: '🇳🇬', status: 'coming', color: '#22C55E' },
+    { name: 'South Africa', authority: 'SARS', system: 'eFiling', flag: '🇿🇦', status: 'coming', color: '#EF4444' },
+    { name: 'Ghana', authority: 'GRA', system: 'E-VAT', flag: '🇬🇭', status: 'coming', color: '#EC4899' },
+  ];
+
   const currentFeatures = features[activeTab] || [];
   const liveCount = currentFeatures.filter(f => f.status === 'live').length;
   const totalCount = currentFeatures.length;
