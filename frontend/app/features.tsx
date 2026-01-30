@@ -7,7 +7,8 @@ import {
   TouchableOpacity,
   Platform,
   useWindowDimensions,
-  Image,
+  Modal,
+  TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -19,881 +20,474 @@ export default function FeaturesPage() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
-  const [activeTab, setActiveTab] = useState('all');
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [activeTab, setActiveTab] = useState('consumer');
+  const [contactForm, setContactForm] = useState({
+    name: '',
+    organization: '',
+    email: '',
+    country: '',
+    message: '',
+  });
 
-  // All platform features organized by category
-  const featureCategories = [
-    {
-      id: 'consumer',
-      name: 'Consumer App',
-      icon: 'phone-portrait',
-      color: '#3B82F6',
-      description: 'Mobile-first experience for citizens',
-      features: [
-        {
-          name: 'QR Code Scanner',
-          description: 'Scan tax receipts with built-in camera. Supports 6+ QR formats with auto-detection.',
-          icon: 'qr-code',
-          status: 'live'
-        },
-        {
-          name: 'Multi-Step Validation',
-          description: 'Receipts go through decode → validate → submit flow with real-time feedback.',
-          icon: 'shield-checkmark',
-          status: 'live'
-        },
-        {
-          name: 'Draw Entries',
-          description: 'Earn lottery entries for each valid scan. Bonus entries for high-value purchases.',
-          icon: 'ticket',
-          status: 'live'
-        },
-        {
-          name: 'Prize Notifications',
-          description: 'Push notifications for draw reminders, winner announcements, and updates.',
-          icon: 'notifications',
-          status: 'live'
-        },
-        {
-          name: 'Referral Program',
-          description: 'Invite friends and earn bonus entries when they scan receipts.',
-          icon: 'people',
-          status: 'live'
-        },
-        {
-          name: 'Scan History',
-          description: 'View all past scans with receipt details, validation status, and entries earned.',
-          icon: 'time',
-          status: 'live'
-        },
-        {
-          name: 'Profile Management',
-          description: 'Manage personal details, notification preferences, and view total entries.',
-          icon: 'person',
-          status: 'live'
-        }
-      ]
-    },
-    {
-      id: 'admin',
-      name: 'Admin Portal',
-      icon: 'desktop',
-      color: '#8B5CF6',
-      description: 'Comprehensive back-office management',
-      features: [
-        {
-          name: 'Dashboard Analytics',
-          description: 'Real-time metrics on users, scans, draws, and compliance rates.',
-          icon: 'analytics',
-          status: 'live'
-        },
-        {
-          name: 'User Management',
-          description: 'View all users, their activity, scan history, and entry balances.',
-          icon: 'people',
-          status: 'live'
-        },
-        {
-          name: 'Draw Management',
-          description: 'Create, schedule, and execute prize draws with configurable rules.',
-          icon: 'trophy',
-          status: 'live'
-        },
-        {
-          name: 'Cryptographic Draws',
-          description: 'Verifiable random selection using cryptographic seeds with full audit trail.',
-          icon: 'lock-closed',
-          status: 'live'
-        },
-        {
-          name: 'Audit Reports',
-          description: 'Detailed draw audit logs with proof of fairness for regulatory compliance.',
-          icon: 'document-text',
-          status: 'live'
-        },
-        {
-          name: 'Broadcast Notifications',
-          description: 'Send push notifications to all users or specific segments.',
-          icon: 'megaphone',
-          status: 'live'
-        },
-        {
-          name: 'Prize Disbursement',
-          description: 'Track and confirm prize payouts with witness verification.',
-          icon: 'cash',
-          status: 'live'
-        },
-        {
-          name: 'Export Reports',
-          description: 'Export data in CSV/JSON for external reporting and audits.',
-          icon: 'download',
-          status: 'live'
-        }
-      ]
-    },
-    {
-      id: 'api',
-      name: 'Receipt API',
-      icon: 'code-slash',
-      color: '#10B981',
-      description: 'Industry-standard receipt processing',
-      features: [
-        {
-          name: 'Auto Format Detection',
-          description: 'Automatically detects JSON, pipe-delimited, URL-encoded, Base64, and custom formats.',
-          icon: 'search',
-          status: 'live'
-        },
-        {
-          name: 'Flexible Schema',
-          description: '30+ fields covering all Tax Authority requirements globally.',
-          icon: 'layers',
-          status: 'live'
-        },
-        {
-          name: '8-Point Validation',
-          description: 'Format checks, TIN validation, amounts, dates, duplicates, Tax Authority verification.',
-          icon: 'checkmark-done',
-          status: 'live'
-        },
-        {
-          name: '8 African Jurisdictions',
-          description: 'Tanzania, Kenya, Uganda, Rwanda, Ethiopia, Nigeria, South Africa, Ghana.',
-          icon: 'globe',
-          status: 'live'
-        },
-        {
-          name: 'RESTful Endpoints',
-          description: 'Clean REST API: decode → validate → submit workflow.',
-          icon: 'git-branch',
-          status: 'live'
-        }
-      ]
-    },
-    {
-      id: 'security',
-      name: 'Security & Compliance',
-      icon: 'shield',
-      color: '#EF4444',
-      description: 'Enterprise-grade security measures',
-      features: [
-        {
-          name: 'JWT Authentication',
-          description: 'Secure token-based authentication with expiration and refresh.',
-          icon: 'key',
-          status: 'live'
-        },
-        {
-          name: 'OTP Verification',
-          description: 'SMS-based OTP for registration with configurable providers (Twilio, Africa\'s Talking).',
-          icon: 'chatbubble-ellipses',
-          status: 'live'
-        },
-        {
-          name: 'Duplicate Detection',
-          description: 'Prevents the same receipt from being submitted twice.',
-          icon: 'copy',
-          status: 'live'
-        },
-        {
-          name: 'Fraud Prevention',
-          description: 'Rate limiting, geo-location tracking, and suspicious activity monitoring.',
-          icon: 'warning',
-          status: 'live'
-        },
-        {
-          name: 'Full Audit Trail',
-          description: 'Every action logged with timestamps, user IDs, and details.',
-          icon: 'list',
-          status: 'live'
-        },
-        {
-          name: 'Data Encryption',
-          description: 'Sensitive data encrypted at rest and in transit.',
-          icon: 'lock-closed',
-          status: 'live'
-        }
-      ]
-    },
-    {
-      id: 'integration',
-      name: 'Integrations',
-      icon: 'link',
-      color: '#F59E0B',
-      description: 'Connect with existing systems',
-      features: [
-        {
-          name: 'SMS Providers',
-          description: 'Twilio, Africa\'s Talking for East Africa. Easy to add more.',
-          icon: 'chatbox',
-          status: 'ready'
-        },
-        {
-          name: 'Push Notifications',
-          description: 'Expo Push Service for iOS and Android notifications.',
-          icon: 'notifications',
-          status: 'live'
-        },
-        {
-          name: 'Tax Authority APIs',
-          description: '8 African jurisdictions supported with extensible framework.',
-          icon: 'business',
-          status: 'live'
-        },
-        {
-          name: 'Webhook Support',
-          description: '16 event types with retry logic and signature verification.',
-          icon: 'git-network',
-          status: 'live'
-        },
-        {
-          name: 'Analytics Export',
-          description: 'Export data to external BI tools for advanced analytics.',
-          icon: 'bar-chart',
-          status: 'live'
-        }
-      ]
-    }
+  const tabs = [
+    { id: 'consumer', label: 'Consumer App', icon: 'phone-portrait' },
+    { id: 'admin', label: 'Admin Portal', icon: 'desktop' },
+    { id: 'api', label: 'Receipt API', icon: 'code-slash' },
+    { id: 'security', label: 'Security', icon: 'shield-checkmark' },
+    { id: 'integrations', label: 'Integrations', icon: 'git-network' },
   ];
 
-  const getStatusBadge = (status: string) => {
-    const config = {
-      live: { color: '#10B981', bg: '#ECFDF5', label: 'Live' },
-      ready: { color: '#3B82F6', bg: '#EFF6FF', label: 'Ready' },
-      planned: { color: '#F59E0B', bg: '#FFFBEB', label: 'Planned' }
-    };
-    const c = config[status] || config.planned;
-    return (
-      <View style={[styles.statusBadge, { backgroundColor: c.bg }]}>
-        <View style={[styles.statusDot, { backgroundColor: c.color }]} />
-        <Text style={[styles.statusText, { color: c.color }]}>{c.label}</Text>
-      </View>
-    );
+  const features: Record<string, any[]> = {
+    consumer: [
+      { name: 'QR Code Scanning', description: 'Scan receipts via camera or upload image', icon: 'qr-code', status: 'live' },
+      { name: 'Web Browser Scanning', description: 'No app download required - scan from any browser', icon: 'globe', status: 'live' },
+      { name: 'Real-time Validation', description: 'Instant verification against Revenue Authority database', icon: 'checkmark-circle', status: 'live' },
+      { name: 'Entry Tracking', description: 'View all scans and accumulated draw entries', icon: 'list', status: 'live' },
+      { name: 'Draw Participation', description: 'Automatic entry into weekly and monthly draws', icon: 'ticket', status: 'live' },
+      { name: 'Push Notifications', description: 'Alerts for new draws, wins, and reminders', icon: 'notifications', status: 'live' },
+      { name: 'Winner Announcements', description: 'Real-time notification when you win', icon: 'trophy', status: 'live' },
+      { name: 'Referral Program', description: 'Earn bonus entries by inviting friends', icon: 'people', status: 'live' },
+      { name: 'Offline Mode', description: 'Scan receipts without internet, sync later', icon: 'cloud-offline', status: 'live' },
+      { name: 'Multi-language Support', description: 'Available in local languages', icon: 'language', status: 'live' },
+    ],
+    admin: [
+      { name: 'Real-time Dashboard', description: 'Live metrics on scans, users, and compliance', icon: 'analytics', status: 'live' },
+      { name: 'Draw Management', description: 'Create, configure, and execute prize draws', icon: 'calendar', status: 'live' },
+      { name: 'Winner Selection', description: 'Cryptographically secure random selection', icon: 'shuffle', status: 'live' },
+      { name: 'User Management', description: 'View and manage citizen accounts', icon: 'people', status: 'live' },
+      { name: 'Prize Disbursement', description: 'Track and confirm prize payouts', icon: 'cash', status: 'live' },
+      { name: 'Audit Reports', description: 'Comprehensive audit trails for compliance', icon: 'document-text', status: 'live' },
+      { name: 'Analytics Export', description: 'Export data for external analysis', icon: 'download', status: 'live' },
+      { name: 'Role-based Access', description: 'Control who can access what features', icon: 'lock-closed', status: 'live' },
+      { name: 'Custom Branding', description: 'White-label with your authority branding', icon: 'color-palette', status: 'live' },
+      { name: 'Executive Reports', description: 'High-level summaries for leadership', icon: 'briefcase', status: 'live' },
+    ],
+    api: [
+      { name: 'RESTful API', description: 'Modern, well-documented REST endpoints', icon: 'code', status: 'live' },
+      { name: 'QR Decode Endpoint', description: 'Extract data from any receipt QR format', icon: 'qr-code', status: 'live' },
+      { name: 'Validation Endpoint', description: 'Verify receipts against your database', icon: 'checkmark-done', status: 'live' },
+      { name: 'Submission Endpoint', description: 'Record scans and award entries', icon: 'send', status: 'live' },
+      { name: 'Batch Processing', description: 'Handle bulk receipt submissions', icon: 'layers', status: 'live' },
+      { name: 'Webhook Events', description: '16 event types for real-time notifications', icon: 'git-branch', status: 'live' },
+      { name: 'API Versioning', description: 'Stable v1 API with backwards compatibility', icon: 'git-compare', status: 'live' },
+      { name: 'Rate Limiting', description: 'Protect against abuse with smart limits', icon: 'speedometer', status: 'live' },
+      { name: 'SDK Libraries', description: 'Client libraries for popular languages', icon: 'library', status: 'coming' },
+      { name: 'Sandbox Environment', description: 'Test integrations safely', icon: 'flask', status: 'live' },
+    ],
+    security: [
+      { name: 'Duplicate Detection', description: 'Prevent same receipt being scanned twice', icon: 'copy', status: 'live' },
+      { name: 'Fraud Scoring', description: 'ML-based suspicious activity detection', icon: 'warning', status: 'live' },
+      { name: 'Device Fingerprinting', description: 'Track and limit abuse from same device', icon: 'finger-print', status: 'live' },
+      { name: 'Rate Limiting', description: 'Prevent automated abuse attempts', icon: 'timer', status: 'live' },
+      { name: 'Audit Logging', description: 'Complete trail of all system actions', icon: 'document-lock', status: 'live' },
+      { name: 'Data Encryption', description: 'AES-256 encryption at rest and in transit', icon: 'lock-closed', status: 'live' },
+      { name: 'JWT Authentication', description: 'Secure token-based user authentication', icon: 'key', status: 'live' },
+      { name: 'HMAC Webhooks', description: 'Signed webhook payloads for verification', icon: 'shield', status: 'live' },
+      { name: 'GDPR Compliance', description: 'Data privacy controls and exports', icon: 'checkmark-done-circle', status: 'live' },
+      { name: 'SOC 2 Ready', description: 'Enterprise security standards', icon: 'ribbon', status: 'live' },
+    ],
+    integrations: [
+      { name: 'Revenue Authority API', description: 'Direct connection to your tax database', icon: 'business', status: 'live' },
+      { name: 'SMS Providers', description: 'Twilio, Africa\'s Talking integration ready', icon: 'chatbubble', status: 'ready' },
+      { name: 'Push Notifications', description: 'Expo Push Service for mobile alerts', icon: 'notifications', status: 'live' },
+      { name: 'Email Service', description: 'Transactional email support', icon: 'mail', status: 'ready' },
+      { name: 'Payment Gateways', description: 'Prize disbursement via M-Pesa, bank transfer', icon: 'card', status: 'ready' },
+      { name: 'Analytics Platforms', description: 'Export to your BI tools', icon: 'bar-chart', status: 'live' },
+      { name: 'SSO Integration', description: 'Single sign-on for admin users', icon: 'log-in', status: 'ready' },
+      { name: 'Webhook Endpoints', description: 'Push events to your systems', icon: 'git-branch', status: 'live' },
+    ],
   };
 
-  const filteredCategories = activeTab === 'all' 
-    ? featureCategories 
-    : featureCategories.filter(c => c.id === activeTab);
+  const currentFeatures = features[activeTab] || [];
+  const liveCount = currentFeatures.filter(f => f.status === 'live').length;
+  const totalCount = currentFeatures.length;
 
-  const stats = {
-    totalFeatures: featureCategories.reduce((sum, c) => sum + c.features.length, 0),
-    liveFeatures: featureCategories.reduce((sum, c) => sum + c.features.filter(f => f.status === 'live').length, 0),
-    categories: featureCategories.length
+  const handleSubmitInquiry = () => {
+    alert('Thank you for your inquiry. Our team will contact you within 24-48 hours.');
+    setShowContactModal(false);
+    setContactForm({ name: '', organization: '', email: '', country: '', message: '' });
   };
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* Header */}
-      <LinearGradient
-        colors={['#0F172A', '#1E3A5F']}
-        style={styles.header}
-      >
-        <View style={styles.headerContent}>
-          <TouchableOpacity 
-            style={styles.backButton}
-            onPress={() => router.back()}
-          >
-            <Ionicons name="arrow-back" size={24} color="#fff" />
+      {/* Navigation */}
+      <View style={styles.nav}>
+        <View style={styles.navContent}>
+          <TouchableOpacity style={styles.logo} onPress={() => router.push('/landing')}>
+            <View style={styles.logoIcon}>
+              <Ionicons name="receipt" size={24} color="#fff" />
+            </View>
+            <Text style={styles.logoText}>Taxxa</Text>
+            {!isMobile && (
+              <View style={styles.logoBadge}>
+                <Text style={styles.logoBadgeText}>Enterprise</Text>
+              </View>
+            )}
           </TouchableOpacity>
           
-          <View style={styles.headerText}>
-            <View style={styles.headerBadge}>
-              <Text style={styles.headerBadgeText}>PLATFORM CAPABILITIES</Text>
+          {!isMobile ? (
+            <View style={styles.navLinks}>
+              <TouchableOpacity style={styles.navLink} onPress={() => router.push('/solution')}>
+                <Text style={styles.navLinkText}>Solution</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.navLink} onPress={() => router.push('/how-it-works')}>
+                <Text style={styles.navLinkText}>How It Works</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.navLink, styles.navLinkActive]} onPress={() => router.push('/features')}>
+                <Text style={[styles.navLinkText, styles.navLinkTextActive]}>Features</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.navLink} onPress={() => router.push('/case-studies')}>
+                <Text style={styles.navLinkText}>Pilot Programs</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.navLink} onPress={() => router.push('/documentation')}>
+                <Text style={styles.navLinkText}>Documentation</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.navButtonPrimary} onPress={() => setShowContactModal(true)}>
+                <Text style={styles.navButtonPrimaryText}>Request Demo</Text>
+              </TouchableOpacity>
             </View>
-            <Text style={styles.headerTitle}>All Features</Text>
-            <Text style={styles.headerSubtitle}>
-              Everything included in the Taxxa platform
-            </Text>
+          ) : (
+            <TouchableOpacity style={styles.mobileMenuButton} onPress={() => setShowMobileMenu(!showMobileMenu)}>
+              <Ionicons name={showMobileMenu ? "close" : "menu"} size={28} color="#1E293B" />
+            </TouchableOpacity>
+          )}
+        </View>
+        
+        {isMobile && showMobileMenu && (
+          <View style={styles.mobileMenuDropdown}>
+            <TouchableOpacity style={styles.mobileMenuItem} onPress={() => { setShowMobileMenu(false); router.push('/solution'); }}>
+              <Text style={styles.mobileMenuItemText}>Solution</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.mobileMenuItem} onPress={() => { setShowMobileMenu(false); router.push('/how-it-works'); }}>
+              <Text style={styles.mobileMenuItemText}>How It Works</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.mobileMenuItem, styles.mobileMenuItemActive]} onPress={() => setShowMobileMenu(false)}>
+              <Text style={[styles.mobileMenuItemText, styles.mobileMenuItemTextActive]}>Features</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.mobileMenuItem} onPress={() => { setShowMobileMenu(false); router.push('/case-studies'); }}>
+              <Text style={styles.mobileMenuItemText}>Pilot Programs</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.mobileMenuItem} onPress={() => { setShowMobileMenu(false); router.push('/documentation'); }}>
+              <Text style={styles.mobileMenuItemText}>Documentation</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.mobileMenuCTA} onPress={() => { setShowMobileMenu(false); setShowContactModal(true); }}>
+              <Text style={styles.mobileMenuCTAText}>Request Demo</Text>
+            </TouchableOpacity>
           </View>
-          
-          {/* Stats Cards */}
-          <View style={[styles.statsRow, isMobile && styles.statsRowMobile]}>
-            <View style={styles.statCard}>
-              <Text style={styles.statValue}>{stats.totalFeatures}</Text>
-              <Text style={styles.statLabel}>Total Features</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={[styles.statValue, { color: '#10B981' }]}>{stats.liveFeatures}</Text>
-              <Text style={styles.statLabel}>Live Now</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statValue}>{stats.categories}</Text>
-              <Text style={styles.statLabel}>Categories</Text>
-            </View>
+        )}
+      </View>
+
+      {/* Hero Section */}
+      <LinearGradient colors={['#0F172A', '#1E3A5F', '#0F172A']} style={[styles.hero, isMobile && styles.heroMobile]}>
+        <View style={[styles.heroContent, isMobile && styles.heroContentMobile]}>
+          <View style={styles.heroBadge}>
+            <Ionicons name="checkmark-done-circle" size={14} color="#60A5FA" />
+            <Text style={styles.heroBadgeText}>48+ Features Ready</Text>
           </View>
+          <Text style={[styles.heroTitle, isMobile && styles.heroTitleMobile]}>
+            Everything You Need.{'\n'}
+            <Text style={styles.heroTitleHighlight}>Nothing You Don't.</Text>
+          </Text>
+          <Text style={[styles.heroSubtitle, isMobile && styles.heroSubtitleMobile]}>
+            A complete platform built for Revenue Authorities. From citizen apps to admin dashboards, 
+            APIs to security - it's all here, ready to deploy.
+          </Text>
         </View>
       </LinearGradient>
 
-      {/* Filter Tabs */}
-      <View style={styles.tabsContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View style={styles.tabs}>
+      {/* Tabs Section */}
+      <View style={styles.tabsSection}>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false} 
+          style={styles.tabsScroll}
+          contentContainerStyle={styles.tabsContainer}
+        >
+          {tabs.map((tab) => (
             <TouchableOpacity
-              style={[styles.tab, activeTab === 'all' && styles.tabActive]}
-              onPress={() => setActiveTab('all')}
+              key={tab.id}
+              style={[styles.tab, activeTab === tab.id && styles.tabActive]}
+              onPress={() => setActiveTab(tab.id)}
             >
-              <Ionicons name="apps" size={18} color={activeTab === 'all' ? '#fff' : '#64748B'} />
-              <Text style={[styles.tabText, activeTab === 'all' && styles.tabTextActive]}>All</Text>
+              <Ionicons 
+                name={tab.icon as any} 
+                size={20} 
+                color={activeTab === tab.id ? '#fff' : '#64748B'} 
+              />
+              <Text style={[styles.tabText, activeTab === tab.id && styles.tabTextActive]}>
+                {tab.label}
+              </Text>
             </TouchableOpacity>
-            {featureCategories.map(cat => (
-              <TouchableOpacity
-                key={cat.id}
-                style={[styles.tab, activeTab === cat.id && styles.tabActive]}
-                onPress={() => setActiveTab(cat.id)}
-              >
-                <Ionicons 
-                  name={cat.icon as any} 
-                  size={18} 
-                  color={activeTab === cat.id ? '#fff' : '#64748B'} 
-                />
-                <Text style={[styles.tabText, activeTab === cat.id && styles.tabTextActive]}>
-                  {cat.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          ))}
         </ScrollView>
       </View>
 
-      {/* Feature Categories */}
-      <View style={styles.content}>
-        {filteredCategories.map(category => (
-          <View key={category.id} style={styles.categorySection}>
-            <View style={styles.categoryHeader}>
-              <View style={[styles.categoryIcon, { backgroundColor: category.color + '20' }]}>
-                <Ionicons name={category.icon as any} size={24} color={category.color} />
-              </View>
-              <View style={styles.categoryInfo}>
-                <Text style={styles.categoryName}>{category.name}</Text>
-                <Text style={styles.categoryDescription}>{category.description}</Text>
-              </View>
-              <View style={styles.categoryCount}>
-                <Text style={styles.categoryCountText}>{category.features.length}</Text>
-              </View>
-            </View>
-
-            <View style={[styles.featuresGrid, isMobile && styles.featuresGridMobile]}>
-              {category.features.map((feature, index) => (
-                <View key={index} style={[styles.featureCard, isMobile && styles.featureCardMobile]}>
-                  <View style={styles.featureHeader}>
-                    <View style={[styles.featureIcon, { backgroundColor: category.color + '15' }]}>
-                      <Ionicons name={feature.icon as any} size={20} color={category.color} />
-                    </View>
-                    {getStatusBadge(feature.status)}
-                  </View>
-                  <Text style={styles.featureName}>{feature.name}</Text>
-                  <Text style={styles.featureDescription}>{feature.description}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        ))}
-      </View>
-
-      {/* Technical Specs Section */}
-      <View style={styles.specsSection}>
-        <Text style={styles.specsSectionTitle}>Technical Specifications</Text>
-        <View style={[styles.specsGrid, isMobile && styles.specsGridMobile]}>
-          <View style={styles.specCard}>
-            <Ionicons name="server" size={24} color="#3B82F6" />
-            <Text style={styles.specTitle}>Backend</Text>
-            <Text style={styles.specValue}>FastAPI + MongoDB</Text>
-          </View>
-          <View style={styles.specCard}>
-            <Ionicons name="phone-portrait" size={24} color="#8B5CF6" />
-            <Text style={styles.specTitle}>Mobile</Text>
-            <Text style={styles.specValue}>React Native + Expo</Text>
-          </View>
-          <View style={styles.specCard}>
-            <Ionicons name="globe" size={24} color="#10B981" />
-            <Text style={styles.specTitle}>API Standard</Text>
-            <Text style={styles.specValue}>REST + OpenAPI 3.0</Text>
-          </View>
-          <View style={styles.specCard}>
-            <Ionicons name="lock-closed" size={24} color="#EF4444" />
-            <Text style={styles.specTitle}>Auth</Text>
-            <Text style={styles.specValue}>JWT + OTP</Text>
-          </View>
+      {/* Features Count */}
+      <View style={styles.countSection}>
+        <View style={styles.countBadge}>
+          <Text style={styles.countText}>
+            <Text style={styles.countHighlight}>{liveCount}</Text> of {totalCount} features live
+          </Text>
         </View>
       </View>
 
-      {/* Supported Jurisdictions */}
-      <View style={styles.jurisdictionsSection}>
-        <Text style={styles.specsSectionTitle}>Supported Tax Authorities - 8 African Countries</Text>
-        <View style={[styles.jurisdictionsGrid, isMobile && styles.jurisdictionsGridMobile]}>
-          <View style={styles.jurisdictionCard}>
-            <View style={[styles.jurisdictionFlag, { backgroundColor: '#22C55E' }]}>
-              <Text style={styles.jurisdictionFlagText}>TZ</Text>
+      {/* Features Grid */}
+      <View style={styles.featuresSection}>
+        <View style={[styles.featuresGrid, isMobile && styles.featuresGridMobile]}>
+          {currentFeatures.map((feature, index) => (
+            <View key={index} style={[styles.featureCard, isMobile && styles.featureCardMobile]}>
+              <View style={styles.featureHeader}>
+                <View style={[styles.featureIconWrap, { backgroundColor: feature.status === 'live' ? '#EFF6FF' : '#FEF3C7' }]}>
+                  <Ionicons 
+                    name={feature.icon as any} 
+                    size={22} 
+                    color={feature.status === 'live' ? '#3B82F6' : '#F59E0B'} 
+                  />
+                </View>
+                <View style={[
+                  styles.statusBadge, 
+                  { backgroundColor: feature.status === 'live' ? '#DCFCE7' : feature.status === 'ready' ? '#FEF3C7' : '#E0E7FF' }
+                ]}>
+                  <Text style={[
+                    styles.statusText,
+                    { color: feature.status === 'live' ? '#166534' : feature.status === 'ready' ? '#92400E' : '#3730A3' }
+                  ]}>
+                    {feature.status === 'live' ? 'Live' : feature.status === 'ready' ? 'Ready' : 'Coming'}
+                  </Text>
+                </View>
+              </View>
+              <Text style={styles.featureName}>{feature.name}</Text>
+              <Text style={styles.featureDescription}>{feature.description}</Text>
             </View>
-            <View style={styles.jurisdictionInfo}>
-              <Text style={styles.jurisdictionName}>Tanzania</Text>
-              <Text style={styles.jurisdictionAuthority}>TRA - EFDMS/VFD</Text>
+          ))}
+        </View>
+      </View>
+
+      {/* Summary Stats */}
+      <View style={[styles.summarySection, { backgroundColor: '#F8FAFC' }]}>
+        <Text style={styles.summaryTitle}>Platform Overview</Text>
+        <View style={[styles.summaryGrid, isMobile && styles.summaryGridMobile]}>
+          {[
+            { value: '48+', label: 'Total Features', icon: 'checkmark-done', color: '#3B82F6' },
+            { value: '5', label: 'Categories', icon: 'grid', color: '#8B5CF6' },
+            { value: '95%', label: 'Features Live', icon: 'pulse', color: '#10B981' },
+            { value: '24/7', label: 'Support', icon: 'headset', color: '#F59E0B' },
+          ].map((stat, index) => (
+            <View key={index} style={[styles.summaryCard, isMobile && styles.summaryCardMobile]}>
+              <View style={[styles.summaryIconWrap, { backgroundColor: stat.color + '15' }]}>
+                <Ionicons name={stat.icon as any} size={24} color={stat.color} />
+              </View>
+              <Text style={styles.summaryValue}>{stat.value}</Text>
+              <Text style={styles.summaryLabel}>{stat.label}</Text>
             </View>
-          </View>
-          <View style={styles.jurisdictionCard}>
-            <View style={[styles.jurisdictionFlag, { backgroundColor: '#000000' }]}>
-              <Text style={styles.jurisdictionFlagText}>KE</Text>
-            </View>
-            <View style={styles.jurisdictionInfo}>
-              <Text style={styles.jurisdictionName}>Kenya</Text>
-              <Text style={styles.jurisdictionAuthority}>KRA - eTIMS</Text>
-            </View>
-          </View>
-          <View style={styles.jurisdictionCard}>
-            <View style={[styles.jurisdictionFlag, { backgroundColor: '#FBBF24' }]}>
-              <Text style={styles.jurisdictionFlagText}>UG</Text>
-            </View>
-            <View style={styles.jurisdictionInfo}>
-              <Text style={styles.jurisdictionName}>Uganda</Text>
-              <Text style={styles.jurisdictionAuthority}>URA - EFRIS</Text>
-            </View>
-          </View>
-          <View style={styles.jurisdictionCard}>
-            <View style={[styles.jurisdictionFlag, { backgroundColor: '#3B82F6' }]}>
-              <Text style={styles.jurisdictionFlagText}>RW</Text>
-            </View>
-            <View style={styles.jurisdictionInfo}>
-              <Text style={styles.jurisdictionName}>Rwanda</Text>
-              <Text style={styles.jurisdictionAuthority}>RRA - EBM</Text>
-            </View>
-          </View>
-          <View style={styles.jurisdictionCard}>
-            <View style={[styles.jurisdictionFlag, { backgroundColor: '#16A34A' }]}>
-              <Text style={styles.jurisdictionFlagText}>ET</Text>
-            </View>
-            <View style={styles.jurisdictionInfo}>
-              <Text style={styles.jurisdictionName}>Ethiopia</Text>
-              <Text style={styles.jurisdictionAuthority}>ERCA - E-Receipt</Text>
-            </View>
-          </View>
-          <View style={styles.jurisdictionCard}>
-            <View style={[styles.jurisdictionFlag, { backgroundColor: '#22C55E' }]}>
-              <Text style={styles.jurisdictionFlagText}>NG</Text>
-            </View>
-            <View style={styles.jurisdictionInfo}>
-              <Text style={styles.jurisdictionName}>Nigeria</Text>
-              <Text style={styles.jurisdictionAuthority}>FIRS - TaxPro</Text>
-            </View>
-          </View>
-          <View style={styles.jurisdictionCard}>
-            <View style={[styles.jurisdictionFlag, { backgroundColor: '#F97316' }]}>
-              <Text style={styles.jurisdictionFlagText}>ZA</Text>
-            </View>
-            <View style={styles.jurisdictionInfo}>
-              <Text style={styles.jurisdictionName}>South Africa</Text>
-              <Text style={styles.jurisdictionAuthority}>SARS - eFiling</Text>
-            </View>
-          </View>
-          <View style={styles.jurisdictionCard}>
-            <View style={[styles.jurisdictionFlag, { backgroundColor: '#EF4444' }]}>
-              <Text style={styles.jurisdictionFlagText}>GH</Text>
-            </View>
-            <View style={styles.jurisdictionInfo}>
-              <Text style={styles.jurisdictionName}>Ghana</Text>
-              <Text style={styles.jurisdictionAuthority}>GRA - E-VAT</Text>
-            </View>
-          </View>
+          ))}
         </View>
       </View>
 
       {/* CTA Section */}
-      <LinearGradient
-        colors={['#3B82F6', '#1D4ED8']}
-        style={styles.ctaSection}
-      >
-        <Text style={styles.ctaTitle}>Ready to Increase Tax Compliance?</Text>
-        <Text style={styles.ctaSubtitle}>
-          Schedule a demo to see the full platform in action
-        </Text>
-        <View style={styles.ctaButtons}>
-          <TouchableOpacity 
-            style={styles.ctaButtonPrimary}
-            onPress={() => router.push('/landing')}
-          >
+      <LinearGradient colors={['#3B82F6', '#1D4ED8']} style={styles.ctaSection}>
+        <Text style={[styles.ctaTitle, isMobile && styles.ctaTitleMobile]}>See These Features In Action</Text>
+        <Text style={styles.ctaSubtitle}>Book a personalized demo and explore how Taxxa can work for you</Text>
+        <View style={[styles.ctaButtons, isMobile && styles.ctaButtonsMobile]}>
+          <TouchableOpacity style={styles.ctaButtonPrimary} onPress={() => setShowContactModal(true)}>
             <Ionicons name="calendar" size={20} color="#3B82F6" />
             <Text style={styles.ctaButtonPrimaryText}>Schedule Demo</Text>
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.ctaButtonSecondary}
-            onPress={() => router.push('/admin')}
-          >
-            <Ionicons name="desktop" size={20} color="#fff" />
-            <Text style={styles.ctaButtonSecondaryText}>Try Admin Portal</Text>
+          <TouchableOpacity style={styles.ctaButtonSecondary} onPress={() => router.push('/demo')}>
+            <Ionicons name="play" size={20} color="#fff" />
+            <Text style={styles.ctaButtonSecondaryText}>Try Interactive Demo</Text>
           </TouchableOpacity>
         </View>
       </LinearGradient>
 
       {/* Footer */}
       <View style={styles.footer}>
-        <Text style={styles.footerText}>© 2024 Taxxa. All rights reserved.</Text>
+        <View style={[styles.footerContent, isMobile && styles.footerContentMobile]}>
+          <View style={styles.footerLogo}>
+            <View style={styles.logoIcon}>
+              <Ionicons name="receipt" size={20} color="#fff" />
+            </View>
+            <Text style={styles.footerLogoText}>Taxxa</Text>
+          </View>
+          <Text style={styles.footerText}>© 2025 Taxxa. Transforming tax compliance worldwide.</Text>
+        </View>
       </View>
+
+      {/* Contact Modal */}
+      <Modal visible={showContactModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, isMobile && styles.modalContentMobile]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Request a Demo</Text>
+              <TouchableOpacity onPress={() => setShowContactModal(false)}>
+                <Ionicons name="close" size={24} color="#64748B" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.modalBody}>
+              <Text style={styles.inputLabel}>Full Name *</Text>
+              <TextInput 
+                style={styles.input} 
+                placeholder="Your name" 
+                placeholderTextColor="#94A3B8"
+                value={contactForm.name} 
+                onChangeText={(text) => setContactForm({...contactForm, name: text})} 
+              />
+              <Text style={styles.inputLabel}>Organization *</Text>
+              <TextInput 
+                style={styles.input} 
+                placeholder="Revenue Authority / Ministry" 
+                placeholderTextColor="#94A3B8"
+                value={contactForm.organization} 
+                onChangeText={(text) => setContactForm({...contactForm, organization: text})} 
+              />
+              <Text style={styles.inputLabel}>Email *</Text>
+              <TextInput 
+                style={styles.input} 
+                placeholder="your.email@revenue.gov" 
+                placeholderTextColor="#94A3B8"
+                keyboardType="email-address" 
+                value={contactForm.email} 
+                onChangeText={(text) => setContactForm({...contactForm, email: text})} 
+              />
+              <Text style={styles.inputLabel}>Country *</Text>
+              <TextInput 
+                style={styles.input} 
+                placeholder="Your country" 
+                placeholderTextColor="#94A3B8"
+                value={contactForm.country} 
+                onChangeText={(text) => setContactForm({...contactForm, country: text})} 
+              />
+              <Text style={styles.inputLabel}>Message</Text>
+              <TextInput 
+                style={[styles.input, styles.textArea]} 
+                placeholder="Tell us about your requirements..." 
+                placeholderTextColor="#94A3B8"
+                multiline 
+                numberOfLines={4} 
+                value={contactForm.message} 
+                onChangeText={(text) => setContactForm({...contactForm, message: text})} 
+              />
+            </ScrollView>
+            <View style={styles.modalFooter}>
+              <TouchableOpacity style={styles.modalCancelBtn} onPress={() => setShowContactModal(false)}>
+                <Text style={styles.modalCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalSubmitBtn} onPress={handleSubmitInquiry}>
+                <Text style={styles.modalSubmitText}>Submit</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-  },
-  header: {
-    paddingTop: 60,
-    paddingBottom: 40,
-    paddingHorizontal: 24,
-  },
-  headerContent: {
-    maxWidth: 1200,
-    alignSelf: 'center',
-    width: '100%',
-  },
-  backButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 24,
-  },
-  headerText: {
-    marginBottom: 32,
-  },
-  headerBadge: {
-    backgroundColor: 'rgba(59, 130, 246, 0.3)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    alignSelf: 'flex-start',
-    marginBottom: 16,
-  },
-  headerBadgeText: {
-    color: '#93C5FD',
-    fontSize: 12,
-    fontWeight: '600',
-    letterSpacing: 1,
-  },
-  headerTitle: {
-    fontSize: 40,
-    fontWeight: '800',
-    color: '#fff',
-    marginBottom: 12,
-  },
-  headerSubtitle: {
-    fontSize: 18,
-    color: '#94A3B8',
-    lineHeight: 28,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  statsRowMobile: {
-    flexDirection: 'column',
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 12,
-    padding: 20,
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 36,
-    fontWeight: '700',
-    color: '#fff',
-  },
-  statLabel: {
-    fontSize: 14,
-    color: '#94A3B8',
-    marginTop: 4,
-  },
-  tabsContainer: {
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
-    paddingVertical: 16,
-  },
-  tabs: {
-    flexDirection: 'row',
-    paddingHorizontal: 24,
-    gap: 12,
-  },
-  tab: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: '#F1F5F9',
-  },
-  tabActive: {
-    backgroundColor: '#3B82F6',
-  },
-  tabText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#64748B',
-  },
-  tabTextActive: {
-    color: '#fff',
-  },
-  content: {
-    padding: 24,
-    maxWidth: 1200,
-    alignSelf: 'center',
-    width: '100%',
-  },
-  categorySection: {
-    marginBottom: 40,
-  },
-  categoryHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  categoryIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  categoryInfo: {
-    flex: 1,
-    marginLeft: 16,
-  },
-  categoryName: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#1E293B',
-  },
-  categoryDescription: {
-    fontSize: 14,
-    color: '#64748B',
-    marginTop: 2,
-  },
-  categoryCount: {
-    backgroundColor: '#F1F5F9',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-  },
-  categoryCountText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#64748B',
-  },
-  featuresGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
-  },
-  featuresGridMobile: {
-    flexDirection: 'column',
-  },
-  featureCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 20,
-    width: isWeb ? 'calc(33.333% - 11px)' : '100%',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  featureCardMobile: {
-    width: '100%',
-  },
-  featureHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  featureIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  statusBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    gap: 6,
-  },
-  statusDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  featureName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1E293B',
-    marginBottom: 6,
-  },
-  featureDescription: {
-    fontSize: 14,
-    color: '#64748B',
-    lineHeight: 20,
-  },
-  specsSection: {
-    backgroundColor: '#fff',
-    padding: 40,
-    marginTop: 20,
-  },
-  specsSectionTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#1E293B',
-    textAlign: 'center',
-    marginBottom: 32,
-  },
-  specsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 24,
-    maxWidth: 1000,
-    alignSelf: 'center',
-  },
-  specsGridMobile: {
-    flexDirection: 'column',
-  },
-  specCard: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: 12,
-    padding: 24,
-    alignItems: 'center',
-    width: isWeb ? 200 : '100%',
-  },
-  specTitle: {
-    fontSize: 14,
-    color: '#64748B',
-    marginTop: 12,
-  },
-  specValue: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1E293B',
-    marginTop: 4,
-  },
-  jurisdictionsSection: {
-    padding: 40,
-  },
-  jurisdictionsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 20,
-    maxWidth: 1000,
-    alignSelf: 'center',
-  },
-  jurisdictionsGridMobile: {
-    flexDirection: 'column',
-  },
-  jurisdictionCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: isWeb ? 300 : '100%',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  jurisdictionFlag: {
-    width: 48,
-    height: 48,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  jurisdictionFlagText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#fff',
-  },
-  jurisdictionInfo: {
-    marginLeft: 16,
-    flex: 1,
-  },
-  jurisdictionName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1E293B',
-  },
-  jurisdictionAuthority: {
-    fontSize: 13,
-    color: '#64748B',
-    marginTop: 2,
-  },
-  ctaSection: {
-    padding: 60,
-    alignItems: 'center',
-  },
-  ctaTitle: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#fff',
-    textAlign: 'center',
-    marginBottom: 12,
-  },
-  ctaSubtitle: {
-    fontSize: 16,
-    color: 'rgba(255,255,255,0.8)',
-    textAlign: 'center',
-    marginBottom: 32,
-  },
-  ctaButtons: {
-    flexDirection: 'row',
-    gap: 16,
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-  },
-  ctaButtonPrimary: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#fff',
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    borderRadius: 10,
-  },
-  ctaButtonPrimaryText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#3B82F6',
-  },
-  ctaButtonSecondary: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.3)',
-  },
-  ctaButtonSecondaryText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  footer: {
-    padding: 24,
-    alignItems: 'center',
-  },
-  footerText: {
-    fontSize: 14,
-    color: '#94A3B8',
-  },
+  container: { flex: 1, backgroundColor: '#fff' },
+  // Navigation
+  nav: { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#E2E8F0', paddingVertical: 16, paddingHorizontal: 24, position: isWeb ? 'sticky' as any : 'relative', top: 0, zIndex: 100 },
+  navContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', maxWidth: 1200, alignSelf: 'center', width: '100%' },
+  logo: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  logoIcon: { width: 36, height: 36, borderRadius: 8, backgroundColor: '#3B82F6', alignItems: 'center', justifyContent: 'center' },
+  logoText: { fontSize: 22, fontWeight: '700', color: '#1E293B' },
+  logoBadge: { backgroundColor: '#EFF6FF', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4 },
+  logoBadgeText: { fontSize: 11, fontWeight: '600', color: '#3B82F6' },
+  navLinks: { flexDirection: 'row', alignItems: 'center', gap: 32 },
+  navLink: { paddingVertical: 8 },
+  navLinkActive: { borderBottomWidth: 2, borderBottomColor: '#3B82F6' },
+  navLinkText: { fontSize: 15, color: '#64748B', fontWeight: '500' },
+  navLinkTextActive: { color: '#3B82F6' },
+  navButtonPrimary: { paddingHorizontal: 20, paddingVertical: 12, borderRadius: 8, backgroundColor: '#3B82F6' },
+  navButtonPrimaryText: { fontSize: 15, fontWeight: '600', color: '#fff' },
+  mobileMenuButton: { padding: 8 },
+  mobileMenuDropdown: { backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#E2E8F0', paddingVertical: 8, marginTop: 12 },
+  mobileMenuItem: { paddingVertical: 14, paddingHorizontal: 16 },
+  mobileMenuItemActive: { backgroundColor: '#EFF6FF' },
+  mobileMenuItemText: { fontSize: 16, color: '#374151', fontWeight: '500' },
+  mobileMenuItemTextActive: { color: '#3B82F6' },
+  mobileMenuCTA: { backgroundColor: '#3B82F6', marginHorizontal: 16, marginTop: 8, paddingVertical: 14, borderRadius: 8, alignItems: 'center' },
+  mobileMenuCTAText: { fontSize: 16, fontWeight: '600', color: '#fff' },
+  // Hero
+  hero: { paddingVertical: 60, paddingHorizontal: 24 },
+  heroMobile: { paddingVertical: 40 },
+  heroContent: { maxWidth: 800, alignSelf: 'center' },
+  heroContentMobile: { alignItems: 'center' },
+  heroBadge: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(59, 130, 246, 0.1)', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, alignSelf: 'flex-start', marginBottom: 24 },
+  heroBadgeText: { color: '#60A5FA', fontSize: 14, fontWeight: '600' },
+  heroTitle: { fontSize: 48, fontWeight: '800', color: '#fff', marginBottom: 16, lineHeight: 56 },
+  heroTitleMobile: { fontSize: 32, lineHeight: 40, textAlign: 'center' },
+  heroTitleHighlight: { color: '#60A5FA' },
+  heroSubtitle: { fontSize: 18, color: '#94A3B8', lineHeight: 28 },
+  heroSubtitleMobile: { fontSize: 16, textAlign: 'center', lineHeight: 26 },
+  // Tabs
+  tabsSection: { paddingVertical: 24, borderBottomWidth: 1, borderBottomColor: '#E2E8F0' },
+  tabsScroll: { flexGrow: 0 },
+  tabsContainer: { paddingHorizontal: 24, gap: 8, justifyContent: 'center', minWidth: '100%' },
+  tab: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 8, backgroundColor: '#F1F5F9' },
+  tabActive: { backgroundColor: '#3B82F6' },
+  tabText: { fontSize: 14, fontWeight: '600', color: '#64748B' },
+  tabTextActive: { color: '#fff' },
+  // Count
+  countSection: { paddingVertical: 16, alignItems: 'center' },
+  countBadge: { backgroundColor: '#F0FDF4', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
+  countText: { fontSize: 14, color: '#166534' },
+  countHighlight: { fontWeight: '700' },
+  // Features Grid
+  featuresSection: { paddingHorizontal: 24, paddingBottom: 48 },
+  featuresGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 16, justifyContent: 'center', maxWidth: 1200, alignSelf: 'center' },
+  featuresGridMobile: { flexDirection: 'column' },
+  featureCard: { backgroundColor: '#fff', borderRadius: 12, padding: 20, width: 280, borderWidth: 1, borderColor: '#E2E8F0' },
+  featureCardMobile: { width: '100%' },
+  featureHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 },
+  featureIconWrap: { width: 44, height: 44, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
+  statusText: { fontSize: 11, fontWeight: '600' },
+  featureName: { fontSize: 16, fontWeight: '700', color: '#1E293B', marginBottom: 6 },
+  featureDescription: { fontSize: 14, color: '#64748B', lineHeight: 20 },
+  // Summary
+  summarySection: { paddingVertical: 60, paddingHorizontal: 24 },
+  summaryTitle: { fontSize: 28, fontWeight: '700', color: '#1E293B', textAlign: 'center', marginBottom: 32 },
+  summaryGrid: { flexDirection: 'row', justifyContent: 'center', gap: 20, maxWidth: 800, alignSelf: 'center' },
+  summaryGridMobile: { flexDirection: 'column' },
+  summaryCard: { backgroundColor: '#fff', borderRadius: 16, padding: 24, alignItems: 'center', flex: 1, minWidth: 150 },
+  summaryCardMobile: { flexDirection: 'row', gap: 16, justifyContent: 'flex-start' },
+  summaryIconWrap: { width: 56, height: 56, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
+  summaryValue: { fontSize: 32, fontWeight: '700', color: '#1E293B' },
+  summaryLabel: { fontSize: 14, color: '#64748B', marginTop: 4 },
+  // CTA
+  ctaSection: { padding: 60, alignItems: 'center' },
+  ctaTitle: { fontSize: 36, fontWeight: '700', color: '#fff', textAlign: 'center', marginBottom: 12 },
+  ctaTitleMobile: { fontSize: 28 },
+  ctaSubtitle: { fontSize: 18, color: 'rgba(255,255,255,0.85)', marginBottom: 32, textAlign: 'center' },
+  ctaButtons: { flexDirection: 'row', gap: 16 },
+  ctaButtonsMobile: { flexDirection: 'column', width: '100%', alignItems: 'center' },
+  ctaButtonPrimary: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#fff', paddingHorizontal: 28, paddingVertical: 16, borderRadius: 8 },
+  ctaButtonPrimaryText: { color: '#3B82F6', fontSize: 17, fontWeight: '600' },
+  ctaButtonSecondary: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 28, paddingVertical: 16, borderRadius: 8, borderWidth: 2, borderColor: '#fff' },
+  ctaButtonSecondaryText: { color: '#fff', fontSize: 17, fontWeight: '600' },
+  // Footer
+  footer: { backgroundColor: '#0F172A', paddingVertical: 32, paddingHorizontal: 24 },
+  footerContent: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', maxWidth: 1200, alignSelf: 'center', width: '100%' },
+  footerContentMobile: { flexDirection: 'column', gap: 16 },
+  footerLogo: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  footerLogoText: { fontSize: 18, fontWeight: '700', color: '#fff' },
+  footerText: { color: '#64748B', fontSize: 14 },
+  // Modal
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 24 },
+  modalContent: { backgroundColor: '#fff', borderRadius: 16, width: '100%', maxWidth: 480, maxHeight: '90%' },
+  modalContentMobile: { maxWidth: '100%' },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: '#E2E8F0' },
+  modalTitle: { fontSize: 20, fontWeight: '700', color: '#1E293B' },
+  modalBody: { padding: 20 },
+  inputLabel: { fontSize: 14, fontWeight: '600', color: '#374151', marginBottom: 6, marginTop: 16 },
+  input: { backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 8, padding: 14, fontSize: 16, color: '#1E293B' },
+  textArea: { height: 100, textAlignVertical: 'top' },
+  modalFooter: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, padding: 20, borderTopWidth: 1, borderTopColor: '#E2E8F0' },
+  modalCancelBtn: { paddingHorizontal: 20, paddingVertical: 12, borderRadius: 8, borderWidth: 1, borderColor: '#E2E8F0' },
+  modalCancelText: { fontSize: 15, fontWeight: '600', color: '#64748B' },
+  modalSubmitBtn: { paddingHorizontal: 20, paddingVertical: 12, borderRadius: 8, backgroundColor: '#3B82F6' },
+  modalSubmitText: { fontSize: 15, fontWeight: '600', color: '#fff' },
 });
