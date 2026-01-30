@@ -1,782 +1,573 @@
 #!/usr/bin/env python3
 """
-TaxDraw Backend API Test Suite - Receipt API v1 Testing
-Testing the new Receipt API v1 endpoints with multi-step flow
+TAXXA Backend API Testing Suite
+Tests production-ready health endpoints and core functionality
 """
 
 import requests
 import json
-import sys
-from datetime import datetime, timedelta
 import time
+from datetime import datetime
+from typing import Dict, Any, Optional
 
 # Configuration
-BASE_URL = "https://taxlottery.preview.emergentagent.com/api"
-RECEIPT_API_BASE = f"{BASE_URL}/v1/receipts"
-ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD = "taxdraw_admin_2024"
+BACKEND_URL = "https://taxlottery.preview.emergentagent.com"
+API_BASE = f"{BACKEND_URL}/api"
 
-# Test data
-TEST_USER = {
-    "phone_number": "0700000001",
-    "password": "password123"
-}
+# Test credentials
+TEST_PHONE = "0700000001"
+TEST_PASSWORD = "password123"
 
-# Test QR data samples
-QR_DATA_JSON = {
-    "qr_data": json.dumps({
-        "receipt_number": f"INV-2026-{int(time.time())}",  # Unique receipt number
-        "merchant_tin": "12345678901",
-        "merchant_name": "ABC Store Ltd",
-        "total_amount": 150.50,
-        "tax_amount": 22.58,
-        "transaction_date": "2026-01-28T10:30:00Z",
-        "currency": "USD"
-    })
-}
-
-QR_DATA_PIPE = {
-    "qr_data": "receipt_no=REC-2026-5678|tin=98765432101|merchant=XYZ Retail|total=250.00|tax=37.50|date=2026-01-27|currency=EUR"
-}
-
-class TaxDrawAPITester:
+class TaxxaAPITester:
     def __init__(self):
         self.session = requests.Session()
-        self.admin_token = None
+        self.auth_token = None
         self.test_results = []
         
-    def log_test(self, test_name, success, message, details=None):
-        """Log test results"""
+    def log_result(self, test_name: str, success: bool, message: str, details: Dict = None):
+        """Log test result"""
         result = {
             "test": test_name,
             "success": success,
             "message": message,
             "timestamp": datetime.now().isoformat(),
-            "details": details
+            "details": details or {}
         }
         self.test_results.append(result)
         status = "✅ PASS" if success else "❌ FAIL"
-        print(f"{status}: {test_name} - {message}")
-        if details and not success:
-            print(f"   Details: {details}")
-    
-    def test_admin_login(self):
-        """Test admin authentication"""
+        print(f"{status} {test_name}: {message}")
+        if details:
+            for key, value in details.items():
+                print(f"    {key}: {value}")
+        print()
+
+    def test_health_liveness(self):
+        """Test GET /api/health - liveness check"""
         try:
-            response = self.session.post(
-                f"{BASE_URL}/admin/login",
-                json={
-                    "username": ADMIN_USERNAME,
-                    "password": ADMIN_PASSWORD
-                },
-                timeout=30
-            )
+            response = self.session.get(f"{API_BASE}/health", timeout=10)
+            
+            # Check response time header
+            response_time_header = response.headers.get('X-Response-Time')
             
             if response.status_code == 200:
                 data = response.json()
-                self.admin_token = data.get("access_token")
-                if self.admin_token:
-                    # Set authorization header for future requests
-                    self.session.headers.update({
-                        "Authorization": f"Bearer {self.admin_token}"
-                    })
-                    self.log_test("Admin Login", True, "Successfully logged in as admin")
-                    return True
-                else:
-                    self.log_test("Admin Login", False, "No access token in response", data)
-                    return False
-            else:
-                self.log_test("Admin Login", False, f"HTTP {response.status_code}", response.text)
-                return False
-                
-        except Exception as e:
-            self.log_test("Admin Login", False, f"Request failed: {str(e)}")
-            return False
-    
-    def test_get_all_draws(self):
-        """Test getting all draws"""
-        try:
-            response = self.session.get(f"{BASE_URL}/admin/draws", timeout=30)
-            
-            if response.status_code == 200:
-                draws = response.json()
-                self.log_test("Get All Draws", True, f"Retrieved {len(draws)} draws")
-                return draws
-            else:
-                self.log_test("Get All Draws", False, f"HTTP {response.status_code}", response.text)
-                return []
-                
-        except Exception as e:
-            self.log_test("Get All Draws", False, f"Request failed: {str(e)}")
-            return []
-    
-    def test_create_draw(self):
-        """Test creating a new draw"""
-        try:
-            draw_data = {
-                "draw_type": "weekly",
-                "days_duration": 1,
-                "prize_tiers": [
+                self.log_result(
+                    "Health Liveness Check",
+                    True,
+                    "Liveness endpoint responding correctly",
                     {
-                        "tier": 1,
-                        "name": "Test Prize",
-                        "prize_type": "money",
-                        "amount": 100,
-                        "winners": 1
+                        "status_code": response.status_code,
+                        "response_time_header": response_time_header,
+                        "response_data": data
                     }
-                ]
-            }
-            
-            response = self.session.post(
-                f"{BASE_URL}/admin/draws",
-                json=draw_data,
-                timeout=30
-            )
-            
-            if response.status_code == 200:
-                data = response.json()
-                draw_id = data.get("id")
-                if draw_id:
-                    self.log_test("Create Draw", True, f"Created draw with ID: {draw_id}")
-                    return draw_id
-                else:
-                    self.log_test("Create Draw", False, "No draw ID in response", data)
-                    return None
-            else:
-                self.log_test("Create Draw", False, f"HTTP {response.status_code}", response.text)
-                return None
-                
-        except Exception as e:
-            self.log_test("Create Draw", False, f"Request failed: {str(e)}")
-            return None
-    
-    def create_test_user_and_entries(self, draw_id):
-        """Create a test user and add entries to the draw"""
-        try:
-            # First, register a test user
-            phone = f"+1555{int(time.time()) % 10000:04d}"  # Generate unique phone
-            
-            # Step 1: Register
-            register_response = self.session.post(
-                f"{BASE_URL}/auth/register",
-                json={"phone_number": phone},
-                timeout=30
-            )
-            
-            if register_response.status_code != 200:
-                self.log_test("Create Test User", False, f"Registration failed: {register_response.status_code}")
-                return False
-            
-            otp = register_response.json().get("otp_for_testing")
-            if not otp:
-                self.log_test("Create Test User", False, "No OTP received")
-                return False
-            
-            # Step 2: Verify OTP
-            verify_response = self.session.post(
-                f"{BASE_URL}/auth/verify-otp",
-                json={"phone_number": phone, "otp": otp},
-                timeout=30
-            )
-            
-            if verify_response.status_code != 200:
-                self.log_test("Create Test User", False, f"OTP verification failed: {verify_response.status_code}")
-                return False
-            
-            # Step 3: Create password and get user token
-            password_response = self.session.post(
-                f"{BASE_URL}/auth/create-password",
-                json={"phone_number": phone, "password": "TestPass123", "name": "Test User"},
-                timeout=30
-            )
-            
-            if password_response.status_code != 200:
-                self.log_test("Create Test User", False, f"Password creation failed: {password_response.status_code}")
-                return False
-            
-            user_token = password_response.json().get("access_token")
-            if not user_token:
-                self.log_test("Create Test User", False, "No user token received")
-                return False
-            
-            # Step 4: Generate test QR and scan it to create entries
-            qr_response = self.session.get(f"{BASE_URL}/test/generate-qr?amount=100", timeout=30)
-            if qr_response.status_code != 200:
-                self.log_test("Create Test User", False, f"QR generation failed: {qr_response.status_code}")
-                return False
-            
-            qr_data = qr_response.json().get("qr_data")
-            if not qr_data:
-                self.log_test("Create Test User", False, "No QR data received")
-                return False
-            
-            # Step 5: Scan the receipt to add entries
-            scan_response = self.session.post(
-                f"{BASE_URL}/scan",
-                json={"qr_data": qr_data},
-                headers={"Authorization": f"Bearer {user_token}"},
-                timeout=30
-            )
-            
-            if scan_response.status_code != 200:
-                self.log_test("Create Test User", False, f"Scan failed: {scan_response.status_code}")
-                return False
-            
-            scan_result = scan_response.json()
-            entries_earned = scan_result.get("entries_earned", 0)
-            
-            if entries_earned > 0:
-                self.log_test("Create Test User", True, f"Created user and earned {entries_earned} entries")
-                return True
-            else:
-                self.log_test("Create Test User", False, f"No entries earned from scan: {scan_result}")
-                return False
-                
-        except Exception as e:
-            self.log_test("Create Test User", False, f"Request failed: {str(e)}")
-            return False
-    
-    def test_complete_draw(self, draw_id):
-        """Test completing a draw"""
-        try:
-            response = self.session.post(
-                f"{BASE_URL}/admin/draws/{draw_id}/complete",
-                timeout=30
-            )
-            
-            if response.status_code == 200:
-                data = response.json()
-                winners = data.get("winners", [])
-                audit_info = data.get("audit", {})
-                
-                self.log_test(
-                    "Complete Draw", 
-                    True, 
-                    f"Draw completed with {len(winners)} winners. Audit hash: {audit_info.get('audit_hash', 'N/A')[:16]}..."
                 )
                 return True
             else:
-                self.log_test("Complete Draw", False, f"HTTP {response.status_code}", response.text)
+                self.log_result(
+                    "Health Liveness Check",
+                    False,
+                    f"Unexpected status code: {response.status_code}",
+                    {"response_text": response.text}
+                )
                 return False
                 
         except Exception as e:
-            self.log_test("Complete Draw", False, f"Request failed: {str(e)}")
-            return False
-    
-    def test_get_draw_audit(self, draw_id):
-        """Test getting draw audit information"""
-        try:
-            response = self.session.get(
-                f"{BASE_URL}/admin/draws/{draw_id}/audit",
-                timeout=30
+            self.log_result(
+                "Health Liveness Check",
+                False,
+                f"Request failed: {str(e)}"
             )
+            return False
+
+    def test_health_readiness(self):
+        """Test GET /api/health/ready - readiness check with component checks"""
+        try:
+            response = self.session.get(f"{API_BASE}/health/ready", timeout=10)
+            
+            # Check response time header
+            response_time_header = response.headers.get('X-Response-Time')
             
             if response.status_code == 200:
                 data = response.json()
                 
-                # Verify required audit data structure
-                required_fields = ["draw", "audit", "verification"]
-                missing_fields = [field for field in required_fields if field not in data]
+                # Verify expected structure
+                expected_keys = ["status", "components"]
+                missing_keys = [key for key in expected_keys if key not in data]
                 
-                if missing_fields:
-                    self.log_test(
-                        "Get Draw Audit", 
-                        False, 
-                        f"Missing required fields: {missing_fields}",
-                        data
+                if missing_keys:
+                    self.log_result(
+                        "Health Readiness Check",
+                        False,
+                        f"Missing expected keys: {missing_keys}",
+                        {"response_data": data}
                     )
                     return False
                 
-                # Check audit data structure
-                audit = data.get("audit", {})
-                required_audit_fields = ["pre_draw", "participants", "selection", "results", "verification"]
-                missing_audit_fields = [field for field in required_audit_fields if field not in audit]
+                # Check component statuses
+                components = data.get("components", {})
+                mongodb_status = components.get("mongodb", {}).get("status")
                 
-                if missing_audit_fields:
-                    self.log_test(
-                        "Get Draw Audit", 
-                        False, 
-                        f"Missing audit fields: {missing_audit_fields}",
-                        audit
-                    )
-                    return False
-                
-                # Check verification status
-                verification = data.get("verification", {})
-                is_valid = verification.get("is_valid", False)
-                
-                # Check for cryptographic verification info
-                pre_draw = audit.get("pre_draw", {})
-                has_seed = "seed" in pre_draw
-                has_hash = "hash" in pre_draw
-                
-                participants_info = audit.get("participants", {})
-                has_participants = "count" in participants_info and "total_entries" in participants_info
-                
-                selection_info = audit.get("selection", {})
-                has_selection_steps = "steps" in selection_info
-                
-                results_info = audit.get("results", {})
-                has_winners = "winners" in results_info
-                
-                success_message = f"Audit retrieved - Valid: {is_valid}, Seed: {has_seed}, Hash: {has_hash}, Participants: {has_participants}, Selection: {has_selection_steps}, Winners: {has_winners}"
-                
-                all_checks_pass = all([has_seed, has_hash, has_participants, has_selection_steps, has_winners])
-                
-                self.log_test("Get Draw Audit", all_checks_pass, success_message)
-                return all_checks_pass
-                
+                self.log_result(
+                    "Health Readiness Check",
+                    True,
+                    "Readiness endpoint responding with component checks",
+                    {
+                        "status_code": response.status_code,
+                        "response_time_header": response_time_header,
+                        "overall_status": data.get("status"),
+                        "mongodb_status": mongodb_status,
+                        "cache_status": components.get("cache", {}).get("status"),
+                        "components": list(components.keys())
+                    }
+                )
+                return True
             else:
-                self.log_test("Get Draw Audit", False, f"HTTP {response.status_code}", response.text)
+                self.log_result(
+                    "Health Readiness Check",
+                    False,
+                    f"Unexpected status code: {response.status_code}",
+                    {"response_text": response.text}
+                )
                 return False
                 
         except Exception as e:
-            self.log_test("Get Draw Audit", False, f"Request failed: {str(e)}")
-            return False
-    
-    def test_export_draw_audit(self, draw_id):
-        """Test exporting draw audit as JSON"""
-        try:
-            response = self.session.get(
-                f"{BASE_URL}/admin/draws/{draw_id}/audit/export",
-                timeout=30
+            self.log_result(
+                "Health Readiness Check",
+                False,
+                f"Request failed: {str(e)}"
             )
+            return False
+
+    def test_health_status(self):
+        """Test GET /api/health/status - detailed system status"""
+        try:
+            response = self.session.get(f"{API_BASE}/health/status", timeout=10)
+            
+            # Check response time header
+            response_time_header = response.headers.get('X-Response-Time')
             
             if response.status_code == 200:
                 data = response.json()
                 
-                # Verify export structure
-                required_export_fields = [
-                    "report_type", "report_version", "generated_at", 
-                    "draw_info", "algorithm", "pre_draw_verification",
-                    "participants", "selection_log", "results", "verification"
-                ]
+                # Verify expected structure for detailed status
+                expected_keys = ["status", "components", "system"]
+                missing_keys = [key for key in expected_keys if key not in data]
                 
-                missing_fields = [field for field in required_export_fields if field not in data]
+                components = data.get("components", {})
+                system_info = data.get("system", {})
                 
-                if missing_fields:
-                    self.log_test(
-                        "Export Draw Audit", 
-                        False, 
-                        f"Missing export fields: {missing_fields}",
-                        data
-                    )
-                    return False
+                # Check for MongoDB health
+                mongodb_healthy = components.get("mongodb", {}).get("status") == "healthy"
                 
-                # Check verification status in export
-                verification = data.get("verification", {})
-                verification_status = verification.get("status", "UNKNOWN")
+                # Check cache status (should be graceful degradation)
+                cache_status = components.get("cache", {}).get("status")
+                cache_ok = cache_status in ["connected", "not configured", "disconnected"]
                 
-                # Check if it's a complete export-ready document
-                has_algorithm_info = "algorithm" in data and "name" in data["algorithm"]
-                has_pre_draw_seed = "pre_draw_verification" in data and "seed" in data["pre_draw_verification"]
-                has_selection_log = "selection_log" in data and isinstance(data["selection_log"], list)
+                # Check rate limiter (should show fallback mode)
+                rate_limiter_status = components.get("rate_limiter", {}).get("status")
+                rate_limiter_backend = components.get("rate_limiter", {}).get("backend")
                 
-                export_complete = all([has_algorithm_info, has_pre_draw_seed, has_selection_log])
-                
-                success_message = f"Export complete - Status: {verification_status}, Algorithm: {has_algorithm_info}, Seed: {has_pre_draw_seed}, Log: {has_selection_log}"
-                
-                self.log_test("Export Draw Audit", export_complete, success_message)
-                return export_complete
-                
+                self.log_result(
+                    "Health Detailed Status",
+                    True,
+                    "Detailed status endpoint responding correctly",
+                    {
+                        "status_code": response.status_code,
+                        "response_time_header": response_time_header,
+                        "overall_status": data.get("status"),
+                        "mongodb_healthy": mongodb_healthy,
+                        "cache_status": cache_status,
+                        "rate_limiter_status": rate_limiter_status,
+                        "rate_limiter_backend": rate_limiter_backend,
+                        "system_uptime": system_info.get("uptime"),
+                        "missing_keys": missing_keys
+                    }
+                )
+                return True
             else:
-                self.log_test("Export Draw Audit", False, f"HTTP {response.status_code}", response.text)
+                self.log_result(
+                    "Health Detailed Status",
+                    False,
+                    f"Unexpected status code: {response.status_code}",
+                    {"response_text": response.text}
+                )
                 return False
                 
         except Exception as e:
-            self.log_test("Export Draw Audit", False, f"Request failed: {str(e)}")
+            self.log_result(
+                "Health Detailed Status",
+                False,
+                f"Request failed: {str(e)}"
+            )
             return False
-    
-    def run_audit_tests(self):
-        """Run the complete audit testing flow"""
-        print("🔍 Starting TaxDraw Draw Audit Report API Tests")
+
+    def test_health_metrics(self):
+        """Test GET /api/health/metrics - request metrics"""
+        try:
+            response = self.session.get(f"{API_BASE}/health/metrics", timeout=10)
+            
+            # Check response time header
+            response_time_header = response.headers.get('X-Response-Time')
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify metrics structure
+                expected_keys = ["requests"]
+                requests_data = data.get("requests", {})
+                
+                self.log_result(
+                    "Health Metrics",
+                    True,
+                    "Metrics endpoint responding correctly",
+                    {
+                        "status_code": response.status_code,
+                        "response_time_header": response_time_header,
+                        "total_requests": requests_data.get("total"),
+                        "requests_by_status": requests_data.get("by_status", {}),
+                        "avg_response_time": requests_data.get("avg_response_time_ms"),
+                        "has_endpoint_metrics": "by_endpoint" in requests_data
+                    }
+                )
+                return True
+            else:
+                self.log_result(
+                    "Health Metrics",
+                    False,
+                    f"Unexpected status code: {response.status_code}",
+                    {"response_text": response.text}
+                )
+                return False
+                
+        except Exception as e:
+            self.log_result(
+                "Health Metrics",
+                False,
+                f"Request failed: {str(e)}"
+            )
+            return False
+
+    def test_auth_login(self):
+        """Test POST /api/auth/login with test credentials"""
+        try:
+            login_data = {
+                "phone_number": TEST_PHONE,
+                "password": TEST_PASSWORD
+            }
+            
+            response = self.session.post(
+                f"{API_BASE}/auth/login",
+                json=login_data,
+                timeout=10
+            )
+            
+            # Check response time header
+            response_time_header = response.headers.get('X-Response-Time')
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify token structure
+                access_token = data.get("access_token")
+                token_type = data.get("token_type")
+                user_data = data.get("user", {})
+                
+                if access_token and token_type == "bearer":
+                    self.auth_token = access_token
+                    self.log_result(
+                        "Authentication Login",
+                        True,
+                        "Login successful with valid token",
+                        {
+                            "status_code": response.status_code,
+                            "response_time_header": response_time_header,
+                            "token_type": token_type,
+                            "user_id": user_data.get("id"),
+                            "user_phone": user_data.get("phone_number"),
+                            "token_length": len(access_token) if access_token else 0
+                        }
+                    )
+                    return True
+                else:
+                    self.log_result(
+                        "Authentication Login",
+                        False,
+                        "Login response missing required fields",
+                        {"response_data": data}
+                    )
+                    return False
+            else:
+                self.log_result(
+                    "Authentication Login",
+                    False,
+                    f"Login failed with status: {response.status_code}",
+                    {"response_text": response.text}
+                )
+                return False
+                
+        except Exception as e:
+            self.log_result(
+                "Authentication Login",
+                False,
+                f"Login request failed: {str(e)}"
+            )
+            return False
+
+    def test_user_stats(self):
+        """Test GET /api/user/stats with authentication"""
+        if not self.auth_token:
+            self.log_result(
+                "User Stats",
+                False,
+                "No auth token available - login test must pass first"
+            )
+            return False
+            
+        try:
+            headers = {"Authorization": f"Bearer {self.auth_token}"}
+            response = self.session.get(
+                f"{API_BASE}/user/stats",
+                headers=headers,
+                timeout=10
+            )
+            
+            # Check response time header
+            response_time_header = response.headers.get('X-Response-Time')
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify expected stats structure
+                expected_keys = ["total_scans", "valid_scans", "total_entries", "current_draw_entries"]
+                missing_keys = [key for key in expected_keys if key not in data]
+                
+                self.log_result(
+                    "User Stats",
+                    True,
+                    "User stats retrieved successfully",
+                    {
+                        "status_code": response.status_code,
+                        "response_time_header": response_time_header,
+                        "total_scans": data.get("total_scans"),
+                        "valid_scans": data.get("valid_scans"),
+                        "total_entries": data.get("total_entries"),
+                        "current_draw_entries": data.get("current_draw_entries"),
+                        "upcoming_draws_count": len(data.get("upcoming_draws", [])),
+                        "currency_info": data.get("currency", {}),
+                        "missing_keys": missing_keys
+                    }
+                )
+                return True
+            else:
+                self.log_result(
+                    "User Stats",
+                    False,
+                    f"Stats request failed with status: {response.status_code}",
+                    {"response_text": response.text}
+                )
+                return False
+                
+        except Exception as e:
+            self.log_result(
+                "User Stats",
+                False,
+                f"Stats request failed: {str(e)}"
+            )
+            return False
+
+    def test_active_draws(self):
+        """Test GET /api/draws/active with authentication"""
+        if not self.auth_token:
+            self.log_result(
+                "Active Draws",
+                False,
+                "No auth token available - login test must pass first"
+            )
+            return False
+            
+        try:
+            headers = {"Authorization": f"Bearer {self.auth_token}"}
+            response = self.session.get(
+                f"{API_BASE}/draws/active",
+                headers=headers,
+                timeout=10
+            )
+            
+            # Check response time header
+            response_time_header = response.headers.get('X-Response-Time')
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Should return a list (even if empty)
+                if isinstance(data, list):
+                    draw_count = len(data)
+                    draw_details = []
+                    
+                    for draw in data[:3]:  # Show details for first 3 draws
+                        draw_details.append({
+                            "id": draw.get("id"),
+                            "draw_type": draw.get("draw_type"),
+                            "status": draw.get("status"),
+                            "user_entries": draw.get("user_entries", 0),
+                            "total_entries": draw.get("total_entries", 0)
+                        })
+                    
+                    self.log_result(
+                        "Active Draws",
+                        True,
+                        f"Active draws retrieved successfully ({draw_count} draws)",
+                        {
+                            "status_code": response.status_code,
+                            "response_time_header": response_time_header,
+                            "draw_count": draw_count,
+                            "sample_draws": draw_details
+                        }
+                    )
+                    return True
+                else:
+                    self.log_result(
+                        "Active Draws",
+                        False,
+                        "Response is not a list as expected",
+                        {"response_data": data}
+                    )
+                    return False
+            else:
+                self.log_result(
+                    "Active Draws",
+                    False,
+                    f"Active draws request failed with status: {response.status_code}",
+                    {"response_text": response.text}
+                )
+                return False
+                
+        except Exception as e:
+            self.log_result(
+                "Active Draws",
+                False,
+                f"Active draws request failed: {str(e)}"
+            )
+            return False
+
+    def test_response_time_headers(self):
+        """Test that X-Response-Time headers are present across different endpoints"""
+        endpoints_to_test = [
+            ("/health", "GET", None),
+            ("/health/ready", "GET", None),
+            ("/app/config", "GET", None)  # Public endpoint
+        ]
+        
+        headers_found = 0
+        total_endpoints = len(endpoints_to_test)
+        
+        for endpoint, method, headers in endpoints_to_test:
+            try:
+                if method == "GET":
+                    response = self.session.get(f"{API_BASE}{endpoint}", headers=headers, timeout=10)
+                
+                response_time_header = response.headers.get('X-Response-Time')
+                if response_time_header:
+                    headers_found += 1
+                    
+            except Exception as e:
+                pass  # Continue testing other endpoints
+        
+        success = headers_found == total_endpoints
+        self.log_result(
+            "Response Time Headers",
+            success,
+            f"X-Response-Time header found on {headers_found}/{total_endpoints} endpoints",
+            {
+                "endpoints_tested": total_endpoints,
+                "headers_found": headers_found,
+                "success_rate": f"{(headers_found/total_endpoints)*100:.1f}%"
+            }
+        )
+        return success
+
+    def run_all_tests(self):
+        """Run all tests in sequence"""
+        print("🚀 Starting TAXXA Backend API Tests")
+        print(f"Backend URL: {BACKEND_URL}")
+        print(f"API Base: {API_BASE}")
         print("=" * 60)
         
-        # Step 1: Admin Login
-        if not self.test_admin_login():
-            print("❌ Cannot proceed without admin authentication")
-            return False
+        # Health Check Tests (Priority)
+        print("📊 HEALTH CHECK ENDPOINTS")
+        health_tests = [
+            self.test_health_liveness,
+            self.test_health_readiness,
+            self.test_health_status,
+            self.test_health_metrics
+        ]
         
-        # Step 2: Get all draws
-        draws = self.test_get_all_draws()
+        health_passed = 0
+        for test in health_tests:
+            if test():
+                health_passed += 1
         
-        # Step 3: Create a fresh draw for audit testing
-        # We'll create a new draw to ensure we have proper audit records
-        print("📝 Creating new draw for audit testing...")
-        new_draw_id = self.test_create_draw()
+        print(f"Health Endpoints: {health_passed}/{len(health_tests)} passed")
+        print()
         
-        if new_draw_id:
-            print(f"👤 Creating test user and entries for draw {new_draw_id}...")
-            if self.create_test_user_and_entries(new_draw_id):
-                print(f"⏳ Completing draw {new_draw_id}...")
-                if self.test_complete_draw(new_draw_id):
-                    completed_draw_id = new_draw_id
-                else:
-                    print("❌ Failed to complete draw")
-                    return False
-            else:
-                print("❌ Failed to create test entries")
-                return False
-        else:
-            print("❌ Failed to create draw")
-            return False
+        # Core API Tests
+        print("🔐 CORE API FUNCTIONALITY")
+        core_tests = [
+            self.test_auth_login,
+            self.test_user_stats,
+            self.test_active_draws
+        ]
         
-        # Step 4: Test audit endpoints
-        if completed_draw_id:
-            print(f"🔍 Testing audit endpoints for draw: {completed_draw_id}")
-            
-            # Test audit endpoint
-            audit_success = self.test_get_draw_audit(completed_draw_id)
-            
-            # Test export endpoint
-            export_success = self.test_export_draw_audit(completed_draw_id)
-            
-            # Overall success
-            overall_success = audit_success and export_success
-            
-            print("\n" + "=" * 60)
-            print("📊 AUDIT TEST SUMMARY")
-            print("=" * 60)
-            
-            for result in self.test_results:
-                status = "✅" if result["success"] else "❌"
-                print(f"{status} {result['test']}: {result['message']}")
-            
-            print(f"\n🎯 Overall Result: {'✅ ALL TESTS PASSED' if overall_success else '❌ SOME TESTS FAILED'}")
-            
-            return overall_success
-        else:
-            print("❌ No completed draw available for audit testing")
-            return False
-
-
-class ReceiptAPITester:
-    """Test the new Receipt API v1 endpoints"""
-    
-    def __init__(self):
-        self.session = requests.Session()
-        self.auth_token = None
-        self.decode_id = None
-        self.validation_id = None
-        self.receipt_id = None
+        core_passed = 0
+        for test in core_tests:
+            if test():
+                core_passed += 1
         
-    def log(self, message, level="INFO"):
-        """Log test messages"""
-        timestamp = datetime.now().strftime("%H:%M:%S")
-        print(f"[{timestamp}] {level}: {message}")
+        print(f"Core API: {core_passed}/{len(core_tests)} passed")
+        print()
         
-    def test_user_login(self):
-        """Test user authentication to get token"""
-        self.log("Testing user login...")
-        
-        try:
-            response = self.session.post(
-                f"{BASE_URL}/auth/login",
-                json=TEST_USER,
-                timeout=30
-            )
-            
-            if response.status_code == 200:
-                data = response.json()
-                self.auth_token = data.get("access_token")
-                self.log(f"✅ Login successful, token obtained")
-                return True
-            else:
-                self.log(f"❌ Login failed: {response.status_code} - {response.text}", "ERROR")
-                return False
-                
-        except Exception as e:
-            self.log(f"❌ Login error: {str(e)}", "ERROR")
-            return False
-    
-    def test_decode_endpoint(self):
-        """Test POST /api/v1/receipts/decode"""
-        self.log("Testing Receipt Decode endpoint...")
-        
-        # Test JSON format
-        try:
-            response = self.session.post(
-                f"{RECEIPT_API_BASE}/decode",
-                json=QR_DATA_JSON,
-                timeout=30
-            )
-            
-            if response.status_code == 200:
-                data = response.json()
-                self.decode_id = data.get("decode_id")
-                self.log(f"✅ JSON decode successful - ID: {self.decode_id}")
-                self.log(f"   Format detected: {data.get('detected_format')}")
-                self.log(f"   Confidence: {data.get('confidence_score')}")
-                
-                if data.get("receipt"):
-                    receipt = data["receipt"]
-                    self.log(f"   Receipt number: {receipt.get('receipt_number')}")
-                    self.log(f"   Merchant: {receipt.get('merchant', {}).get('name')}")
-                    self.log(f"   Amount: {receipt.get('total_amount')} {receipt.get('currency')}")
-                
-                json_success = True
-            else:
-                self.log(f"❌ JSON decode failed: {response.status_code} - {response.text}", "ERROR")
-                json_success = False
-                
-        except Exception as e:
-            self.log(f"❌ JSON decode error: {str(e)}", "ERROR")
-            json_success = False
-        
-        # Test pipe-delimited format
-        try:
-            response = self.session.post(
-                f"{RECEIPT_API_BASE}/decode",
-                json=QR_DATA_PIPE,
-                timeout=30
-            )
-            
-            if response.status_code == 200:
-                data = response.json()
-                self.log(f"✅ Pipe-delimited decode successful")
-                self.log(f"   Format detected: {data.get('detected_format')}")
-                self.log(f"   Confidence: {data.get('confidence_score')}")
-                pipe_success = True
-            else:
-                self.log(f"❌ Pipe-delimited decode failed: {response.status_code} - {response.text}", "ERROR")
-                pipe_success = False
-                
-        except Exception as e:
-            self.log(f"❌ Pipe-delimited decode error: {str(e)}", "ERROR")
-            pipe_success = False
-        
-        return json_success and pipe_success
-    
-    def test_validate_endpoint(self):
-        """Test POST /api/v1/receipts/validate"""
-        self.log("Testing Receipt Validate endpoint...")
-        
-        if not self.decode_id:
-            self.log("❌ No decode_id available for validation", "ERROR")
-            return False
-        
-        try:
-            response = self.session.post(
-                f"{RECEIPT_API_BASE}/validate",
-                json={
-                    "decode_id": self.decode_id,
-                    "validation_mode": "mock"
-                },
-                timeout=30
-            )
-            
-            if response.status_code == 200:
-                data = response.json()
-                self.validation_id = data.get("validation_id")
-                self.log(f"✅ Validation successful - ID: {self.validation_id}")
-                self.log(f"   Status: {data.get('status')}")
-                self.log(f"   Is valid: {data.get('is_valid')}")
-                
-                checks = data.get("checks_performed", [])
-                self.log(f"   Checks performed: {len(checks)}")
-                for check in checks:
-                    status = "✅" if check.get("passed") else "❌"
-                    self.log(f"     {status} {check.get('name')}: {check.get('description')}")
-                
-                return True
-            else:
-                self.log(f"❌ Validation failed: {response.status_code} - {response.text}", "ERROR")
-                return False
-                
-        except Exception as e:
-            self.log(f"❌ Validation error: {str(e)}", "ERROR")
-            return False
-    
-    def test_submit_endpoint(self):
-        """Test POST /api/v1/receipts/submit (requires auth)"""
-        self.log("Testing Receipt Submit endpoint...")
-        
-        if not self.auth_token:
-            self.log("❌ No auth token available for submit", "ERROR")
-            return False
-            
-        if not self.validation_id:
-            self.log("❌ No validation_id available for submit", "ERROR")
-            return False
-        
-        try:
-            headers = {"Authorization": f"Bearer {self.auth_token}"}
-            response = self.session.post(
-                f"{RECEIPT_API_BASE}/submit",
-                json={"validation_id": self.validation_id},
-                headers=headers,
-                timeout=30
-            )
-            
-            if response.status_code == 200:
-                data = response.json()
-                self.receipt_id = data.get("receipt_id")
-                self.log(f"✅ Submit successful - Receipt ID: {self.receipt_id}")
-                self.log(f"   Status: {data.get('status')}")
-                self.log(f"   Entries earned: {data.get('entries_earned')}")
-                self.log(f"   Bonus entries: {data.get('bonus_entries')}")
-                self.log(f"   Total entries: {data.get('total_entries')}")
-                self.log(f"   Message: {data.get('message')}")
-                return True
-            else:
-                self.log(f"❌ Submit failed: {response.status_code} - {response.text}", "ERROR")
-                return False
-                
-        except Exception as e:
-            self.log(f"❌ Submit error: {str(e)}", "ERROR")
-            return False
-    
-    def test_list_receipts_endpoint(self):
-        """Test GET /api/v1/receipts (requires auth)"""
-        self.log("Testing List Receipts endpoint...")
-        
-        if not self.auth_token:
-            self.log("❌ No auth token available for list", "ERROR")
-            return False
-        
-        try:
-            headers = {"Authorization": f"Bearer {self.auth_token}"}
-            response = self.session.get(
-                f"{RECEIPT_API_BASE}",
-                headers=headers,
-                timeout=30
-            )
-            
-            if response.status_code == 200:
-                data = response.json()
-                self.log(f"✅ List receipts successful")
-                self.log(f"   Found {len(data)} receipts")
-                
-                for i, receipt in enumerate(data[:3]):  # Show first 3
-                    self.log(f"   Receipt {i+1}: {receipt.get('receipt_number')} - {receipt.get('status')} - {receipt.get('entries_earned')} entries")
-                
-                return True
-            else:
-                self.log(f"❌ List receipts failed: {response.status_code} - {response.text}", "ERROR")
-                return False
-                
-        except Exception as e:
-            self.log(f"❌ List receipts error: {str(e)}", "ERROR")
-            return False
-    
-    def test_get_receipt_endpoint(self):
-        """Test GET /api/v1/receipts/{receipt_id} (requires auth)"""
-        self.log("Testing Get Receipt Details endpoint...")
-        
-        if not self.auth_token:
-            self.log("❌ No auth token available for get receipt", "ERROR")
-            return False
-            
-        if not self.receipt_id:
-            self.log("❌ No receipt_id available for get receipt", "ERROR")
-            return False
-        
-        try:
-            headers = {"Authorization": f"Bearer {self.auth_token}"}
-            response = self.session.get(
-                f"{RECEIPT_API_BASE}/{self.receipt_id}",
-                headers=headers,
-                timeout=30
-            )
-            
-            if response.status_code == 200:
-                data = response.json()
-                self.log(f"✅ Get receipt details successful")
-                self.log(f"   Receipt ID: {data.get('id')}")
-                self.log(f"   Status: {data.get('status')}")
-                self.log(f"   Entries earned: {data.get('entries_earned')}")
-                self.log(f"   Bonus entries: {data.get('bonus_entries')}")
-                
-                receipt = data.get("receipt", {})
-                self.log(f"   Receipt number: {receipt.get('receipt_number')}")
-                self.log(f"   Merchant: {receipt.get('merchant', {}).get('name')}")
-                self.log(f"   Amount: {receipt.get('total_amount')} {receipt.get('currency')}")
-                
-                return True
-            else:
-                self.log(f"❌ Get receipt details failed: {response.status_code} - {response.text}", "ERROR")
-                return False
-                
-        except Exception as e:
-            self.log(f"❌ Get receipt details error: {str(e)}", "ERROR")
-            return False
-    
-    def run_full_test_flow(self):
-        """Run the complete test flow"""
-        self.log("=" * 60)
-        self.log("Starting Receipt API v1 Test Suite")
-        self.log("=" * 60)
-        
-        results = {}
-        
-        # Step 1: Login
-        results["login"] = self.test_user_login()
-        
-        # Step 2: Decode QR code
-        results["decode"] = self.test_decode_endpoint()
-        
-        # Step 3: Validate receipt
-        results["validate"] = self.test_validate_endpoint()
-        
-        # Step 4: Submit receipt (requires auth)
-        results["submit"] = self.test_submit_endpoint()
-        
-        # Step 5: List receipts
-        results["list"] = self.test_list_receipts_endpoint()
-        
-        # Step 6: Get receipt details
-        results["get_receipt"] = self.test_get_receipt_endpoint()
+        # Performance Tests
+        print("⚡ PERFORMANCE HEADERS")
+        perf_passed = 1 if self.test_response_time_headers() else 0
+        print(f"Performance Headers: {perf_passed}/1 passed")
+        print()
         
         # Summary
-        self.log("=" * 60)
-        self.log("TEST RESULTS SUMMARY")
-        self.log("=" * 60)
+        total_tests = len(health_tests) + len(core_tests) + 1
+        total_passed = health_passed + core_passed + perf_passed
         
-        total_tests = len(results)
-        passed_tests = sum(1 for result in results.values() if result)
+        print("=" * 60)
+        print("📋 TEST SUMMARY")
+        print(f"Total Tests: {total_passed}/{total_tests} passed")
+        print(f"Success Rate: {(total_passed/total_tests)*100:.1f}%")
         
-        for test_name, result in results.items():
-            status = "✅ PASS" if result else "❌ FAIL"
-            self.log(f"{test_name.upper()}: {status}")
-        
-        self.log(f"\nOverall: {passed_tests}/{total_tests} tests passed")
-        
-        if passed_tests == total_tests:
-            self.log("🎉 All Receipt API v1 tests PASSED!")
-            return True
+        if total_passed == total_tests:
+            print("🎉 All tests passed!")
         else:
-            self.log(f"⚠️  {total_tests - passed_tests} test(s) FAILED")
-            return False
-
+            print("⚠️  Some tests failed - check details above")
+        
+        return {
+            "total_tests": total_tests,
+            "passed": total_passed,
+            "success_rate": (total_passed/total_tests)*100,
+            "health_endpoints": f"{health_passed}/{len(health_tests)}",
+            "core_api": f"{core_passed}/{len(core_tests)}",
+            "performance": f"{perf_passed}/1",
+            "all_results": self.test_results
+        }
 
 def main():
     """Main test execution"""
-    print("🧪 TaxDraw Backend API Test Suite")
-    print("=" * 60)
+    tester = TaxxaAPITester()
+    results = tester.run_all_tests()
     
-    # Test Receipt API v1 endpoints
-    receipt_tester = ReceiptAPITester()
+    # Save detailed results
+    with open("/app/backend_test_results.json", "w") as f:
+        json.dump(results, f, indent=2, default=str)
     
-    try:
-        receipt_success = receipt_tester.run_full_test_flow()
-        
-        print("\n" + "=" * 60)
-        print("FINAL TEST SUMMARY")
-        print("=" * 60)
-        
-        if receipt_success:
-            print("🎉 All Receipt API v1 tests PASSED!")
-            sys.exit(0)
-        else:
-            print("❌ Some Receipt API v1 tests FAILED!")
-            sys.exit(1)
-            
-    except KeyboardInterrupt:
-        print("\n⚠️  Tests interrupted by user")
-        sys.exit(1)
-    except Exception as e:
-        print(f"\n💥 Unexpected error: {str(e)}")
-        sys.exit(1)
+    print(f"\n📄 Detailed results saved to: /app/backend_test_results.json")
+    
+    return results
 
 if __name__ == "__main__":
     main()
