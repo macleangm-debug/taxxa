@@ -1967,6 +1967,236 @@ async def tax_authority_login(data: TaxAuthorityLogin):
     }
 
 
+# ============== STAFF MANAGEMENT ENDPOINTS ==============
+
+@api_router.post("/authority/staff")
+async def create_staff_member(
+    data: StaffMemberCreate,
+    admin: dict = Depends(get_current_authority_admin)
+):
+    """Create a staff member for a tax authority - Authority Admin only"""
+    authority_code = admin.get("authority_code")
+    
+    if not authority_code:
+        raise HTTPException(status_code=403, detail="Authority admin access required")
+    
+    # Validate role
+    valid_roles = [AdminRole.MANAGER, AdminRole.AUDITOR, AdminRole.SUPPORT]
+    if data.role not in valid_roles:
+        raise HTTPException(status_code=400, detail=f"Invalid role. Must be one of: {', '.join(valid_roles)}")
+    
+    # Check if email already exists
+    existing = await db.authority_staff.find_one({"email": data.email})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    staff_member = {
+        "email": data.email,
+        "password_hash": hash_password(data.password),
+        "full_name": data.full_name,
+        "role": data.role,
+        "authority_code": authority_code,
+        "phone": data.phone,
+        "department": data.department,
+        "is_active": True,
+        "created_at": datetime.utcnow(),
+        "created_by": admin.get("email"),
+        "last_login": None,
+    }
+    
+    result = await db.authority_staff.insert_one(staff_member)
+    
+    # Log the action
+    await db.audit_logs.insert_one({
+        "action": "staff_created",
+        "authority_code": authority_code,
+        "performed_by": admin.get("email"),
+        "timestamp": datetime.utcnow(),
+        "details": {"staff_email": data.email, "role": data.role}
+    })
+    
+    return {
+        "message": f"Staff member {data.full_name} created successfully",
+        "id": str(result.inserted_id),
+        "role": data.role
+    }
+
+
+@api_router.get("/authority/staff")
+async def list_staff_members(admin: dict = Depends(get_current_authority_admin)):
+    """List all staff members for a tax authority"""
+    authority_code = admin.get("authority_code")
+    
+    if not authority_code:
+        # Super admin can see all
+        staff = await db.authority_staff.find({}).to_list(500)
+    else:
+        staff = await db.authority_staff.find({"authority_code": authority_code}).to_list(100)
+    
+    return {
+        "staff": [
+            {
+                "id": str(s["_id"]),
+                "email": s["email"],
+                "full_name": s["full_name"],
+                "role": s["role"],
+                "authority_code": s["authority_code"],
+                "phone": s.get("phone"),
+                "department": s.get("department"),
+                "is_active": s["is_active"],
+                "created_at": s["created_at"],
+                "last_login": s.get("last_login"),
+            }
+            for s in staff
+        ],
+        "total": len(staff)
+    }
+
+
+@api_router.put("/authority/staff/{staff_id}")
+async def update_staff_member(
+    staff_id: str,
+    updates: Dict[str, Any],
+    admin: dict = Depends(get_current_authority_admin)
+):
+    """Update a staff member"""
+    authority_code = admin.get("authority_code")
+    
+    staff = await db.authority_staff.find_one({"_id": ObjectId(staff_id)})
+    if not staff:
+        raise HTTPException(status_code=404, detail="Staff member not found")
+    
+    # Ensure admin can only update their own authority's staff
+    if authority_code and staff["authority_code"] != authority_code:
+        raise HTTPException(status_code=403, detail="Cannot update staff from another authority")
+    
+    allowed_fields = ["full_name", "phone", "department", "is_active", "role"]
+    update_data = {k: v for k, v in updates.items() if k in allowed_fields}
+    
+    if "role" in update_data:
+        valid_roles = [AdminRole.MANAGER, AdminRole.AUDITOR, AdminRole.SUPPORT]
+        if update_data["role"] not in valid_roles:
+            raise HTTPException(status_code=400, detail="Invalid role")
+    
+    update_data["updated_at"] = datetime.utcnow()
+    update_data["updated_by"] = admin.get("email")
+    
+    await db.authority_staff.update_one(
+        {"_id": ObjectId(staff_id)},
+        {"$set": update_data}
+    )
+    
+    return {"message": "Staff member updated successfully"}
+
+
+@api_router.delete("/authority/staff/{staff_id}")
+async def deactivate_staff_member(
+    staff_id: str,
+    admin: dict = Depends(get_current_authority_admin)
+):
+    """Deactivate a staff member (soft delete)"""
+    authority_code = admin.get("authority_code")
+    
+    staff = await db.authority_staff.find_one({"_id": ObjectId(staff_id)})
+    if not staff:
+        raise HTTPException(status_code=404, detail="Staff member not found")
+    
+    if authority_code and staff["authority_code"] != authority_code:
+        raise HTTPException(status_code=403, detail="Cannot deactivate staff from another authority")
+    
+    await db.authority_staff.update_one(
+        {"_id": ObjectId(staff_id)},
+        {"$set": {"is_active": False, "deactivated_at": datetime.utcnow(), "deactivated_by": admin.get("email")}}
+    )
+    
+    await db.audit_logs.insert_one({
+        "action": "staff_deactivated",
+        "authority_code": authority_code or staff["authority_code"],
+        "performed_by": admin.get("email"),
+        "timestamp": datetime.utcnow(),
+        "details": {"staff_email": staff["email"]}
+    })
+    
+    return {"message": "Staff member deactivated"}
+
+
+@api_router.post("/authority/staff/login")
+async def staff_login(data: TaxAuthorityLogin):
+    """Staff member login"""
+    staff = await db.authority_staff.find_one({"email": data.email})
+    
+    if not staff:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    if not staff.get("is_active", False):
+        raise HTTPException(status_code=403, detail="Account is deactivated")
+    
+    if not verify_password(data.password, staff["password_hash"]):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    # Get authority info
+    authority = await db.tax_authorities.find_one({"code": staff["authority_code"]})
+    if not authority or not authority.get("is_active", False):
+        raise HTTPException(status_code=403, detail="Tax Authority is deactivated")
+    
+    # Update last login
+    await db.authority_staff.update_one(
+        {"_id": staff["_id"]},
+        {"$set": {"last_login": datetime.utcnow()}}
+    )
+    
+    # Get permissions for role
+    permissions = ROLE_PERMISSIONS.get(staff["role"], [])
+    
+    payload = {
+        "email": data.email,
+        "staff_id": str(staff["_id"]),
+        "full_name": staff["full_name"],
+        "authority_code": staff["authority_code"],
+        "authority_name": authority["name"],
+        "role": staff["role"],
+        "permissions": permissions,
+        "exp": datetime.utcnow() + timedelta(hours=12),  # Shorter session for staff
+        "iat": datetime.utcnow()
+    }
+    token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "role": staff["role"],
+        "permissions": permissions,
+        "staff": {
+            "id": str(staff["_id"]),
+            "full_name": staff["full_name"],
+            "email": staff["email"],
+            "department": staff.get("department"),
+        },
+        "authority": {
+            "code": authority["code"],
+            "name": authority["name"],
+            "country": authority["country"],
+            "currency": authority["currency"],
+            "currency_symbol": authority["currency_symbol"]
+        }
+    }
+
+
+def has_permission(admin: dict, permission: str) -> bool:
+    """Check if admin has specific permission"""
+    role = admin.get("role")
+    
+    if role == AdminRole.SUPER_ADMIN:
+        return True
+    
+    permissions = admin.get("permissions", ROLE_PERMISSIONS.get(role, []))
+    
+    if "*" in permissions:
+        return True
+    
+    return permission in permissions
+
+
 # ============== ADMIN DASHBOARD ==============
 
 @api_router.get("/admin/dashboard")
