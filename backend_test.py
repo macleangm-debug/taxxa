@@ -221,9 +221,15 @@ class TaxxaAPITester:
             if response.status_code == 200:
                 data = response.json()
                 
-                # Verify metrics structure
-                expected_keys = ["requests"]
-                requests_data = data.get("requests", {})
+                # The metrics endpoint should return request statistics
+                # Check if it has the expected structure from MetricsCollector
+                has_requests_data = "requests" in data or "total_requests" in data
+                
+                # Extract metrics information
+                total_requests = data.get("total_requests") or data.get("requests", {}).get("total", 0)
+                error_rate = data.get("error_rate_percent", 0)
+                uptime = data.get("uptime_seconds", 0)
+                endpoints = data.get("endpoints", {})
                 
                 self.log_result(
                     "Health Metrics",
@@ -232,10 +238,12 @@ class TaxxaAPITester:
                     {
                         "status_code": response.status_code,
                         "response_time_header": response_time_header,
-                        "total_requests": requests_data.get("total"),
-                        "requests_by_status": requests_data.get("by_status", {}),
-                        "avg_response_time": requests_data.get("avg_response_time_ms"),
-                        "has_endpoint_metrics": "by_endpoint" in requests_data
+                        "total_requests": total_requests,
+                        "error_rate_percent": error_rate,
+                        "uptime_seconds": uptime,
+                        "endpoints_tracked": len(endpoints),
+                        "has_requests_data": has_requests_data,
+                        "response_structure": list(data.keys())
                     }
                 )
                 return True
