@@ -12,31 +12,19 @@ import hashlib
 import json
 import uuid
 import logging
+from dataclasses import dataclass, field
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v2", tags=["High-Performance Scan"])
 
-# Import services (lazy to avoid circular imports)
-def get_services():
-    from services.scan_processor import (
-        receipt_bloom_filter,
-        scan_batch_processor,
-        background_tasks,
-        write_aggregator,
-        ScanJob
-    )
-    from services.cache_service import cache
-    from services.rate_limiter import rate_limiter
-    return {
-        "bloom_filter": receipt_bloom_filter,
-        "batch_processor": scan_batch_processor,
-        "background_tasks": background_tasks,
-        "write_aggregator": write_aggregator,
-        "ScanJob": ScanJob,
-        "cache": cache,
-        "rate_limiter": rate_limiter
-    }
+# Database reference (set during initialization)
+_db = None
+
+def set_database(db):
+    """Set database reference"""
+    global _db
+    _db = db
 
 
 # ============== MODELS ==============
@@ -67,7 +55,18 @@ class BatchScanResponse(BaseModel):
     results: List[ScanResponseV2]
 
 
-# ============== MOCK VERIFICATION (Same as original) ==============
+@dataclass
+class ScanJob:
+    """Represents a scan processing job"""
+    job_id: str
+    user_id: str
+    qr_data: str
+    geo_location: Optional[Dict] = None
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    priority: int = 0
+
+
+# ============== MOCK VERIFICATION ==============
 
 REGISTERED_MERCHANTS = {
     "MER-001": {"name": "SuperMart", "tax_id": "TAX-001", "status": "active"},
@@ -108,6 +107,13 @@ async def process_scan_batch(jobs: List[ScanJob], db) -> List[Dict]:
     Process a batch of scans efficiently.
     Minimizes DB operations through batching.
     """
+    from services.scan_processor import (
+        receipt_bloom_filter,
+        background_tasks,
+        write_aggregator
+    )
+    from services.cache_service import cache
+    
     results = []
     
     # Pre-check duplicates using Bloom filter
@@ -178,12 +184,12 @@ async def process_scan_batch(jobs: List[ScanJob], db) -> List[Dict]:
                 # Queue draw entries update
                 active_draws = await cache.get_active_draws()
                 if not active_draws:
-                    active_draws = await db.draws.find({"status": "active"}).to_list(10)
-                    await cache.set_active_draws([
-                        {"id": str(d["_id"])} for d in active_draws
-                    ])
+                    active_draws_cursor = await db.draws.find({"status": "active"}).to_list(10)
+                    active_draws = [{"id": str(d["_id"])} for d in active_draws_cursor]
+                    if active_draws:
+                        await cache.set_active_draws(active_draws)
                 
-                for draw in active_draws:
+                for draw in (active_draws or []):
                     draw_id = draw.get("id") or str(draw.get("_id"))
                     await write_aggregator.increment_draw_entries(
                         job.user_id, draw_id, entries
@@ -249,22 +255,26 @@ async def process_scan_batch(jobs: List[ScanJob], db) -> List[Dict]:
 @router.post("/scan", response_model=ScanResponseV2)
 async def scan_receipt_v2(
     request: Request,
-    data: ScanRequestV2,
-    db = None  # Injected via dependency
+    data: ScanRequestV2
 ):
     """
     High-performance scan endpoint.
     Uses batch processing and async operations for maximum throughput.
     """
     import time
+    from services.scan_processor import scan_batch_processor
+    from services.rate_limiter import rate_limiter
+    
     start_time = time.time()
     
-    # Get user from token (simplified - use your actual auth)
+    # Get user from request state (set by auth middleware)
     user = getattr(request.state, 'user', None)
     if not user:
         raise HTTPException(status_code=401, detail="Authentication required")
     
-    user_id = str(user["_id"])
+    user_id = str(user.get("_id", user.get("id", "")))
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid user")
     
     # Rate limiting
     is_limited, remaining, reset_time = await rate_limiter.check_rate_limit(
@@ -276,7 +286,7 @@ async def scan_receipt_v2(
             detail=f"Rate limit exceeded. Try again in {reset_time}s"
         )
     
-    # Create job and submit to batch processor
+    # Create job
     job = ScanJob(
         job_id=str(uuid.uuid4()),
         user_id=user_id,
@@ -285,7 +295,12 @@ async def scan_receipt_v2(
     )
     
     # Process via batch processor
-    result = await scan_batch_processor.submit(job)
+    try:
+        result = await scan_batch_processor.submit(job)
+    except Exception as e:
+        # Fallback to direct processing
+        results = await process_scan_batch([job], _db)
+        result = results[0] if results else {"status": "error", "message": str(e)}
     
     processing_time = (time.time() - start_time) * 1000
     
@@ -302,8 +317,7 @@ async def scan_receipt_v2(
 @router.post("/scan/batch", response_model=BatchScanResponse)
 async def scan_batch_v2(
     request: Request,
-    data: BatchScanRequest,
-    db = None
+    data: BatchScanRequest
 ):
     """
     Batch scan endpoint for bulk processing.
@@ -319,7 +333,7 @@ async def scan_batch_v2(
     if not user:
         raise HTTPException(status_code=401, detail="Authentication required")
     
-    user_id = str(user["_id"])
+    user_id = str(user.get("_id", user.get("id", "")))
     
     # Create jobs
     jobs = [
@@ -333,7 +347,7 @@ async def scan_batch_v2(
     ]
     
     # Process batch directly
-    results = await process_scan_batch(jobs, db)
+    results = await process_scan_batch(jobs, _db)
     
     # Build response
     successful = sum(1 for r in results if r["status"] == "valid")
@@ -358,6 +372,13 @@ async def scan_batch_v2(
 @router.get("/scan/stats")
 async def get_scan_system_stats():
     """Get high-performance scan system statistics"""
+    from services.scan_processor import (
+        receipt_bloom_filter,
+        scan_batch_processor,
+        background_tasks,
+        write_aggregator
+    )
+    
     return {
         "bloom_filter": receipt_bloom_filter.get_stats(),
         "batch_processor": scan_batch_processor.get_stats(),
