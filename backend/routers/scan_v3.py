@@ -157,8 +157,6 @@ class WriteBuffer:
     Reduces DB round-trips by 100x.
     """
     
-    __slots__ = ['_scan_buffer', '_user_updates', '_draw_updates', '_lock', '_flush_task', '_stats']
-    
     def __init__(self):
         self._scan_buffer: List[Dict] = []
         self._user_updates: Dict[str, Dict] = {}
@@ -166,6 +164,7 @@ class WriteBuffer:
         self._lock = asyncio.Lock()
         self._flush_task = None
         self._stats = {"flushes": 0, "scans_written": 0, "users_updated": 0}
+        self._db = None
     
     async def start(self, db, flush_interval: float = 0.1):
         """Start background flush task"""
