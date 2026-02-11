@@ -151,6 +151,11 @@ async def lifespan(app: FastAPI):
         await create_optimized_indexes(db)
         logger.info("✅ Optimized database indexes created")
         
+        # Initialize distributed components (for multi-instance)
+        await distributed_cache.connect()
+        await distributed_processor.initialize(db, distributed_cache)
+        logger.info("✅ Distributed components initialized")
+        
     except Exception as e:
         logger.warning(f"High-performance processing initialization warning: {e}")
     
