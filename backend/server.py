@@ -3920,6 +3920,31 @@ async def get_scaling_info():
     }
 
 
+@api_router.get("/system/optimizations")
+async def get_optimizations_stats():
+    """Get all code-level optimization statistics"""
+    from routers.scan_v3 import deduplicator, write_buffer
+    
+    return {
+        "in_memory_optimizations": get_optimization_stats(),
+        "v3_scan_system": {
+            "deduplicator": deduplicator.stats(),
+            "write_buffer": write_buffer.stats()
+        },
+        "expected_performance": {
+            "single_scan_latency_ms": "<5",
+            "throughput_per_minute": "50,000+",
+            "memory_usage_mb": "~100-200"
+        }
+    }
+
+
+@api_router.get("/system/db-stats")
+async def get_database_stats():
+    """Get database collection statistics"""
+    return await get_collection_stats(db)
+
+
 # ============== RECEIPT API ROUTER ==============
 # Import and configure the new Receipt API router
 from routers.receipts import router as receipts_router, set_database, set_auth_dependency
