@@ -160,6 +160,9 @@ class UltraOptimizedAPITester:
         if success and opt_data:
             print(f"   🔧 Optimization components status:")
             if isinstance(opt_data, dict):
+                # Check for nested structure
+                in_memory_opts = opt_data.get('in_memory_optimizations', opt_data)
+                
                 # Check for expected optimization components
                 expected_components = [
                     'user_cache', 'draw_cache', 'config_cache',
@@ -167,8 +170,8 @@ class UltraOptimizedAPITester:
                 ]
                 
                 for component in expected_components:
-                    if component in opt_data:
-                        comp_data = opt_data[component]
+                    if component in in_memory_opts:
+                        comp_data = in_memory_opts[component]
                         print(f"      ✅ {component}: Active")
                         if isinstance(comp_data, dict):
                             # Show key stats for different components
@@ -192,11 +195,31 @@ class UltraOptimizedAPITester:
                         print(f"      ❌ {component}: Missing")
                         
                 # Verify cache sizes match specifications
-                user_cache = opt_data.get('user_cache', {})
+                user_cache = in_memory_opts.get('user_cache', {})
                 if user_cache.get('maxsize') == 50000:
                     print(f"      ✅ User cache configured for 50K users (spec)")
                 else:
                     print(f"      ⚠️  User cache size: {user_cache.get('maxsize', 'N/A')} (expected: 50K)")
+                    
+                # Check V3 system components if present
+                v3_system = opt_data.get('v3_scan_system', {})
+                if v3_system:
+                    print(f"      ✅ V3 scan system: Active")
+                    if 'deduplicator' in v3_system:
+                        dedup = v3_system['deduplicator']
+                        max_size = dedup.get('max_size', 0)
+                        if max_size >= 2000000:
+                            print(f"         ✅ Deduplicator: {max_size:,} capacity (meets 2M spec)")
+                        else:
+                            print(f"         ⚠️  Deduplicator capacity: {max_size:,} (expected: 2M)")
+                            
+                # Check performance expectations
+                expected_perf = opt_data.get('expected_performance', {})
+                if expected_perf:
+                    print(f"      ✅ Performance expectations configured:")
+                    latency = expected_perf.get('single_scan_latency_ms', 'N/A')
+                    throughput = expected_perf.get('throughput_per_minute', 'N/A')
+                    print(f"         latency: {latency}, throughput: {throughput}")
 
     def test_v3_scan_system(self):
         """Test ultra-optimized V3 scan system"""
