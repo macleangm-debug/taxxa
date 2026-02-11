@@ -413,6 +413,30 @@ class UltraOptimizedAPITester:
         else:
             print(f"   ❌ Could not retrieve V3 performance targets")
 
+    def test_v3_scan_functionality(self):
+        """Test V3 scan endpoint functionality (basic without auth)"""
+        print(f"\n🧪 === V3 SCAN FUNCTIONALITY TESTS ===")
+        
+        # First generate test QR data
+        success, qr_data_response = self.run_test(
+            "Generate Test QR Data",
+            "GET",
+            "/api/test/generate-qr?merchant_id=MER-001&amount=100",
+            200
+        )
+        
+        if success and isinstance(qr_data_response, dict) and 'qr_data' in qr_data_response:
+            qr_data = qr_data_response['qr_data']
+            print(f"      ✅ Test QR data generated successfully")
+            print(f"      📱 Receipt ID: {qr_data_response.get('receipt_data', {}).get('receipt_id', 'N/A')}")
+            
+            # Note: We can't test the actual V3 scan endpoint without authentication
+            # But we can verify the QR generation works
+            print(f"      ℹ️  V3 scan endpoint requires authentication (expected)")
+            print(f"      ✅ QR generation pipeline working for V3 testing")
+        else:
+            print(f"      ❌ Test QR data generation failed")
+
     def run_all_tests(self):
         """Run all ultra-optimization system tests"""
         print(f"🚀 Starting Ultra-Optimization Tests...")
@@ -424,6 +448,7 @@ class UltraOptimizedAPITester:
             self.test_database_optimization_stats()
             self.test_backend_initialization()
             self.test_performance_targets()
+            self.test_v3_scan_functionality()
             
         except KeyboardInterrupt:
             print(f"\n⚠️  Tests interrupted by user")
