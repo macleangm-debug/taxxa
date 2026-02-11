@@ -863,6 +863,22 @@ const styles = StyleSheet.create({
     color: '#A78BFA',
     fontWeight: '500',
   },
+  drawSetupBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.3)',
+  },
+  drawSetupText: {
+    fontSize: 14,
+    color: '#10B981',
+    fontWeight: '500',
+  },
   fullscreenBtn: {
     padding: 8,
     borderRadius: 8,
