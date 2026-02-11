@@ -3966,6 +3966,11 @@ from routers.scan_v2 import router as scan_v2_router, set_database as set_scan_v
 set_scan_v2_db(db)
 app.include_router(scan_v2_router)
 
+# Ultra-Optimized Scan Router (v3)
+from routers.scan_v3 import router as scan_v3_router, set_database as set_scan_v3_db
+set_scan_v3_db(db)
+app.include_router(scan_v3_router)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
