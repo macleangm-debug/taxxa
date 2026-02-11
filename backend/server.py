@@ -166,6 +166,13 @@ async def lifespan(app: FastAPI):
     # Shutdown
     logger.info("Shutting down TAXXA API Server...")
     
+    # Stop distributed components
+    try:
+        await distributed_cache.disconnect()
+        logger.info("Distributed cache disconnected")
+    except Exception as e:
+        logger.warning(f"Distributed cache shutdown warning: {e}")
+    
     # Stop ultra-optimized v3
     try:
         from routers.scan_v3 import shutdown_v3
