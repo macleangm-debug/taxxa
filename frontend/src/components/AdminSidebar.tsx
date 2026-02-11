@@ -69,7 +69,7 @@ export default function AdminSidebar() {
       {/* Navigation */}
       <ScrollView style={styles.nav} showsVerticalScrollIndicator={false}>
         <Text style={styles.navSection}>MAIN MENU</Text>
-        {menuItems.slice(0, 6).map((item) => (
+        {menuItems.slice(0, 7).map((item) => (
           <TouchableOpacity
             key={item.id}
             style={[styles.navItem, isActive(item.route) && styles.navItemActive]}
