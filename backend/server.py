@@ -33,8 +33,7 @@ from services.scan_processor import (
     background_tasks,
     write_aggregator,
     receipt_bloom_filter,
-    ScanJob,
-    process_scan_batch
+    ScanJob
 )
 from services.scan_processor_handlers import set_database as set_handler_db
 from services.performance_config import perf_config, calculate_capacity
