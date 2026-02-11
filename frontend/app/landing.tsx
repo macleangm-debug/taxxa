@@ -404,6 +404,10 @@ export default function LandingPage() {
               <TouchableOpacity style={styles.navLink}>
                 <Text style={styles.navLinkText}>Case Studies</Text>
               </TouchableOpacity>
+              <TouchableOpacity style={styles.navLinkHighlight} onPress={() => router.push('/presentation-demo')}>
+                <Ionicons name="tv" size={16} color="#10B981" />
+                <Text style={styles.navLinkHighlightText}>Presentation Mode</Text>
+              </TouchableOpacity>
               <TouchableOpacity style={styles.navButtonOutline} onPress={() => router.push('/admin')}>
                 <Text style={styles.navButtonOutlineText}>Log In</Text>
               </TouchableOpacity>
