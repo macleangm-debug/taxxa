@@ -17,7 +17,7 @@ import sys
 from datetime import datetime
 from typing import Dict, Any, List
 
-class HighPerformanceAPITester:
+class UltraOptimizedAPITester:
     def __init__(self, base_url: str = "https://50ebc352-e2d4-4f4e-aa24-0e76550a3033.preview.emergentagent.com"):
         self.base_url = base_url
         self.session = requests.Session()
@@ -29,9 +29,10 @@ class HighPerformanceAPITester:
         self.failed_tests = []
         self.results = {}
         
-        print(f"🚀 High-Performance API Tester")
+        print(f"🚀 Ultra-Optimized API Tester")
         print(f"🔗 Testing backend: {self.base_url}")
         print(f"⏰ Started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"🎯 Target: 50,000+ scans/minute with <5ms latency")
         print("=" * 60)
 
     def run_test(self, name: str, method: str, endpoint: str, expected_status: int, 
