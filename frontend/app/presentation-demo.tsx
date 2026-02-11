@@ -226,6 +226,11 @@ export default function PresentationDemo() {
             <Text style={styles.prizeConfigText}>Prizes</Text>
           </TouchableOpacity>
           
+          <TouchableOpacity style={styles.drawSetupBtn} onPress={() => router.push('/draw-setup')}>
+            <Ionicons name="options" size={20} color="#10B981" />
+            <Text style={styles.drawSetupText}>Draw Setup</Text>
+          </TouchableOpacity>
+          
           <TouchableOpacity style={styles.fullscreenBtn} onPress={toggleFullscreen}>
             <Ionicons name={isFullscreen ? "contract" : "expand"} size={22} color="#fff" />
           </TouchableOpacity>
