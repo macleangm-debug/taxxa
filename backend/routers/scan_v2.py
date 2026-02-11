@@ -17,6 +17,27 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v2", tags=["High-Performance Scan"])
 
+# Import services (lazy to avoid circular imports)
+def get_services():
+    from services.scan_processor import (
+        receipt_bloom_filter,
+        scan_batch_processor,
+        background_tasks,
+        write_aggregator,
+        ScanJob
+    )
+    from services.cache_service import cache
+    from services.rate_limiter import rate_limiter
+    return {
+        "bloom_filter": receipt_bloom_filter,
+        "batch_processor": scan_batch_processor,
+        "background_tasks": background_tasks,
+        "write_aggregator": write_aggregator,
+        "ScanJob": ScanJob,
+        "cache": cache,
+        "rate_limiter": rate_limiter
+    }
+
 
 # ============== MODELS ==============
 
