@@ -180,6 +180,10 @@ export default function PresentationDemo() {
   // Update prizes when country changes
   useEffect(() => {
     setCustomPrizes({ ...AFRICAN_COUNTRIES[selectedCountry].prizes });
+    // Reset scan state when country changes
+    setScanPhase('idle');
+    setSelectedMerchant(null);
+    setScanResult(null);
   }, [selectedCountry]);
 
   return (
