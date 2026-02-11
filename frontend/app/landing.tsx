@@ -72,31 +72,43 @@ const ParticleBackground = () => {
   );
 };
 
-// Sample QR codes for demo
+// Sample QR codes for demo - Africa focused
 const SAMPLE_QR_CODES = [
   {
-    id: 'TW-2026-001',
-    country: 'Taiwan',
-    merchant: '7-Eleven Taipei',
-    amount: 'NT$1,250',
+    id: 'TZ-2026-001',
+    country: 'Tanzania',
+    flag: '🇹🇿',
+    merchant: 'Shoppers Plaza Dar es Salaam',
+    amount: 'TZS 125,000',
     date: '2026-01-15',
-    qrData: 'TW|INV|2026|001|7ELEVEN|1250|VAT125',
+    qrData: 'TZ|EFD|2026|001|SHOPPERS|125000|VAT22500',
   },
   {
-    id: 'PT-2026-002',
-    country: 'Portugal',
-    merchant: 'Continente Lisboa',
-    amount: '€47.50',
+    id: 'KE-2026-002',
+    country: 'Kenya',
+    flag: '🇰🇪',
+    merchant: 'Carrefour Nairobi',
+    amount: 'KES 8,500',
     date: '2026-01-14',
-    qrData: 'PT|FAT|2026|002|CONTINENTE|4750|IVA1093',
+    qrData: 'KE|ETR|2026|002|CARREFOUR|8500|VAT1360',
   },
   {
-    id: 'SK-2026-003',
-    country: 'Slovakia',
-    merchant: 'Tesco Bratislava',
-    amount: '€32.80',
+    id: 'TZ-2026-003',
+    country: 'Tanzania',
+    flag: '🇹🇿',
+    merchant: 'Game Stores Arusha',
+    amount: 'TZS 287,500',
     date: '2026-01-13',
-    qrData: 'SK|UCT|2026|003|TESCO|3280|DPH656',
+    qrData: 'TZ|EFD|2026|003|GAME|287500|VAT51750',
+  },
+  {
+    id: 'KE-2026-004',
+    country: 'Kenya',
+    flag: '🇰🇪',
+    merchant: 'Naivas Supermarket Mombasa',
+    amount: 'KES 12,750',
+    date: '2026-01-12',
+    qrData: 'KE|ETR|2026|004|NAIVAS|12750|VAT2040',
   },
 ];
 
