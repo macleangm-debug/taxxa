@@ -349,8 +349,9 @@ class UltraOptimizedAPITester:
             
             # Check specific initialization indicators
             if isinstance(opt_data, dict):
+                in_memory_opts = opt_data.get('in_memory_optimizations', opt_data)
                 cache_components = ['user_cache', 'draw_cache', 'config_cache']
-                initialized_caches = sum(1 for comp in cache_components if comp in opt_data)
+                initialized_caches = sum(1 for comp in cache_components if comp in in_memory_opts)
                 print(f"   📦 Caches initialized: {initialized_caches}/{len(cache_components)}")
                 
             if isinstance(v3_data, dict) and 'write_buffer' in v3_data:
