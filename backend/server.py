@@ -157,6 +157,13 @@ async def lifespan(app: FastAPI):
     # Shutdown
     logger.info("Shutting down TAXXA API Server...")
     
+    # Stop ultra-optimized v3
+    try:
+        from routers.scan_v3 import shutdown_v3
+        await shutdown_v3()
+    except Exception as e:
+        logger.warning(f"V3 shutdown warning: {e}")
+    
     # Stop high-performance components
     try:
         await scan_batch_processor.stop()
