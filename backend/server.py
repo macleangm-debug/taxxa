@@ -138,6 +138,15 @@ async def lifespan(app: FastAPI):
         capacity = calculate_capacity(perf_config)
         logger.info(f"📊 Theoretical capacity: {capacity['theoretical_capacity']['total_scans_per_minute']:,} scans/min")
         
+        # Initialize ultra-optimized v3 scan system
+        from routers.scan_v3 import initialize_v3
+        await initialize_v3(db)
+        logger.info("✅ Ultra-optimized scan v3 initialized")
+        
+        # Create optimized database indexes
+        await create_optimized_indexes(db)
+        logger.info("✅ Optimized database indexes created")
+        
     except Exception as e:
         logger.warning(f"High-performance processing initialization warning: {e}")
     
