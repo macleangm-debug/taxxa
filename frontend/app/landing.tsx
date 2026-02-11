@@ -387,7 +387,7 @@ export default function ModernLandingPage() {
             <Pressable><Text style={styles.navLink}>Solution</Text></Pressable>
             <Pressable><Text style={styles.navLink}>How It Works</Text></Pressable>
             <Pressable><Text style={styles.navLink}>Results</Text></Pressable>
-            <Pressable><Text style={styles.navLink}>Pricing</Text></Pressable>
+            <Pressable onPress={() => router.push('/docs')}><Text style={styles.navLink}>API Docs</Text></Pressable>
             <Pressable 
               style={styles.navCTA}
               onPress={() => setShowContactModal(true)}
