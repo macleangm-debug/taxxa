@@ -181,3 +181,55 @@ Taxxa is a Tax Compliance Incentive Platform that transforms tax compliance thro
 | Single scan latency | <5ms |
 | Throughput/instance | 50K/min |
 | Memory usage | <200MB |
+
+---
+
+## Multi-Instance Deployment Update (Feb 11, 2026)
+
+### Distributed Architecture for 1M+ Scans/Minute
+
+#### Components
+1. **Distributed Cache Service**
+   - Redis Cluster support (6 nodes)
+   - Automatic fallback to in-memory cache
+   - Distributed rate limiting
+   - Receipt deduplication across instances
+
+2. **Distributed Processor**
+   - Unique instance IDs
+   - Distributed locking for receipts
+   - Cross-instance coordination
+
+3. **V4 Endpoints**
+   - POST /api/v4/scan
+   - POST /api/v4/scan/batch
+   - GET /api/v4/stats
+   - GET /api/v4/health
+   - GET /api/v4/leaderboard/{draw_id}
+
+4. **Load Balancer (Nginx)**
+   - Least connections strategy
+   - Rate limiting: 1000 req/s
+   - Health check routing
+   - Request ID tracking
+
+5. **Docker Compose Stack**
+   - 8 API instances (4 workers each)
+   - 6 Redis cluster nodes
+   - 3 MongoDB replica set nodes
+   - Prometheus + Grafana monitoring
+
+#### Capacity Calculation
+| Instances | Workers | Scans/min |
+|-----------|---------|-----------|
+| 8 | 32 | 400,000 |
+| 16 | 64 | 800,000 |
+| 20 | 80 | 1,000,000+ |
+
+#### New Files
+- /backend/services/distributed_cache.py
+- /backend/services/distributed_processor.py
+- /backend/routers/scan_v4.py
+- /backend/docker-compose.multi-instance.yml
+- /backend/nginx/nginx.conf
+- /backend/monitoring/prometheus.yml
