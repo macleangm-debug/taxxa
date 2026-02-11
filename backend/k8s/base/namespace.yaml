@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: taxxa
+  labels:
+    app.kubernetes.io/name: taxxa
+    app.kubernetes.io/component: platform
+
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: taxxa-quota
+  namespace: taxxa
+spec:
+  hard:
+    requests.cpu: "200"
+    requests.memory: "400Gi"
+    limits.cpu: "400"
+    limits.memory: "800Gi"
+    persistentvolumeclaims: "50"
+    pods: "200"
+
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: taxxa-limits
+  namespace: taxxa
+spec:
+  limits:
+  - default:
+      cpu: "2"
+      memory: "4Gi"
+    defaultRequest:
+      cpu: "500m"
+      memory: "1Gi"
+    type: Container

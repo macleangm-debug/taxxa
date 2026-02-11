@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: taxxa-api-config
+  namespace: taxxa
+data:
+  # MongoDB Connection Pool (Optimized for high throughput)
+  MONGO_MAX_POOL_SIZE: "500"
+  MONGO_MIN_POOL_SIZE: "50"
+  MONGO_MAX_IDLE_TIME_MS: "30000"
+  MONGO_CONNECT_TIMEOUT_MS: "5000"
+  MONGO_SERVER_SELECTION_TIMEOUT_MS: "5000"
+  MONGO_SOCKET_TIMEOUT_MS: "30000"
+  
+  # Batch Processing Configuration
+  SCAN_BATCH_SIZE: "100"
+  SCAN_BATCH_FLUSH_INTERVAL_MS: "50"
+  SCAN_QUEUE_MAX_SIZE: "50000"
+  
+  # Write Aggregation
+  WRITE_FLUSH_INTERVAL_MS: "200"
+  WRITE_MAX_PENDING: "500"
+  
+  # Background Workers
+  BACKGROUND_WORKERS: "8"
+  BACKGROUND_QUEUE_SIZE: "100000"
+  
+  # Bloom Filter (10M receipts capacity)
+  BLOOM_EXPECTED_ITEMS: "10000000"
+  BLOOM_FP_RATE: "0.01"
+  
+  # Rate Limiting
+  SCAN_RATE_LIMIT: "100"
+  GLOBAL_RATE_LIMIT: "1000"
+  
+  # Cache TTLs
+  CACHE_USER_STATS_TTL: "60"
+  CACHE_ACTIVE_DRAWS_TTL: "30"
+  CACHE_APP_CONFIG_TTL: "300"
+  
+  # Uvicorn Workers per Pod
+  UVICORN_WORKERS: "8"
+  
+  # Redis Configuration
+  REDIS_URL: "redis://redis-cluster:6379"
+  REDIS_CLUSTER_MODE: "true"
+  
+  # Application Settings
+  LOG_LEVEL: "INFO"
+  ENVIRONMENT: "production"
