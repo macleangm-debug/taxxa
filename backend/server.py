@@ -3938,7 +3938,8 @@ set_webhooks_db(db)
 app.include_router(webhooks_router)
 
 # High-Performance Scan Router (v2)
-from routers.scan_v2 import router as scan_v2_router
+from routers.scan_v2 import router as scan_v2_router, set_database as set_scan_v2_db
+set_scan_v2_db(db)
 app.include_router(scan_v2_router)
 
 app.add_middleware(
