@@ -47,6 +47,10 @@ from services.optimizations import (
 )
 from services.db_indexes import create_optimized_indexes, get_collection_stats
 
+# Distributed components (for multi-instance deployment)
+from services.distributed_cache import distributed_cache, DistributedCache
+from services.distributed_processor import distributed_processor
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
