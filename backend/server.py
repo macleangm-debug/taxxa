@@ -77,6 +77,7 @@ async def lifespan(app: FastAPI):
     """Application startup and shutdown lifecycle"""
     # Startup
     logger.info("🚀 Starting TAXXA API Server...")
+    logger.info(f"🔧 Performance config: {perf_config.UVICORN_WORKERS} workers, batch size {perf_config.SCAN_BATCH_SIZE}")
     
     # Initialize cache (Redis)
     try:
@@ -100,12 +101,54 @@ async def lifespan(app: FastAPI):
     # Create database indexes
     await ensure_indexes()
     
+    # Initialize high-performance scan processing
+    try:
+        # Set database reference for background handlers
+        set_handler_db(db)
+        
+        # Start write aggregator
+        await write_aggregator.start(db)
+        logger.info("✅ Write aggregator started")
+        
+        # Start background task queue
+        await background_tasks.start()
+        logger.info("✅ Background task queue started")
+        
+        # Start batch processor with process function
+        async def batch_process_func(jobs):
+            from routers.scan_v2 import process_scan_batch
+            return await process_scan_batch(jobs, db)
+        
+        await scan_batch_processor.start(batch_process_func)
+        logger.info("✅ Scan batch processor started")
+        
+        # Log Bloom filter stats
+        bloom_stats = receipt_bloom_filter.get_stats()
+        logger.info(f"✅ Bloom filter ready: {bloom_stats['size_mb']:.2f}MB, {bloom_stats['hash_count']} hashes")
+        
+        # Log capacity calculations
+        capacity = calculate_capacity(perf_config)
+        logger.info(f"📊 Theoretical capacity: {capacity['theoretical_capacity']['total_scans_per_minute']:,} scans/min")
+        
+    except Exception as e:
+        logger.warning(f"High-performance processing initialization warning: {e}")
+    
     logger.info("✅ TAXXA API Server ready for requests")
     
     yield
     
     # Shutdown
     logger.info("Shutting down TAXXA API Server...")
+    
+    # Stop high-performance components
+    try:
+        await scan_batch_processor.stop()
+        await background_tasks.stop()
+        await write_aggregator.stop()
+        logger.info("High-performance components stopped")
+    except Exception as e:
+        logger.warning(f"HP shutdown warning: {e}")
+    
     await cache.disconnect()
     await rate_limiter.disconnect()
     client.close()
