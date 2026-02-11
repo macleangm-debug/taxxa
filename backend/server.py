@@ -27,6 +27,18 @@ from services.cache_service import cache, CacheService
 from services.rate_limiter import rate_limiter, RateLimiterService, get_client_ip
 from services.health_check import health_service, metrics, HealthCheckService, MetricsCollector
 
+# High-performance scan processing imports
+from services.scan_processor import (
+    scan_batch_processor,
+    background_tasks,
+    write_aggregator,
+    receipt_bloom_filter,
+    ScanJob,
+    process_scan_batch
+)
+from services.scan_processor_handlers import set_database as set_handler_db
+from services.performance_config import perf_config, calculate_capacity
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
