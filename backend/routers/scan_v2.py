@@ -13,16 +13,6 @@ import json
 import uuid
 import logging
 
-from services.scan_processor import (
-    receipt_bloom_filter,
-    scan_batch_processor,
-    background_tasks,
-    write_aggregator,
-    ScanJob
-)
-from services.cache_service import cache
-from services.rate_limiter import rate_limiter, get_client_ip
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v2", tags=["High-Performance Scan"])
