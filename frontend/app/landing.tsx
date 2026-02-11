@@ -631,6 +631,332 @@ export default function ModernLandingPage() {
         </ScrollView>
       </View>
 
+      {/* Problem & Solution Section */}
+      <View style={styles.problemSection}>
+        <View style={styles.problemContent}>
+          <FadeInView>
+            <Text style={styles.sectionLabel}>THE CHALLENGE</Text>
+            <Text style={styles.sectionTitle}>Why Traditional Compliance Fails</Text>
+          </FadeInView>
+          
+          <View style={styles.problemGrid}>
+            {[
+              { icon: 'close-circle', title: 'No Consumer Incentive', desc: 'Citizens have no personal benefit from requesting receipts', color: '#EF4444' },
+              { icon: 'cash', title: 'Penalty-Only Approach', desc: 'Enforcement relies on expensive audits and creates adversarial relationships', color: '#F97316' },
+              { icon: 'time', title: 'Delayed Detection', desc: 'Tax evasion discovered months later, after revenue is already lost', color: '#EAB308' },
+              { icon: 'eye-off', title: 'Information Gap', desc: 'Tax authorities lack real-time visibility into retail transactions', color: '#8B5CF6' },
+              { icon: 'people', title: 'Public Disengagement', desc: 'Citizens view tax compliance as the government\'s problem', color: '#6366F1' },
+              { icon: 'wallet', title: 'High Enforcement Costs', desc: 'Manual audits often cost more than recovered revenue', color: '#EC4899' },
+            ].map((problem, index) => (
+              <FadeInView key={index} delay={index * 100}>
+                <View style={styles.problemCard}>
+                  <View style={[styles.problemIcon, { backgroundColor: `${problem.color}20` }]}>
+                    <Ionicons name={problem.icon as any} size={24} color={problem.color} />
+                  </View>
+                  <Text style={styles.problemTitle}>{problem.title}</Text>
+                  <Text style={styles.problemDesc}>{problem.desc}</Text>
+                </View>
+              </FadeInView>
+            ))}
+          </View>
+        </View>
+      </View>
+
+      {/* Solutions Section */}
+      <View style={styles.solutionsSection}>
+        <FadeInView>
+          <Text style={styles.sectionLabel}>OUR SOLUTION</Text>
+          <Text style={styles.sectionTitle}>How Taxxa Solves These Challenges</Text>
+          <Text style={styles.sectionSubtitle}>
+            A behavioral economics approach that aligns citizen and government interests
+          </Text>
+        </FadeInView>
+        
+        <View style={styles.solutionsGrid}>
+          {[
+            {
+              icon: 'gift',
+              title: 'Incentivized Collection',
+              desc: 'Prize draws motivate citizens to request receipts, creating natural demand for compliant transactions',
+              cta: 'See Prize Structure',
+              color: '#10B981'
+            },
+            {
+              icon: 'shield-checkmark',
+              title: 'Real-Time Verification',
+              desc: 'Every receipt is instantly validated against your tax database, ensuring authenticity',
+              cta: 'View Integration Docs',
+              color: '#3B82F6'
+            },
+            {
+              icon: 'analytics',
+              title: 'Comprehensive Analytics',
+              desc: 'Real-time dashboards showing transaction volumes, compliance rates, and geographic distribution',
+              cta: 'Explore Dashboard',
+              color: '#8B5CF6'
+            },
+            {
+              icon: 'lock-closed',
+              title: 'Cryptographic Fairness',
+              desc: 'Verifiable random selection with full audit trails builds public trust through mathematical proof',
+              cta: 'Learn About Security',
+              color: '#F59E0B'
+            },
+          ].map((solution, index) => (
+            <FadeInView key={index} delay={index * 150}>
+              <View style={styles.solutionCard}>
+                <View style={[styles.solutionIconWrapper, { backgroundColor: `${solution.color}15` }]}>
+                  <Ionicons name={solution.icon as any} size={32} color={solution.color} />
+                </View>
+                <Text style={styles.solutionTitle}>{solution.title}</Text>
+                <Text style={styles.solutionDesc}>{solution.desc}</Text>
+                <Pressable style={styles.solutionCTA}>
+                  <Text style={[styles.solutionCTAText, { color: solution.color }]}>{solution.cta}</Text>
+                  <Ionicons name="arrow-forward" size={16} color={solution.color} />
+                </Pressable>
+              </View>
+            </FadeInView>
+          ))}
+        </View>
+      </View>
+
+      {/* Features Grid Section */}
+      <View style={styles.featuresSection}>
+        <FadeInView>
+          <Text style={styles.sectionLabel}>PLATFORM CAPABILITIES</Text>
+          <Text style={styles.sectionTitle}>Enterprise-Grade Features</Text>
+          <Text style={styles.sectionSubtitle}>
+            Everything you need to deploy, manage, and scale a successful receipt lottery program
+          </Text>
+        </FadeInView>
+        
+        <View style={styles.featuresGrid}>
+          {[
+            {
+              category: 'Integration',
+              icon: 'code-slash',
+              color: '#3B82F6',
+              items: [
+                'RESTful API with comprehensive documentation',
+                'QR, barcode, and digital receipt support',
+                'Webhook notifications for real-time events',
+                'OAuth 2.0 and API key authentication',
+                'Sandbox environment for testing',
+              ]
+            },
+            {
+              category: 'Administration',
+              icon: 'settings',
+              color: '#10B981',
+              items: [
+                'Multi-tenant regional deployment',
+                'Role-based access control (RBAC)',
+                'Configurable draw frequencies & prizes',
+                'Merchant management & compliance tracking',
+                'Automated fraud detection algorithms',
+              ]
+            },
+            {
+              category: 'Analytics',
+              icon: 'bar-chart',
+              color: '#8B5CF6',
+              items: [
+                'Real-time transaction dashboards',
+                'Geographic heat maps of activity',
+                'Merchant compliance scoring',
+                'Revenue impact projections',
+                'Exportable reports (PDF, CSV, API)',
+              ]
+            },
+            {
+              category: 'Security',
+              icon: 'shield-checkmark',
+              color: '#F59E0B',
+              items: [
+                'End-to-end encryption (TLS 1.3)',
+                'SOC 2 Type II compliance ready',
+                'GDPR-compliant data handling',
+                'Cryptographic audit trails',
+                'Regular third-party security audits',
+              ]
+            },
+          ].map((feature, index) => (
+            <FadeInView key={index} delay={index * 150}>
+              <View style={styles.featureCard}>
+                <View style={styles.featureCardHeader}>
+                  <View style={[styles.featureIconBg, { backgroundColor: `${feature.color}15` }]}>
+                    <Ionicons name={feature.icon as any} size={24} color={feature.color} />
+                  </View>
+                  <Text style={styles.featureCategoryTitle}>{feature.category}</Text>
+                </View>
+                <View style={styles.featureList}>
+                  {feature.items.map((item, idx) => (
+                    <View key={idx} style={styles.featureItem}>
+                      <Ionicons name="checkmark-circle" size={18} color={feature.color} />
+                      <Text style={styles.featureItemText}>{item}</Text>
+                    </View>
+                  ))}
+                </View>
+                <Pressable style={[styles.featureCTA, { borderColor: feature.color }]}>
+                  <Text style={[styles.featureCTAText, { color: feature.color }]}>Learn More</Text>
+                  <Ionicons name="arrow-forward" size={16} color={feature.color} />
+                </Pressable>
+              </View>
+            </FadeInView>
+          ))}
+        </View>
+      </View>
+
+      {/* Deployment Process */}
+      <View style={styles.deploymentSection}>
+        <FadeInView>
+          <Text style={styles.sectionLabel}>IMPLEMENTATION</Text>
+          <Text style={styles.sectionTitle}>Rapid Deployment Process</Text>
+          <Text style={styles.sectionSubtitle}>
+            From first contact to full launch in as little as 8-12 weeks
+          </Text>
+        </FadeInView>
+        
+        <View style={styles.deploymentTimeline}>
+          {[
+            {
+              phase: 'Phase 1',
+              title: 'Discovery & Planning',
+              duration: '2-3 Weeks',
+              icon: 'search',
+              tasks: ['Technical assessment', 'API specification', 'Security requirements', 'Project timeline'],
+            },
+            {
+              phase: 'Phase 2',
+              title: 'Integration',
+              duration: '4-6 Weeks',
+              icon: 'code-slash',
+              tasks: ['API integration', 'Custom branding', 'Prize configuration', 'Admin training'],
+            },
+            {
+              phase: 'Phase 3',
+              title: 'Testing',
+              duration: '2-3 Weeks',
+              icon: 'checkmark-done',
+              tasks: ['End-to-end testing', 'Security audit', 'Load testing', 'UAT'],
+            },
+            {
+              phase: 'Phase 4',
+              title: 'Launch & Support',
+              duration: 'Ongoing',
+              icon: 'rocket',
+              tasks: ['Launch coordination', 'Real-time monitoring', '24/7 support', 'Quarterly reviews'],
+            },
+          ].map((phase, index) => (
+            <FadeInView key={index} delay={index * 200}>
+              <View style={styles.phaseCard}>
+                <View style={styles.phaseHeader}>
+                  <View style={styles.phaseIconCircle}>
+                    <Ionicons name={phase.icon as any} size={24} color="#10B981" />
+                  </View>
+                  <View style={styles.phaseBadge}>
+                    <Text style={styles.phaseBadgeText}>{phase.phase}</Text>
+                  </View>
+                </View>
+                <Text style={styles.phaseTitle}>{phase.title}</Text>
+                <Text style={styles.phaseDuration}>{phase.duration}</Text>
+                <View style={styles.phaseTasks}>
+                  {phase.tasks.map((task, idx) => (
+                    <View key={idx} style={styles.phaseTask}>
+                      <View style={styles.phaseTaskDot} />
+                      <Text style={styles.phaseTaskText}>{task}</Text>
+                    </View>
+                  ))}
+                </View>
+                {index < 3 && <View style={styles.phaseConnector} />}
+              </View>
+            </FadeInView>
+          ))}
+        </View>
+        
+        <FadeInView delay={800}>
+          <View style={styles.deploymentCTA}>
+            <Text style={styles.deploymentCTATitle}>Ready to Get Started?</Text>
+            <Pressable 
+              style={styles.deploymentCTAButton}
+              onPress={() => setShowContactModal(true)}
+            >
+              <LinearGradient
+                colors={['#10B981', '#059669']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.deploymentCTAGradient}
+              >
+                <Text style={styles.deploymentCTAButtonText}>Schedule Discovery Call</Text>
+                <Ionicons name="calendar" size={20} color="#fff" />
+              </LinearGradient>
+            </Pressable>
+          </View>
+        </FadeInView>
+      </View>
+
+      {/* Global Case Studies */}
+      <View style={styles.caseStudiesSection}>
+        <FadeInView>
+          <Text style={styles.sectionLabel}>PROVEN RESULTS</Text>
+          <Text style={styles.sectionTitle}>Global Success Stories</Text>
+        </FadeInView>
+        
+        <View style={styles.caseStudiesGrid}>
+          {[
+            {
+              country: 'Taiwan',
+              flag: '🇹🇼',
+              program: 'Uniform Invoice Lottery',
+              since: 'Since 1951',
+              result: 'Near-universal receipt issuance, credited with significantly reducing tax evasion for over 70 years.',
+              metric: '99%',
+              metricLabel: 'Compliance',
+            },
+            {
+              country: 'Portugal',
+              flag: '🇵🇹',
+              program: 'Fatura da Sorte',
+              since: 'Since 2014',
+              result: 'Increased invoice requests by 15% and generated millions in previously unreported transactions.',
+              metric: '+15%',
+              metricLabel: 'Receipt Requests',
+            },
+            {
+              country: 'Slovakia',
+              flag: '🇸🇰',
+              program: 'Receipt Lottery',
+              since: 'Since 2013',
+              result: 'Documented VAT revenue increases and improved merchant compliance rates nationwide.',
+              metric: '+20%',
+              metricLabel: 'VAT Revenue',
+            },
+          ].map((study, index) => (
+            <FadeInView key={index} delay={index * 200}>
+              <View style={styles.caseStudyCard}>
+                <View style={styles.caseStudyHeader}>
+                  <Text style={styles.caseStudyFlag}>{study.flag}</Text>
+                  <View>
+                    <Text style={styles.caseStudyCountry}>{study.country}</Text>
+                    <Text style={styles.caseStudyProgram}>{study.program}</Text>
+                  </View>
+                </View>
+                <View style={styles.caseStudyMetric}>
+                  <Text style={styles.caseStudyMetricValue}>{study.metric}</Text>
+                  <Text style={styles.caseStudyMetricLabel}>{study.metricLabel}</Text>
+                </View>
+                <Text style={styles.caseStudyResult}>{study.result}</Text>
+                <Text style={styles.caseStudySince}>{study.since}</Text>
+                <Pressable style={styles.caseStudyCTA}>
+                  <Text style={styles.caseStudyCTAText}>Read Full Case Study</Text>
+                  <Ionicons name="arrow-forward" size={16} color="#10B981" />
+                </Pressable>
+              </View>
+            </FadeInView>
+          ))}
+        </View>
+      </View>
+
       {/* CTA Section */}
       <View style={styles.ctaSection}>
         <LinearGradient
