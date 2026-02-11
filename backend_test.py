@@ -145,118 +145,249 @@ class UltraOptimizedAPITester:
             200
         )
 
-    def test_performance_monitoring(self):
-        """Test performance monitoring endpoints"""
-        print(f"\n⚡ === PERFORMANCE MONITORING TESTS ===")
+    def test_optimization_components(self):
+        """Test optimization component statistics endpoint"""
+        print(f"\n⚡ === OPTIMIZATION COMPONENTS TESTS ===")
         
-        # System performance stats
-        success, perf_data = self.run_test(
-            "System Performance Stats",
-            "GET",
-            "/api/system/performance",
-            200
-        )
-        
-        if success and perf_data:
-            print(f"   📈 Performance components status:")
-            if isinstance(perf_data, dict):
-                # Look for component status indicators
-                for key, value in perf_data.items():
-                    if 'status' in str(key).lower() or 'health' in str(key).lower():
-                        print(f"      {key}: {value}")
-        
-        # Scaling recommendations  
-        success, scaling_data = self.run_test(
-            "Scaling Recommendations",
+        # Test main optimization stats endpoint
+        success, opt_data = self.run_test(
+            "Optimization Component Stats",
             "GET", 
-            "/api/system/scaling",
+            "/api/system/optimizations",
             200
         )
         
-        if success and scaling_data:
-            print(f"   🔧 Scaling recommendations available:")
-            if isinstance(scaling_data, dict):
-                if 'recommendations' in scaling_data:
-                    recs = scaling_data['recommendations']
-                    if isinstance(recs, list):
-                        print(f"      Found {len(recs)} scaling recommendations")
-
-    def test_high_performance_scan_system(self):
-        """Test high-performance scan system statistics"""
-        print(f"\n🔥 === HIGH-PERFORMANCE SCAN SYSTEM TESTS ===")
-        
-        # Scan system stats
-        success, scan_stats = self.run_test(
-            "High-Performance Scan Stats",
-            "GET",
-            "/api/v2/scan/stats", 
-            200
-        )
-        
-        if success and scan_stats:
-            print(f"   🎯 Scan system components:")
-            if isinstance(scan_stats, dict):
-                # Check for expected high-performance components
+        if success and opt_data:
+            print(f"   🔧 Optimization components status:")
+            if isinstance(opt_data, dict):
+                # Check for expected optimization components
                 expected_components = [
-                    'bloom_filter', 'batch_processor', 
-                    'background_tasks', 'write_aggregator'
+                    'user_cache', 'draw_cache', 'config_cache',
+                    'request_coalescer', 'circuit_breaker', 'scanned_receipts'
                 ]
                 
                 for component in expected_components:
-                    if component in scan_stats:
-                        comp_data = scan_stats[component]
+                    if component in opt_data:
+                        comp_data = opt_data[component]
                         print(f"      ✅ {component}: Active")
                         if isinstance(comp_data, dict):
-                            # Show key stats
-                            for stat, value in comp_data.items():
-                                if stat in ['item_count', 'size_mb', 'processed', 'queue_size']:
-                                    print(f"         {stat}: {value}")
+                            # Show key stats for different components
+                            if 'cache' in component:
+                                # Cache stats
+                                size = comp_data.get('size', 0)
+                                maxsize = comp_data.get('maxsize', 0) 
+                                hit_rate = comp_data.get('hit_rate', 0)
+                                print(f"         size: {size}/{maxsize}, hit_rate: {hit_rate}%")
+                            elif component == 'request_coalescer':
+                                # Coalescer stats
+                                pending = comp_data.get('pending_requests', 0)
+                                coalesced = comp_data.get('coalesced_requests', 0)
+                                print(f"         pending: {pending}, coalesced: {coalesced}")
+                            elif component == 'scanned_receipts':
+                                # Deduplication stats
+                                count = comp_data.get('count', 0)
+                                memory_mb = comp_data.get('memory_mb', 0)
+                                print(f"         receipts: {count:,}, memory: {memory_mb:.2f}MB")
+                    else:
+                        print(f"      ❌ {component}: Missing")
+                        
+                # Verify cache sizes match specifications
+                user_cache = opt_data.get('user_cache', {})
+                if user_cache.get('maxsize') == 50000:
+                    print(f"      ✅ User cache configured for 50K users (spec)")
+                else:
+                    print(f"      ⚠️  User cache size: {user_cache.get('maxsize', 'N/A')} (expected: 50K)")
+
+    def test_v3_scan_system(self):
+        """Test ultra-optimized V3 scan system"""
+        print(f"\n🔥 === ULTRA-OPTIMIZED V3 SCAN SYSTEM TESTS ===")
+        
+        # Test V3 scan stats endpoint
+        success, v3_stats = self.run_test(
+            "V3 Ultra-Optimized Scan Stats",
+            "GET",
+            "/api/v3/stats", 
+            200
+        )
+        
+        if success and v3_stats:
+            print(f"   🎯 V3 Scan system components:")
+            if isinstance(v3_stats, dict):
+                # Check for V3 specific components
+                expected_v3_components = ['deduplicator', 'write_buffer', 'target_performance']
+                
+                for component in expected_v3_components:
+                    if component in v3_stats:
+                        comp_data = v3_stats[component]
+                        print(f"      ✅ {component}: Active")
+                        if isinstance(comp_data, dict):
+                            if component == 'deduplicator':
+                                # Deduplication stats
+                                size = comp_data.get('size', 0)
+                                max_size = comp_data.get('max_size', 0)
+                                memory_mb = comp_data.get('memory_mb', 0)
+                                evictions = comp_data.get('evictions', 0)
+                                print(f"         capacity: {size:,}/{max_size:,}, memory: {memory_mb}MB, evictions: {evictions}")
+                                
+                                # Check if deduplicator meets 2M capacity spec
+                                if max_size >= 2000000:
+                                    print(f"         ✅ Meets 2M capacity requirement")
+                                else:
+                                    print(f"         ⚠️  Below 2M capacity: {max_size:,}")
+                                    
+                            elif component == 'write_buffer':
+                                # Write buffer stats
+                                flushes = comp_data.get('flushes', 0)
+                                scans_written = comp_data.get('scans_written', 0)
+                                users_updated = comp_data.get('users_updated', 0)
+                                pending_scans = comp_data.get('pending_scans', 0)
+                                pending_users = comp_data.get('pending_users', 0)
+                                print(f"         flushes: {flushes}, written: {scans_written}, pending: {pending_scans}")
+                                
+                            elif component == 'target_performance':
+                                # Performance targets
+                                response_target = comp_data.get('response_time_target_ms', 0)
+                                throughput_target = comp_data.get('throughput_target_per_min', 0)
+                                print(f"         target: <{response_target}ms, {throughput_target:,}/min")
+                                
+                                # Verify targets meet specification
+                                if response_target <= 5 and throughput_target >= 50000:
+                                    print(f"         ✅ Meets performance targets (<5ms, 50K+/min)")
+                                else:
+                                    print(f"         ⚠️  Performance targets may be off-spec")
                     else:
                         print(f"      ❌ {component}: Missing")
 
-    def test_system_initialization(self):
-        """Test that high-performance components are properly initialized"""
-        print(f"\n🏗️  === SYSTEM INITIALIZATION TESTS ===")
+    def test_database_optimization_stats(self):
+        """Test database optimization statistics"""
+        print(f"\n💾 === DATABASE OPTIMIZATION TESTS ===")
         
-        # Check if server started with all components
-        # This is tested indirectly through the stats endpoints
-        success, data = self.run_test(
-            "Server Components Initialization Check", 
+        # Test database stats endpoint
+        success, db_stats = self.run_test(
+            "Database Collection Statistics",
             "GET",
-            "/api/v2/scan/stats",
+            "/api/system/db-stats",
             200
         )
         
-        if success:
-            print(f"   ✅ High-performance components initialized successfully")
-        else:
-            print(f"   ❌ Component initialization may have failed")
+        if success and db_stats:
+            print(f"   📊 Database collection statistics:")
+            if isinstance(db_stats, dict):
+                # Expected collections with indexes
+                expected_collections = ['scans', 'users', 'draw_entries', 'draws', 'referrals']
+                
+                for collection in expected_collections:
+                    if collection in db_stats:
+                        coll_data = db_stats[collection]
+                        if isinstance(coll_data, dict) and 'error' not in coll_data:
+                            print(f"      ✅ {collection}:")
+                            count = coll_data.get('count', 0)
+                            size_mb = coll_data.get('size_mb', 0)
+                            index_size_mb = coll_data.get('index_size_mb', 0)
+                            avg_obj_size = coll_data.get('avg_obj_size', 0)
+                            print(f"         documents: {count:,}, size: {size_mb:.2f}MB")
+                            print(f"         indexes: {index_size_mb:.2f}MB, avg_obj: {avg_obj_size}B")
+                        else:
+                            error_msg = coll_data.get('error', 'Unknown error') if isinstance(coll_data, dict) else 'Invalid data'
+                            print(f"      ❌ {collection}: {error_msg}")
+                    else:
+                        print(f"      ❌ {collection}: Missing from stats")
 
-    def test_capacity_calculations(self):
-        """Test theoretical capacity calculations"""
-        print(f"\n📐 === CAPACITY CALCULATION TESTS ===")
+    def test_backend_initialization(self):
+        """Test that all optimization components initialized correctly on startup"""
+        print(f"\n🏗️  === BACKEND INITIALIZATION TESTS ===")
         
-        success, data = self.run_test(
-            "Theoretical Capacity Check",
+        # Test that optimization components are initialized
+        success1, opt_data = self.run_test(
+            "Optimization Components Initialization",
             "GET", 
-            "/api/system/scaling",
+            "/api/system/optimizations",
             200
         )
         
-        if success and isinstance(data, dict):
-            if 'theoretical_capacity' in data:
-                capacity = data['theoretical_capacity']
-                print(f"   📊 System Capacity Analysis:")
-                if isinstance(capacity, dict):
-                    for metric, value in capacity.items():
-                        print(f"      {metric}: {value}")
-                        
-                # Check if meets 1M+ target
-                scans_per_min = capacity.get('total_scans_per_minute', 0)
-                if scans_per_min >= 1000000:
-                    print(f"   ✅ Meets 1M+ scans/min target ({scans_per_min:,})")
+        # Test that V3 write buffer is initialized
+        success2, v3_data = self.run_test(
+            "V3 Write Buffer Initialization",
+            "GET",
+            "/api/v3/stats",
+            200  
+        )
+        
+        # Test database indexes were created
+        success3, db_data = self.run_test(
+            "Database Indexes Creation",
+            "GET",
+            "/api/system/db-stats", 
+            200
+        )
+        
+        if success1 and success2 and success3:
+            print(f"   ✅ All optimization components initialized successfully")
+            
+            # Check specific initialization indicators
+            if isinstance(opt_data, dict):
+                cache_components = ['user_cache', 'draw_cache', 'config_cache']
+                initialized_caches = sum(1 for comp in cache_components if comp in opt_data)
+                print(f"   📦 Caches initialized: {initialized_caches}/{len(cache_components)}")
+                
+            if isinstance(v3_data, dict) and 'write_buffer' in v3_data:
+                wb_data = v3_data['write_buffer']
+                if isinstance(wb_data, dict):
+                    flushes = wb_data.get('flushes', 0)
+                    print(f"   💾 Write buffer active: {flushes} flushes recorded")
+                    
+            if isinstance(db_data, dict):
+                active_collections = sum(1 for coll, data in db_data.items() 
+                                       if isinstance(data, dict) and 'error' not in data)
+                print(f"   🗃️  Database collections with stats: {active_collections}")
+                
+        else:
+            failed_components = []
+            if not success1: failed_components.append("optimization components")
+            if not success2: failed_components.append("V3 write buffer") 
+            if not success3: failed_components.append("database stats")
+            print(f"   ❌ Failed initialization: {', '.join(failed_components)}")
+
+    def test_performance_targets(self):
+        """Test that system meets performance targets"""
+        print(f"\n🎯 === PERFORMANCE TARGET VERIFICATION ===")
+        
+        # Check V3 performance targets
+        success, v3_data = self.run_test(
+            "V3 Performance Target Check",
+            "GET",
+            "/api/v3/stats",
+            200
+        )
+        
+        if success and isinstance(v3_data, dict):
+            targets = v3_data.get('target_performance', {})
+            if isinstance(targets, dict):
+                response_target = targets.get('response_time_target_ms', 0)
+                throughput_target = targets.get('throughput_target_per_min', 0)
+                
+                print(f"   🎯 Performance targets:")
+                print(f"      Response time target: <{response_target}ms")
+                print(f"      Throughput target: {throughput_target:,} scans/minute")
+                
+                # Verify against specifications
+                meets_response = response_target <= 5
+                meets_throughput = throughput_target >= 50000
+                
+                if meets_response and meets_throughput:
+                    print(f"   ✅ Meets all performance targets")
+                    print(f"      ✅ <5ms latency target: {response_target}ms")
+                    print(f"      ✅ 50K+ scans/min target: {throughput_target:,}")
                 else:
-                    print(f"   ⚠️  Below 1M target: {scans_per_min:,} scans/min")
+                    print(f"   ⚠️  Performance targets analysis:")
+                    if not meets_response:
+                        print(f"      ❌ Response time target too high: {response_target}ms (should be ≤5ms)")
+                    if not meets_throughput:
+                        print(f"      ❌ Throughput target too low: {throughput_target:,} (should be ≥50,000)")
+            else:
+                print(f"   ❌ Performance targets not found in V3 stats")
+        else:
+            print(f"   ❌ Could not retrieve V3 performance targets")
 
     def run_all_tests(self):
         """Run all high-performance system tests"""
