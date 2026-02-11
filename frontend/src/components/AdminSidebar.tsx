@@ -28,6 +28,7 @@ const menuItems: MenuItem[] = [
   { id: 'scans', label: 'Scans', icon: 'scan-outline', route: '/admin/scans' },
   { id: 'notifications', label: 'Notifications', icon: 'notifications-outline', route: '/admin/notifications' },
   { id: 'analytics', label: 'Analytics', icon: 'bar-chart-outline', route: '/admin/analytics' },
+  { id: 'performance', label: 'System Performance', icon: 'speedometer-outline', route: '/admin/performance' },
   { id: 'fraud', label: 'Fraud Detection', icon: 'shield-outline', route: '/admin/fraud' },
   { id: 'settings', label: 'Settings', icon: 'settings-outline', route: '/admin/settings' },
 ];
