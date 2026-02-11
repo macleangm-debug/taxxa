@@ -1290,6 +1290,22 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
     fontWeight: '500',
   },
+  navLinkHighlight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.3)',
+  },
+  navLinkHighlightText: {
+    fontSize: 14,
+    color: '#10B981',
+    fontWeight: '600',
+  },
   navButtonOutline: {
     paddingHorizontal: 18,
     paddingVertical: 10,
