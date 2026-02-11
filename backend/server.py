@@ -38,6 +38,15 @@ from services.scan_processor import (
 from services.scan_processor_handlers import set_database as set_handler_db
 from services.performance_config import perf_config, calculate_capacity
 
+# Advanced optimizations
+from services.optimizations import (
+    user_cache, draw_cache, config_cache,
+    request_coalescer, circuit_breaker,
+    semaphore_pool, batch_executor,
+    get_optimization_stats
+)
+from services.db_indexes import create_optimized_indexes, get_collection_stats
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
