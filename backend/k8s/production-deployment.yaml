@@ -1,0 +1,284 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: taxxa-performance-config
+  namespace: taxxa
+data:
+  # MongoDB Connection Pool
+  MONGO_MAX_POOL_SIZE: "500"
+  MONGO_MIN_POOL_SIZE: "50"
+  MONGO_MAX_IDLE_TIME_MS: "30000"
+  MONGO_CONNECT_TIMEOUT_MS: "5000"
+  MONGO_SERVER_SELECTION_TIMEOUT_MS: "5000"
+  MONGO_SOCKET_TIMEOUT_MS: "30000"
+  
+  # Batch Processing
+  SCAN_BATCH_SIZE: "100"
+  SCAN_BATCH_FLUSH_INTERVAL_MS: "50"
+  SCAN_QUEUE_MAX_SIZE: "50000"
+  
+  # Write Aggregation
+  WRITE_FLUSH_INTERVAL_MS: "200"
+  WRITE_MAX_PENDING: "500"
+  
+  # Background Workers
+  BACKGROUND_WORKERS: "8"
+  BACKGROUND_QUEUE_SIZE: "100000"
+  
+  # Bloom Filter
+  BLOOM_EXPECTED_ITEMS: "10000000"
+  BLOOM_FP_RATE: "0.01"
+  
+  # Rate Limiting
+  SCAN_RATE_LIMIT: "100"
+  GLOBAL_RATE_LIMIT: "1000"
+  
+  # Workers per pod
+  UVICORN_WORKERS: "8"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: taxxa-api
+  namespace: taxxa
+  labels:
+    app: taxxa-api
+spec:
+  replicas: 50  # For 1M+ scans/min
+  selector:
+    matchLabels:
+      app: taxxa-api
+  template:
+    metadata:
+      labels:
+        app: taxxa-api
+    spec:
+      containers:
+      - name: taxxa-api
+        image: taxxa/api:latest
+        ports:
+        - containerPort: 8001
+        envFrom:
+        - configMapRef:
+            name: taxxa-performance-config
+        - secretRef:
+            name: taxxa-secrets
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "2000m"
+          limits:
+            memory: "2Gi"
+            cpu: "4000m"
+        readinessProbe:
+          httpGet:
+            path: /api/health/ready
+            port: 8001
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 8001
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/sh", "-c", "sleep 10"]  # Graceful shutdown
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - taxxa-api
+              topologyKey: kubernetes.io/hostname
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: taxxa-api-hpa
+  namespace: taxxa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: taxxa-api
+  minReplicas: 10
+  maxReplicas: 100
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+      - type: Pods
+        value: 10
+        periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 10
+        periodSeconds: 60
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: taxxa-api
+  namespace: taxxa
+spec:
+  selector:
+    app: taxxa-api
+  ports:
+  - port: 8001
+    targetPort: 8001
+  type: ClusterIP
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: taxxa-api-ingress
+  namespace: taxxa
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "30"
+    nginx.ingress.kubernetes.io/upstream-keepalive-connections: "100"
+spec:
+  rules:
+  - host: api.taxxa.io
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: taxxa-api
+            port:
+              number: 8001
+
+---
+# MongoDB Sharded Cluster Configuration
+apiVersion: mongodbcommunity.mongodb.com/v1
+kind: MongoDBCommunity
+metadata:
+  name: taxxa-mongodb
+  namespace: taxxa
+spec:
+  members: 3
+  type: ReplicaSet
+  version: "6.0.4"
+  security:
+    authentication:
+      modes: ["SCRAM"]
+  users:
+    - name: taxxa-app
+      db: admin
+      passwordSecretRef:
+        name: mongodb-password
+      roles:
+        - name: readWrite
+          db: taxxa_db
+      scramCredentialsSecretName: taxxa-scram
+  statefulSet:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: mongod
+              resources:
+                requests:
+                  cpu: "2000m"
+                  memory: "4Gi"
+                limits:
+                  cpu: "4000m"
+                  memory: "8Gi"
+
+---
+# Redis Cluster for Caching and Rate Limiting
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-cluster-config
+  namespace: taxxa
+data:
+  redis.conf: |
+    cluster-enabled yes
+    cluster-config-file nodes.conf
+    cluster-node-timeout 5000
+    appendonly yes
+    maxmemory 2gb
+    maxmemory-policy allkeys-lru
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-cluster
+  namespace: taxxa
+spec:
+  serviceName: redis-cluster
+  replicas: 6
+  selector:
+    matchLabels:
+      app: redis-cluster
+  template:
+    metadata:
+      labels:
+        app: redis-cluster
+    spec:
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        ports:
+        - containerPort: 6379
+        - containerPort: 16379
+        command:
+        - redis-server
+        - /conf/redis.conf
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        volumeMounts:
+        - name: conf
+          mountPath: /conf
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: conf
+        configMap:
+          name: redis-cluster-config
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 10Gi
