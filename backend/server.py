@@ -3862,6 +3862,40 @@ async def cache_status():
     return await cache.get_cache_stats()
 
 
+# ============== HIGH-PERFORMANCE SYSTEM ENDPOINTS ==============
+
+@api_router.get("/system/performance")
+async def get_performance_stats():
+    """Get high-performance system statistics"""
+    from services.performance_config import calculate_capacity, perf_config
+    
+    return {
+        "config": perf_config.to_dict(),
+        "capacity": calculate_capacity(perf_config),
+        "components": {
+            "bloom_filter": receipt_bloom_filter.get_stats(),
+            "batch_processor": scan_batch_processor.get_stats(),
+            "background_tasks": background_tasks.get_stats(),
+            "write_aggregator": write_aggregator.get_stats()
+        }
+    }
+
+
+@api_router.get("/system/scaling")
+async def get_scaling_info():
+    """Get scaling recommendations for 1M+ scans/minute"""
+    from services.performance_config import calculate_capacity, perf_config, DEPLOYMENT_CONFIGS
+    
+    capacity = calculate_capacity(perf_config)
+    
+    return {
+        "current_capacity": capacity["theoretical_capacity"],
+        "bottlenecks": capacity["bottlenecks"],
+        "recommendations": capacity["recommendations"],
+        "deployment_configs": DEPLOYMENT_CONFIGS
+    }
+
+
 # ============== RECEIPT API ROUTER ==============
 # Import and configure the new Receipt API router
 from routers.receipts import router as receipts_router, set_database, set_auth_dependency
