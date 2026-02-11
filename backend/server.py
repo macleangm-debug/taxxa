@@ -3857,6 +3857,273 @@ async def set_active_country(
     return {"message": "Active country updated successfully"}
 
 
+# ============== DRAW CONFIGURATION CRUD ==============
+
+@api_router.post("/draw-configs")
+async def create_draw_config(config: DrawConfigurationCreate):
+    """Create a new draw configuration"""
+    try:
+        now = datetime.utcnow()
+        
+        # Build the document
+        doc = {
+            "name": config.name,
+            "type": config.type,
+            "country": config.country,
+            "status": "draft",
+            "startDate": config.startDate,
+            "endDate": config.endDate,
+            "drawDate": config.drawDate,
+            "prizePool": config.prizePool,
+            "prizes": [p.dict() for p in config.prizes] if config.prizes else [],
+            "entryMethod": config.entryMethod,
+            "fixedEntries": config.fixedEntries,
+            "amountPerEntry": config.amountPerEntry,
+            "baseEntries": config.baseEntries,
+            "tiers": [t.dict() for t in config.tiers] if config.tiers else [],
+            "vatAmountPerEntry": config.vatAmountPerEntry,
+            "vatBaseEntries": config.vatBaseEntries,
+            "capsEnabled": config.capsEnabled,
+            "maxEntriesPerReceipt": config.maxEntriesPerReceipt,
+            "maxEntriesPerDay": config.maxEntriesPerDay,
+            "maxEntriesPerWeek": config.maxEntriesPerWeek,
+            "bonusesEnabled": config.bonusesEnabled,
+            "firstScanBonus": config.firstScanBonus,
+            "weekendBonus": config.weekendBonus,
+            "holidayBonus": config.holidayBonus,
+            "streakBonus": config.streakBonus,
+            "merchantCategoryBonus": config.merchantCategoryBonus,
+            "minimumReceiptAmount": config.minimumReceiptAmount,
+            "requireVerifiedMerchant": config.requireVerifiedMerchant,
+            "allowDuplicateReceipts": config.allowDuplicateReceipts,
+            "receiptValidityHours": config.receiptValidityHours,
+            "createdAt": now,
+            "updatedAt": now,
+        }
+        
+        result = await db.draw_configs.insert_one(doc)
+        
+        logger.info(f"Created draw config: {config.name} ({config.country})")
+        
+        return {
+            "success": True,
+            "message": "Draw configuration created successfully",
+            "id": str(result.inserted_id),
+            "config": {
+                "id": str(result.inserted_id),
+                "name": config.name,
+                "type": config.type,
+                "country": config.country,
+                "status": "draft",
+                "prizePool": config.prizePool,
+                "entryMethod": config.entryMethod,
+                "createdAt": now.isoformat(),
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error creating draw config: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/draw-configs")
+async def get_draw_configs(
+    country: Optional[str] = None,
+    status: Optional[str] = None,
+    type: Optional[str] = None
+):
+    """Get all draw configurations with optional filters"""
+    try:
+        query = {}
+        if country:
+            query["country"] = country
+        if status:
+            query["status"] = status
+        if type:
+            query["type"] = type
+        
+        configs = await db.draw_configs.find(query).sort("createdAt", -1).to_list(100)
+        
+        result = []
+        for cfg in configs:
+            result.append({
+                "id": str(cfg["_id"]),
+                "name": cfg.get("name", "Untitled"),
+                "type": cfg.get("type", "weekly"),
+                "country": cfg.get("country", "tanzania"),
+                "status": cfg.get("status", "draft"),
+                "prizePool": cfg.get("prizePool", 0),
+                "entryMethod": cfg.get("entryMethod", "amount"),
+                "capsEnabled": cfg.get("capsEnabled", True),
+                "bonusesEnabled": cfg.get("bonusesEnabled", True),
+                "createdAt": cfg.get("createdAt", datetime.utcnow()).isoformat() if cfg.get("createdAt") else None,
+                "updatedAt": cfg.get("updatedAt", datetime.utcnow()).isoformat() if cfg.get("updatedAt") else None,
+            })
+        
+        return {
+            "success": True,
+            "count": len(result),
+            "configs": result
+        }
+    except Exception as e:
+        logger.error(f"Error fetching draw configs: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/draw-configs/{config_id}")
+async def get_draw_config(config_id: str):
+    """Get a specific draw configuration by ID"""
+    try:
+        cfg = await db.draw_configs.find_one({"_id": ObjectId(config_id)})
+        
+        if not cfg:
+            raise HTTPException(status_code=404, detail="Draw configuration not found")
+        
+        # Convert ObjectId and datetime for JSON serialization
+        result = {k: v for k, v in cfg.items() if k != "_id"}
+        result["id"] = str(cfg["_id"])
+        if "createdAt" in result and result["createdAt"]:
+            result["createdAt"] = result["createdAt"].isoformat()
+        if "updatedAt" in result and result["updatedAt"]:
+            result["updatedAt"] = result["updatedAt"].isoformat()
+        
+        return {
+            "success": True,
+            "config": result
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching draw config {config_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.put("/draw-configs/{config_id}")
+async def update_draw_config(config_id: str, updates: DrawConfigurationUpdate):
+    """Update a draw configuration"""
+    try:
+        # Build update document (only include non-None fields)
+        update_data = {k: v for k, v in updates.dict().items() if v is not None}
+        update_data["updatedAt"] = datetime.utcnow()
+        
+        # Handle tiers conversion
+        if "tiers" in update_data and update_data["tiers"]:
+            update_data["tiers"] = [t.dict() if hasattr(t, 'dict') else t for t in update_data["tiers"]]
+        
+        result = await db.draw_configs.update_one(
+            {"_id": ObjectId(config_id)},
+            {"$set": update_data}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Draw configuration not found")
+        
+        logger.info(f"Updated draw config: {config_id}")
+        
+        return {
+            "success": True,
+            "message": "Draw configuration updated successfully",
+            "modifiedCount": result.modified_count
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating draw config {config_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.delete("/draw-configs/{config_id}")
+async def delete_draw_config(config_id: str):
+    """Delete a draw configuration"""
+    try:
+        result = await db.draw_configs.delete_one({"_id": ObjectId(config_id)})
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Draw configuration not found")
+        
+        logger.info(f"Deleted draw config: {config_id}")
+        
+        return {
+            "success": True,
+            "message": "Draw configuration deleted successfully"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting draw config {config_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/draw-configs/{config_id}/activate")
+async def activate_draw_config(config_id: str):
+    """Activate a draw configuration (set status to active)"""
+    try:
+        # First, deactivate any other active configs for the same country
+        cfg = await db.draw_configs.find_one({"_id": ObjectId(config_id)})
+        if not cfg:
+            raise HTTPException(status_code=404, detail="Draw configuration not found")
+        
+        # Deactivate other active configs for same country and type
+        await db.draw_configs.update_many(
+            {
+                "country": cfg["country"],
+                "type": cfg["type"],
+                "status": "active",
+                "_id": {"$ne": ObjectId(config_id)}
+            },
+            {"$set": {"status": "inactive", "updatedAt": datetime.utcnow()}}
+        )
+        
+        # Activate this config
+        result = await db.draw_configs.update_one(
+            {"_id": ObjectId(config_id)},
+            {"$set": {"status": "active", "updatedAt": datetime.utcnow()}}
+        )
+        
+        logger.info(f"Activated draw config: {config_id}")
+        
+        return {
+            "success": True,
+            "message": "Draw configuration activated successfully"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error activating draw config {config_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/draw-configs/{config_id}/duplicate")
+async def duplicate_draw_config(config_id: str):
+    """Duplicate a draw configuration"""
+    try:
+        cfg = await db.draw_configs.find_one({"_id": ObjectId(config_id)})
+        if not cfg:
+            raise HTTPException(status_code=404, detail="Draw configuration not found")
+        
+        # Create a copy
+        now = datetime.utcnow()
+        new_cfg = {k: v for k, v in cfg.items() if k != "_id"}
+        new_cfg["name"] = f"{cfg.get('name', 'Untitled')} (Copy)"
+        new_cfg["status"] = "draft"
+        new_cfg["createdAt"] = now
+        new_cfg["updatedAt"] = now
+        
+        result = await db.draw_configs.insert_one(new_cfg)
+        
+        logger.info(f"Duplicated draw config {config_id} to {result.inserted_id}")
+        
+        return {
+            "success": True,
+            "message": "Draw configuration duplicated successfully",
+            "newId": str(result.inserted_id)
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error duplicating draw config {config_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ============== EDUCATION CONTENT ==============
 
 @api_router.get("/education")
