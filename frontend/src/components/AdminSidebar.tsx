@@ -94,7 +94,7 @@ export default function AdminSidebar() {
         ))}
 
         <Text style={styles.navSection}>SYSTEM</Text>
-        {menuItems.slice(6).map((item) => (
+        {menuItems.slice(7).map((item) => (
           <TouchableOpacity
             key={item.id}
             style={[styles.navItem, isActive(item.route) && styles.navItemActive]}
