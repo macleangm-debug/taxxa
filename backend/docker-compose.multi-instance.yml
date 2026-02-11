@@ -1,0 +1,342 @@
+version: '3.8'
+
+# Multi-Instance Deployment for Local Testing
+# Simulates production environment with:
+# - 8 API instances behind nginx load balancer
+# - Redis cluster (6 nodes)
+# - MongoDB replica set
+
+services:
+  # ============== LOAD BALANCER ==============
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "8000:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api-1
+      - api-2
+      - api-3
+      - api-4
+      - api-5
+      - api-6
+      - api-7
+      - api-8
+    networks:
+      - taxxa-network
+
+  # ============== API INSTANCES ==============
+  api-1:
+    build: .
+    environment:
+      - POD_NAME=api-1
+      - MONGO_URL=mongodb://mongo-primary:27017/taxxa_db?replicaSet=rs0
+      - DB_NAME=taxxa_db
+      - REDIS_MODE=cluster
+      - REDIS_CLUSTER_NODES=redis-1:6379,redis-2:6379,redis-3:6379
+      - UVICORN_WORKERS=4
+    depends_on:
+      - mongo-primary
+      - redis-1
+    networks:
+      - taxxa-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+
+  api-2:
+    build: .
+    environment:
+      - POD_NAME=api-2
+      - MONGO_URL=mongodb://mongo-primary:27017/taxxa_db?replicaSet=rs0
+      - DB_NAME=taxxa_db
+      - REDIS_MODE=cluster
+      - REDIS_CLUSTER_NODES=redis-1:6379,redis-2:6379,redis-3:6379
+      - UVICORN_WORKERS=4
+    depends_on:
+      - mongo-primary
+      - redis-1
+    networks:
+      - taxxa-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+
+  api-3:
+    build: .
+    environment:
+      - POD_NAME=api-3
+      - MONGO_URL=mongodb://mongo-primary:27017/taxxa_db?replicaSet=rs0
+      - DB_NAME=taxxa_db
+      - REDIS_MODE=cluster
+      - REDIS_CLUSTER_NODES=redis-1:6379,redis-2:6379,redis-3:6379
+      - UVICORN_WORKERS=4
+    depends_on:
+      - mongo-primary
+      - redis-1
+    networks:
+      - taxxa-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+
+  api-4:
+    build: .
+    environment:
+      - POD_NAME=api-4
+      - MONGO_URL=mongodb://mongo-primary:27017/taxxa_db?replicaSet=rs0
+      - DB_NAME=taxxa_db
+      - REDIS_MODE=cluster
+      - REDIS_CLUSTER_NODES=redis-1:6379,redis-2:6379,redis-3:6379
+      - UVICORN_WORKERS=4
+    depends_on:
+      - mongo-primary
+      - redis-1
+    networks:
+      - taxxa-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+
+  api-5:
+    build: .
+    environment:
+      - POD_NAME=api-5
+      - MONGO_URL=mongodb://mongo-primary:27017/taxxa_db?replicaSet=rs0
+      - DB_NAME=taxxa_db
+      - REDIS_MODE=cluster
+      - REDIS_CLUSTER_NODES=redis-1:6379,redis-2:6379,redis-3:6379
+      - UVICORN_WORKERS=4
+    depends_on:
+      - mongo-primary
+      - redis-1
+    networks:
+      - taxxa-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+
+  api-6:
+    build: .
+    environment:
+      - POD_NAME=api-6
+      - MONGO_URL=mongodb://mongo-primary:27017/taxxa_db?replicaSet=rs0
+      - DB_NAME=taxxa_db
+      - REDIS_MODE=cluster
+      - REDIS_CLUSTER_NODES=redis-1:6379,redis-2:6379,redis-3:6379
+      - UVICORN_WORKERS=4
+    depends_on:
+      - mongo-primary
+      - redis-1
+    networks:
+      - taxxa-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+
+  api-7:
+    build: .
+    environment:
+      - POD_NAME=api-7
+      - MONGO_URL=mongodb://mongo-primary:27017/taxxa_db?replicaSet=rs0
+      - DB_NAME=taxxa_db
+      - REDIS_MODE=cluster
+      - REDIS_CLUSTER_NODES=redis-1:6379,redis-2:6379,redis-3:6379
+      - UVICORN_WORKERS=4
+    depends_on:
+      - mongo-primary
+      - redis-1
+    networks:
+      - taxxa-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+
+  api-8:
+    build: .
+    environment:
+      - POD_NAME=api-8
+      - MONGO_URL=mongodb://mongo-primary:27017/taxxa_db?replicaSet=rs0
+      - DB_NAME=taxxa_db
+      - REDIS_MODE=cluster
+      - REDIS_CLUSTER_NODES=redis-1:6379,redis-2:6379,redis-3:6379
+      - UVICORN_WORKERS=4
+    depends_on:
+      - mongo-primary
+      - redis-1
+    networks:
+      - taxxa-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+
+  # ============== REDIS CLUSTER ==============
+  redis-1:
+    image: redis:7-alpine
+    command: redis-server --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-1-data:/data
+    networks:
+      - taxxa-network
+
+  redis-2:
+    image: redis:7-alpine
+    command: redis-server --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+    volumes:
+      - redis-2-data:/data
+    networks:
+      - taxxa-network
+
+  redis-3:
+    image: redis:7-alpine
+    command: redis-server --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+    volumes:
+      - redis-3-data:/data
+    networks:
+      - taxxa-network
+
+  redis-4:
+    image: redis:7-alpine
+    command: redis-server --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+    volumes:
+      - redis-4-data:/data
+    networks:
+      - taxxa-network
+
+  redis-5:
+    image: redis:7-alpine
+    command: redis-server --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+    volumes:
+      - redis-5-data:/data
+    networks:
+      - taxxa-network
+
+  redis-6:
+    image: redis:7-alpine
+    command: redis-server --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+    volumes:
+      - redis-6-data:/data
+    networks:
+      - taxxa-network
+
+  # Redis cluster initialization
+  redis-cluster-init:
+    image: redis:7-alpine
+    depends_on:
+      - redis-1
+      - redis-2
+      - redis-3
+      - redis-4
+      - redis-5
+      - redis-6
+    command: >
+      sh -c "sleep 10 && redis-cli --cluster create 
+      redis-1:6379 redis-2:6379 redis-3:6379 
+      redis-4:6379 redis-5:6379 redis-6:6379 
+      --cluster-replicas 1 --cluster-yes"
+    networks:
+      - taxxa-network
+
+  # ============== MONGODB REPLICA SET ==============
+  mongo-primary:
+    image: mongo:6
+    command: mongod --replSet rs0 --bind_ip_all
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-primary-data:/data/db
+    networks:
+      - taxxa-network
+
+  mongo-secondary-1:
+    image: mongo:6
+    command: mongod --replSet rs0 --bind_ip_all
+    volumes:
+      - mongo-secondary-1-data:/data/db
+    networks:
+      - taxxa-network
+
+  mongo-secondary-2:
+    image: mongo:6
+    command: mongod --replSet rs0 --bind_ip_all
+    volumes:
+      - mongo-secondary-2-data:/data/db
+    networks:
+      - taxxa-network
+
+  # MongoDB replica set initialization
+  mongo-init:
+    image: mongo:6
+    depends_on:
+      - mongo-primary
+      - mongo-secondary-1
+      - mongo-secondary-2
+    command: >
+      mongosh --host mongo-primary:27017 --eval '
+      rs.initiate({
+        _id: "rs0",
+        members: [
+          { _id: 0, host: "mongo-primary:27017", priority: 2 },
+          { _id: 1, host: "mongo-secondary-1:27017", priority: 1 },
+          { _id: 2, host: "mongo-secondary-2:27017", priority: 1 }
+        ]
+      });
+      '
+    networks:
+      - taxxa-network
+
+  # ============== MONITORING ==============
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - taxxa-network
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - taxxa-network
+
+networks:
+  taxxa-network:
+    driver: bridge
+
+volumes:
+  redis-1-data:
+  redis-2-data:
+  redis-3-data:
+  redis-4-data:
+  redis-5-data:
+  redis-6-data:
+  mongo-primary-data:
+  mongo-secondary-1-data:
+  mongo-secondary-2-data:
+  grafana-data:
