@@ -408,6 +408,139 @@ class ConsolidatedStats(BaseModel):
     by_authority: List[Dict[str, Any]]
 
 
+# ============== DRAW CONFIGURATION MODELS ==============
+
+class TierConfig(BaseModel):
+    """Tier configuration for tiered entry method"""
+    minAmount: int
+    maxAmount: Optional[int] = None
+    entries: int
+
+class BonusConfig(BaseModel):
+    """Bonus configuration"""
+    enabled: bool = False
+    multiplier: float = 1.0
+    description: Optional[str] = None
+
+class FirstScanBonus(BonusConfig):
+    pass
+
+class WeekendBonus(BonusConfig):
+    pass
+
+class HolidayBonus(BonusConfig):
+    holidays: List[str] = []
+
+class StreakBonus(BonusConfig):
+    daysRequired: int = 7
+
+class MerchantCategory(BaseModel):
+    name: str
+    multiplier: float = 1.0
+    enabled: bool = True
+
+class MerchantCategoryBonus(BaseModel):
+    enabled: bool = True
+    categories: List[MerchantCategory] = []
+
+class PrizeConfig(BaseModel):
+    rank: int
+    amount: int
+    quantity: int
+
+class DrawConfigurationCreate(BaseModel):
+    """Create a new draw configuration"""
+    name: str
+    type: str = "weekly"  # weekly, monthly, quarterly, special
+    country: str = "tanzania"
+    startDate: Optional[str] = None
+    endDate: Optional[str] = None
+    drawDate: Optional[str] = None
+    
+    # Prize Pool
+    prizePool: int = 50000000
+    prizes: List[PrizeConfig] = []
+    
+    # Entry Calculation Method
+    entryMethod: str = "amount"  # fixed, amount, tiered, vat
+    
+    # Fixed Method Settings
+    fixedEntries: int = 1
+    
+    # Amount-Based Settings
+    amountPerEntry: int = 10000
+    baseEntries: int = 1
+    
+    # Tiered Settings
+    tiers: List[TierConfig] = []
+    
+    # VAT-Based Settings
+    vatAmountPerEntry: int = 1000
+    vatBaseEntries: int = 0
+    
+    # Entry Caps
+    capsEnabled: bool = True
+    maxEntriesPerReceipt: int = 20
+    maxEntriesPerDay: int = 50
+    maxEntriesPerWeek: int = 200
+    
+    # Bonus Multipliers
+    bonusesEnabled: bool = True
+    firstScanBonus: Optional[Dict[str, Any]] = None
+    weekendBonus: Optional[Dict[str, Any]] = None
+    holidayBonus: Optional[Dict[str, Any]] = None
+    streakBonus: Optional[Dict[str, Any]] = None
+    merchantCategoryBonus: Optional[Dict[str, Any]] = None
+    
+    # Advanced Settings
+    minimumReceiptAmount: int = 1000
+    requireVerifiedMerchant: bool = True
+    allowDuplicateReceipts: bool = False
+    receiptValidityHours: int = 72
+
+class DrawConfigurationResponse(BaseModel):
+    """Draw configuration response"""
+    id: str
+    name: str
+    type: str
+    country: str
+    status: str = "draft"  # draft, active, completed
+    prizePool: int
+    entryMethod: str
+    capsEnabled: bool
+    bonusesEnabled: bool
+    createdAt: datetime
+    updatedAt: datetime
+    createdBy: Optional[str] = None
+
+class DrawConfigurationUpdate(BaseModel):
+    """Update a draw configuration"""
+    name: Optional[str] = None
+    type: Optional[str] = None
+    status: Optional[str] = None
+    prizePool: Optional[int] = None
+    entryMethod: Optional[str] = None
+    fixedEntries: Optional[int] = None
+    amountPerEntry: Optional[int] = None
+    baseEntries: Optional[int] = None
+    tiers: Optional[List[TierConfig]] = None
+    vatAmountPerEntry: Optional[int] = None
+    vatBaseEntries: Optional[int] = None
+    capsEnabled: Optional[bool] = None
+    maxEntriesPerReceipt: Optional[int] = None
+    maxEntriesPerDay: Optional[int] = None
+    maxEntriesPerWeek: Optional[int] = None
+    bonusesEnabled: Optional[bool] = None
+    firstScanBonus: Optional[Dict[str, Any]] = None
+    weekendBonus: Optional[Dict[str, Any]] = None
+    holidayBonus: Optional[Dict[str, Any]] = None
+    streakBonus: Optional[Dict[str, Any]] = None
+    merchantCategoryBonus: Optional[Dict[str, Any]] = None
+    minimumReceiptAmount: Optional[int] = None
+    requireVerifiedMerchant: Optional[bool] = None
+    receiptValidityHours: Optional[int] = None
+
+
 # Super Admin credentials (in production, store securely)
 SUPER_ADMIN_CREDENTIALS = {
     "email": os.environ.get("SUPER_ADMIN_EMAIL", "admin@taxxa.io"),
