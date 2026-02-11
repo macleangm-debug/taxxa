@@ -9,8 +9,7 @@ import {
   TextInput,
   Modal,
   useWindowDimensions,
-  Animated,
-  Easing,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -50,8 +49,6 @@ const ParticleBackground = () => {
     left: `${Math.random() * 100}%`,
     top: `${Math.random() * 100}%`,
     size: Math.random() * 4 + 2,
-    delay: Math.random() * 5,
-    duration: Math.random() * 10 + 15,
   }));
 
   return (
@@ -75,15 +72,43 @@ const ParticleBackground = () => {
   );
 };
 
+// Sample QR codes for demo
+const SAMPLE_QR_CODES = [
+  {
+    id: 'TW-2026-001',
+    country: 'Taiwan',
+    merchant: '7-Eleven Taipei',
+    amount: 'NT$1,250',
+    date: '2026-01-15',
+    qrData: 'TW|INV|2026|001|7ELEVEN|1250|VAT125',
+  },
+  {
+    id: 'PT-2026-002',
+    country: 'Portugal',
+    merchant: 'Continente Lisboa',
+    amount: '€47.50',
+    date: '2026-01-14',
+    qrData: 'PT|FAT|2026|002|CONTINENTE|4750|IVA1093',
+  },
+  {
+    id: 'SK-2026-003',
+    country: 'Slovakia',
+    merchant: 'Tesco Bratislava',
+    amount: '€32.80',
+    date: '2026-01-13',
+    qrData: 'SK|UCT|2026|003|TESCO|3280|DPH656',
+  },
+];
+
 export default function LandingPage() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
-  const isTablet = width >= 768 && width < 1024;
   
   const [showContactModal, setShowContactModal] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showApiPlayground, setShowApiPlayground] = useState(false);
+  const [showScannerDemo, setShowScannerDemo] = useState(false);
   const [activeFeature, setActiveFeature] = useState(0);
   const [demoStep, setDemoStep] = useState(0);
   const [apiResponse, setApiResponse] = useState('');
@@ -91,6 +116,11 @@ export default function LandingPage() {
   const [apiMethod, setApiMethod] = useState('POST');
   const [isApiLoading, setIsApiLoading] = useState(false);
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
+  
+  // Scanner demo state
+  const [selectedQR, setSelectedQR] = useState<typeof SAMPLE_QR_CODES[0] | null>(null);
+  const [scanPhase, setScanPhase] = useState<'select' | 'scanning' | 'verifying' | 'result'>('select');
+  const [scanResult, setScanResult] = useState<any>(null);
   
   const [contactForm, setContactForm] = useState({
     name: '',
@@ -155,6 +185,40 @@ export default function LandingPage() {
     setIsApiLoading(false);
   };
 
+  // Scanner demo simulation
+  const startScanDemo = async (qr: typeof SAMPLE_QR_CODES[0]) => {
+    setSelectedQR(qr);
+    setScanPhase('scanning');
+    
+    // Scanning animation
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    setScanPhase('verifying');
+    
+    // Verification animation
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Generate result
+    const entries = Math.floor(Math.random() * 5) + 1;
+    setScanResult({
+      receipt_id: qr.id,
+      status: 'VALID',
+      merchant: qr.merchant,
+      amount: qr.amount,
+      country: qr.country,
+      entries_earned: entries,
+      verification_code: 'VRF-' + Math.random().toString(36).substr(2, 8).toUpperCase(),
+      timestamp: new Date().toISOString(),
+      next_draw: '2026-01-20 18:00 UTC',
+    });
+    setScanPhase('result');
+  };
+
+  const resetScanner = () => {
+    setSelectedQR(null);
+    setScanPhase('select');
+    setScanResult(null);
+  };
+
   const features = [
     {
       icon: 'scan-outline',
@@ -192,8 +256,8 @@ export default function LandingPage() {
       icon: 'globe-outline',
       title: 'Multi-tenant Platform',
       description: 'Deploy across multiple jurisdictions with localized configurations',
-      stat: '15+',
-      statLabel: 'Countries Ready',
+      stat: '10+',
+      statLabel: 'Countries Active',
       color: '#EC4899',
     },
     {
@@ -203,6 +267,69 @@ export default function LandingPage() {
       stat: '50+',
       statLabel: 'API Endpoints',
       color: '#06B6D4',
+    },
+  ];
+
+  const caseStudies = [
+    {
+      country: 'Taiwan',
+      flag: '🇹🇼',
+      program: 'Uniform Invoice Lottery',
+      since: '1951',
+      result: '75%',
+      resultLabel: 'Tax Revenue Increase',
+      description: 'The world\'s first and longest-running receipt lottery. Bi-monthly draws with prizes up to NT$10 million.',
+      color: '#EF4444',
+    },
+    {
+      country: 'Portugal',
+      flag: '🇵🇹',
+      program: 'Fatura da Sorte',
+      since: '2014',
+      result: '15%',
+      resultLabel: 'Invoice Request Increase',
+      description: 'Consumers register receipts for weekly car raffles and quarterly grand prizes.',
+      color: '#22C55E',
+    },
+    {
+      country: 'Slovakia',
+      flag: '🇸🇰',
+      program: 'Bločková Lotéria',
+      since: '2013',
+      result: '€30M',
+      resultLabel: 'Additional VAT Revenue',
+      description: 'Monthly draws incentivizing VAT compliance with cash prizes and car giveaways.',
+      color: '#3B82F6',
+    },
+    {
+      country: 'Brazil',
+      flag: '🇧🇷',
+      program: 'Nota Fiscal Paulista',
+      since: '2007',
+      result: '22%',
+      resultLabel: 'Sales Tax Increase',
+      description: 'São Paulo state program returning up to 30% of tax as credits or lottery entries.',
+      color: '#FBBF24',
+    },
+    {
+      country: 'Italy',
+      flag: '🇮🇹',
+      program: 'Lotteria degli Scontrini',
+      since: '2021',
+      result: '€5M',
+      resultLabel: 'Weekly Prize Pool',
+      description: 'Electronic receipts automatically enter consumers into weekly and annual draws.',
+      color: '#10B981',
+    },
+    {
+      country: 'Panama',
+      flag: '🇵🇦',
+      program: 'Lotería Fiscal',
+      since: '2025',
+      result: '15%',
+      resultLabel: 'Expected Revenue Growth',
+      description: 'Newly relaunched program using ITBMS invoices with monthly prize draws.',
+      color: '#8B5CF6',
     },
   ];
 
@@ -256,14 +383,14 @@ export default function LandingPage() {
               <TouchableOpacity style={styles.navLink}>
                 <Text style={styles.navLinkText}>Features</Text>
               </TouchableOpacity>
+              <TouchableOpacity style={styles.navLink} onPress={() => setShowScannerDemo(true)}>
+                <Text style={styles.navLinkText}>Try Scanner</Text>
+              </TouchableOpacity>
               <TouchableOpacity style={styles.navLink} onPress={() => setShowApiPlayground(true)}>
                 <Text style={styles.navLinkText}>API Playground</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.navLink}>
-                <Text style={styles.navLinkText}>Pricing</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.navLink}>
-                <Text style={styles.navLinkText}>Documentation</Text>
+                <Text style={styles.navLinkText}>Case Studies</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.navButtonOutline} onPress={() => router.push('/admin')}>
                 <Text style={styles.navButtonOutlineText}>Log In</Text>
@@ -284,14 +411,14 @@ export default function LandingPage() {
             <TouchableOpacity style={styles.mobileMenuItem}>
               <Text style={styles.mobileMenuItemText}>Features</Text>
             </TouchableOpacity>
+            <TouchableOpacity style={styles.mobileMenuItem} onPress={() => { setShowMobileMenu(false); setShowScannerDemo(true); }}>
+              <Text style={styles.mobileMenuItemText}>Try Scanner</Text>
+            </TouchableOpacity>
             <TouchableOpacity style={styles.mobileMenuItem} onPress={() => { setShowMobileMenu(false); setShowApiPlayground(true); }}>
               <Text style={styles.mobileMenuItemText}>API Playground</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.mobileMenuItem}>
-              <Text style={styles.mobileMenuItemText}>Pricing</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.mobileMenuItem}>
-              <Text style={styles.mobileMenuItemText}>Documentation</Text>
+              <Text style={styles.mobileMenuItemText}>Case Studies</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.mobileMenuCTA} onPress={() => { setShowMobileMenu(false); setShowContactModal(true); }}>
               <Text style={styles.mobileMenuCTAText}>Request Demo</Text>
@@ -306,7 +433,7 @@ export default function LandingPage() {
         <View style={[styles.heroContent, isMobile && styles.heroContentMobile]}>
           <View style={styles.heroBadge}>
             <View style={styles.heroBadgeDot} />
-            <Text style={styles.heroBadgeText}>Interactive Demo Available</Text>
+            <Text style={styles.heroBadgeText}>Live Scanner Demo Available</Text>
           </View>
           
           <Text style={[styles.heroTitle, isMobile && styles.heroTitleMobile]}>
@@ -317,13 +444,13 @@ export default function LandingPage() {
           
           <Text style={[styles.heroSubtitle, isMobile && styles.heroSubtitleMobile]}>
             Transform tax compliance with incentivized receipt verification. 
-            Explore our interactive demo - no account needed.
+            Try scanning a sample receipt right now - no account needed.
           </Text>
           
           <View style={[styles.heroButtons, isMobile && styles.heroButtonsMobile]}>
-            <TouchableOpacity style={styles.heroButtonPrimary} onPress={() => setShowApiPlayground(true)}>
-              <Ionicons name="play" size={20} color="#fff" />
-              <Text style={styles.heroButtonPrimaryText}>Launch Interactive Demo</Text>
+            <TouchableOpacity style={styles.heroButtonPrimary} onPress={() => setShowScannerDemo(true)}>
+              <Ionicons name="scan" size={20} color="#fff" />
+              <Text style={styles.heroButtonPrimaryText}>Try Live Scanner Demo</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.heroButtonSecondary} onPress={() => setShowContactModal(true)}>
               <Text style={styles.heroButtonSecondaryText}>Schedule Demo</Text>
@@ -342,16 +469,51 @@ export default function LandingPage() {
               <Text style={styles.statLabel}>Receipts Verified</Text>
             </View>
             <View style={styles.statCard}>
-              <AnimatedCounter end={99} suffix="%" prefix="" />
+              <AnimatedCounter end={99} suffix="%" />
               <Text style={styles.statLabel}>Uptime SLA</Text>
             </View>
             <View style={styles.statCard}>
-              <AnimatedCounter end={15} suffix="+" />
+              <AnimatedCounter end={10} suffix="+" />
               <Text style={styles.statLabel}>Countries</Text>
             </View>
           </View>
         </View>
       </LinearGradient>
+
+      {/* Case Studies Section */}
+      <View style={styles.caseStudiesSection}>
+        <View style={styles.sectionHeader}>
+          <View style={[styles.sectionBadge, { backgroundColor: 'rgba(34, 197, 94, 0.1)' }]}>
+            <Text style={[styles.sectionBadgeText, { color: '#22C55E' }]}>Proven Results</Text>
+          </View>
+          <Text style={styles.sectionTitle}>Global Success Stories</Text>
+          <Text style={styles.sectionSubtitle}>
+            Receipt lotteries have transformed tax compliance in 10+ countries worldwide
+          </Text>
+        </View>
+
+        <View style={[styles.caseStudiesGrid, isMobile && styles.caseStudiesGridMobile]}>
+          {caseStudies.map((study, index) => (
+            <View key={index} style={styles.caseStudyCard}>
+              <View style={styles.caseStudyHeader}>
+                <Text style={styles.caseStudyFlag}>{study.flag}</Text>
+                <View>
+                  <Text style={styles.caseStudyCountry}>{study.country}</Text>
+                  <Text style={styles.caseStudyProgram}>{study.program}</Text>
+                </View>
+                <View style={[styles.caseStudySince, { backgroundColor: study.color + '20' }]}>
+                  <Text style={[styles.caseStudySinceText, { color: study.color }]}>Since {study.since}</Text>
+                </View>
+              </View>
+              <View style={styles.caseStudyResult}>
+                <Text style={[styles.caseStudyResultValue, { color: study.color }]}>{study.result}</Text>
+                <Text style={styles.caseStudyResultLabel}>{study.resultLabel}</Text>
+              </View>
+              <Text style={styles.caseStudyDescription}>{study.description}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
 
       {/* Interactive Features Section */}
       <View style={styles.featuresSection}>
@@ -375,8 +537,6 @@ export default function LandingPage() {
                 hoveredCard === index && styles.featureCardHovered,
               ]}
               onPress={() => setActiveFeature(index)}
-              onMouseEnter={() => setHoveredCard(index)}
-              onMouseLeave={() => setHoveredCard(null)}
               activeOpacity={0.8}
             >
               <View style={[styles.featureIconWrapper, { backgroundColor: feature.color + '20' }]}>
@@ -445,6 +605,14 @@ export default function LandingPage() {
                 )}
               </TouchableOpacity>
             ))}
+            
+            <TouchableOpacity 
+              style={styles.tryLiveButton}
+              onPress={() => setShowScannerDemo(true)}
+            >
+              <Ionicons name="scan" size={20} color="#fff" />
+              <Text style={styles.tryLiveButtonText}>Try Live Scanner Demo</Text>
+            </TouchableOpacity>
           </View>
 
           {/* Demo Visualization */}
@@ -632,9 +800,9 @@ export default function LandingPage() {
               <Ionicons name="mail" size={20} color="#3B82F6" />
               <Text style={styles.ctaButtonPrimaryText}>Request a Demo</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.ctaButtonSecondary} onPress={() => setShowApiPlayground(true)}>
-              <Ionicons name="code-slash" size={20} color="#fff" />
-              <Text style={styles.ctaButtonSecondaryText}>Try API Playground</Text>
+            <TouchableOpacity style={styles.ctaButtonSecondary} onPress={() => setShowScannerDemo(true)}>
+              <Ionicons name="scan" size={20} color="#fff" />
+              <Text style={styles.ctaButtonSecondaryText}>Try Scanner Demo</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.ctaTrust}>
@@ -689,6 +857,168 @@ export default function LandingPage() {
           <Text style={styles.footerCopyright}>© 2026 Taxxa. All rights reserved.</Text>
         </View>
       </View>
+
+      {/* Live Scanner Demo Modal */}
+      <Modal visible={showScannerDemo} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.scannerModal, isMobile && styles.scannerModalMobile]}>
+            <View style={styles.scannerHeader}>
+              <View style={styles.scannerTitleRow}>
+                <Ionicons name="scan" size={24} color="#10B981" />
+                <Text style={styles.scannerTitle}>Live Receipt Scanner Demo</Text>
+              </View>
+              <TouchableOpacity onPress={() => { setShowScannerDemo(false); resetScanner(); }}>
+                <Ionicons name="close" size={28} color="#64748B" />
+              </TouchableOpacity>
+            </View>
+            
+            <ScrollView style={styles.scannerBody}>
+              {scanPhase === 'select' && (
+                <View style={styles.scannerContent}>
+                  <Text style={styles.scannerSubtitle}>
+                    Select a sample receipt to scan. These represent real receipt formats from countries with active fiscal lottery programs.
+                  </Text>
+                  
+                  <View style={styles.qrSampleGrid}>
+                    {SAMPLE_QR_CODES.map((qr, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        style={styles.qrSampleCard}
+                        onPress={() => startScanDemo(qr)}
+                      >
+                        <View style={styles.qrSampleHeader}>
+                          <View style={styles.qrCodeVisual}>
+                            <View style={styles.qrCodePattern}>
+                              {[...Array(5)].map((_, i) => (
+                                <View key={i} style={styles.qrCodeRow}>
+                                  {[...Array(5)].map((_, j) => (
+                                    <View 
+                                      key={j} 
+                                      style={[
+                                        styles.qrCodeCell,
+                                        (i + j) % 2 === 0 && styles.qrCodeCellFilled
+                                      ]} 
+                                    />
+                                  ))}
+                                </View>
+                              ))}
+                            </View>
+                          </View>
+                          <View style={styles.qrSampleInfo}>
+                            <Text style={styles.qrSampleCountry}>{qr.country}</Text>
+                            <Text style={styles.qrSampleMerchant}>{qr.merchant}</Text>
+                            <Text style={styles.qrSampleAmount}>{qr.amount}</Text>
+                          </View>
+                        </View>
+                        <View style={styles.qrSampleScanBtn}>
+                          <Ionicons name="scan" size={16} color="#fff" />
+                          <Text style={styles.qrSampleScanText}>Scan This Receipt</Text>
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              )}
+
+              {scanPhase === 'scanning' && selectedQR && (
+                <View style={styles.scanningPhase}>
+                  <View style={styles.scannerAnimation}>
+                    <View style={styles.scannerFrame}>
+                      <View style={styles.scannerCorner} />
+                      <View style={[styles.scannerCorner, styles.scannerCornerTR]} />
+                      <View style={[styles.scannerCorner, styles.scannerCornerBL]} />
+                      <View style={[styles.scannerCorner, styles.scannerCornerBR]} />
+                      <View style={styles.scannerBeam} />
+                    </View>
+                  </View>
+                  <Text style={styles.scanningText}>Scanning QR Code...</Text>
+                  <Text style={styles.scanningSubtext}>{selectedQR.merchant}</Text>
+                </View>
+              )}
+
+              {scanPhase === 'verifying' && selectedQR && (
+                <View style={styles.verifyingPhase}>
+                  <View style={styles.verifyingIcon}>
+                    <Ionicons name="shield-checkmark" size={64} color="#8B5CF6" />
+                  </View>
+                  <Text style={styles.verifyingText}>Verifying with {selectedQR.country} Tax Authority...</Text>
+                  <View style={styles.verifyingProgress}>
+                    <View style={styles.verifyingProgressFill} />
+                  </View>
+                  <View style={styles.verifyingSteps}>
+                    <View style={styles.verifyingStepDone}>
+                      <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+                      <Text style={styles.verifyingStepText}>QR Code Decoded</Text>
+                    </View>
+                    <View style={styles.verifyingStepDone}>
+                      <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+                      <Text style={styles.verifyingStepText}>Merchant Validated</Text>
+                    </View>
+                    <View style={styles.verifyingStepActive}>
+                      <Ionicons name="ellipse" size={20} color="#8B5CF6" />
+                      <Text style={styles.verifyingStepText}>Tax Record Verification</Text>
+                    </View>
+                  </View>
+                </View>
+              )}
+
+              {scanPhase === 'result' && scanResult && (
+                <View style={styles.resultPhase}>
+                  <View style={styles.resultSuccess}>
+                    <View style={styles.resultIconBg}>
+                      <Ionicons name="checkmark-circle" size={72} color="#10B981" />
+                    </View>
+                    <Text style={styles.resultTitle}>Receipt Verified!</Text>
+                    <View style={styles.resultEntries}>
+                      <Text style={styles.resultEntriesNumber}>+{scanResult.entries_earned}</Text>
+                      <Text style={styles.resultEntriesLabel}>Lottery Entries Earned</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.resultDetails}>
+                    <Text style={styles.resultDetailsTitle}>Receipt Details</Text>
+                    <View style={styles.resultRow}>
+                      <Text style={styles.resultLabel}>Receipt ID</Text>
+                      <Text style={styles.resultValue}>{scanResult.receipt_id}</Text>
+                    </View>
+                    <View style={styles.resultRow}>
+                      <Text style={styles.resultLabel}>Status</Text>
+                      <View style={styles.resultStatusBadge}>
+                        <Text style={styles.resultStatusText}>{scanResult.status}</Text>
+                      </View>
+                    </View>
+                    <View style={styles.resultRow}>
+                      <Text style={styles.resultLabel}>Merchant</Text>
+                      <Text style={styles.resultValue}>{scanResult.merchant}</Text>
+                    </View>
+                    <View style={styles.resultRow}>
+                      <Text style={styles.resultLabel}>Amount</Text>
+                      <Text style={styles.resultValue}>{scanResult.amount}</Text>
+                    </View>
+                    <View style={styles.resultRow}>
+                      <Text style={styles.resultLabel}>Country</Text>
+                      <Text style={styles.resultValue}>{scanResult.country}</Text>
+                    </View>
+                    <View style={styles.resultRow}>
+                      <Text style={styles.resultLabel}>Verification Code</Text>
+                      <Text style={[styles.resultValue, { fontFamily: isWeb ? 'monospace' : undefined }]}>{scanResult.verification_code}</Text>
+                    </View>
+                    <View style={styles.resultRow}>
+                      <Text style={styles.resultLabel}>Next Draw</Text>
+                      <Text style={styles.resultValue}>{scanResult.next_draw}</Text>
+                    </View>
+                  </View>
+
+                  <TouchableOpacity style={styles.scanAgainButton} onPress={resetScanner}>
+                    <Ionicons name="scan" size={20} color="#fff" />
+                    <Text style={styles.scanAgainText}>Scan Another Receipt</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
 
       {/* API Playground Modal */}
       <Modal visible={showApiPlayground} animationType="slide" transparent>
@@ -931,13 +1261,13 @@ const styles = StyleSheet.create({
   navLinks: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 32,
+    gap: 24,
   },
   navLink: {
     paddingVertical: 8,
   },
   navLinkText: {
-    fontSize: 15,
+    fontSize: 14,
     color: '#94A3B8',
     fontWeight: '500',
   },
@@ -1019,13 +1349,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: 'rgba(139, 92, 246, 0.15)',
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.3)',
+    borderColor: 'rgba(16, 185, 129, 0.3)',
   },
   heroBadgeDot: {
     width: 8,
@@ -1036,7 +1366,7 @@ const styles = StyleSheet.create({
   heroBadgeText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#A78BFA',
+    color: '#10B981',
   },
   heroTitle: {
     fontSize: isWeb ? 56 : 40,
@@ -1078,7 +1408,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: '#8B5CF6',
+    backgroundColor: '#10B981',
     paddingHorizontal: 28,
     paddingVertical: 16,
     borderRadius: 12,
@@ -1136,12 +1466,85 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
     fontWeight: '500',
   },
+
+  // Case Studies
+  caseStudiesSection: {
+    paddingVertical: 100,
+    paddingHorizontal: 24,
+    backgroundColor: '#0f0f1f',
+  },
+  caseStudiesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 20,
+    maxWidth: 1200,
+    alignSelf: 'center',
+  },
+  caseStudiesGridMobile: {
+    gap: 16,
+  },
+  caseStudyCard: {
+    backgroundColor: 'rgba(30, 30, 60, 0.5)',
+    borderRadius: 16,
+    padding: 24,
+    width: isWeb ? 360 : '100%',
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.1)',
+  },
+  caseStudyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 16,
+  },
+  caseStudyFlag: {
+    fontSize: 32,
+  },
+  caseStudyCountry: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  caseStudyProgram: {
+    fontSize: 13,
+    color: '#64748B',
+  },
+  caseStudySince: {
+    marginLeft: 'auto',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  caseStudySinceText: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  caseStudyResult: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 8,
+    marginBottom: 12,
+  },
+  caseStudyResultValue: {
+    fontSize: 36,
+    fontWeight: '700',
+  },
+  caseStudyResultLabel: {
+    fontSize: 14,
+    color: '#94A3B8',
+  },
+  caseStudyDescription: {
+    fontSize: 14,
+    color: '#94A3B8',
+    lineHeight: 22,
+  },
   
   // Features Section
   featuresSection: {
     paddingVertical: 100,
     paddingHorizontal: 24,
-    backgroundColor: '#0f0f1f',
+    backgroundColor: '#0a0a1a',
   },
   sectionHeader: {
     alignItems: 'center',
@@ -1316,6 +1719,21 @@ const styles = StyleSheet.create({
   },
   demoStepConnectorActive: {
     backgroundColor: '#8B5CF6',
+  },
+  tryLiveButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    backgroundColor: '#10B981',
+    paddingVertical: 16,
+    borderRadius: 12,
+    marginTop: 16,
+  },
+  tryLiveButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
   },
   
   // Phone Demo
@@ -1809,14 +2227,336 @@ const styles = StyleSheet.create({
     color: '#64748B',
   },
   
-  // API Playground Modal
+  // Scanner Demo Modal
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
   },
+  scannerModal: {
+    backgroundColor: '#0f0f1f',
+    borderRadius: 20,
+    width: '100%',
+    maxWidth: 700,
+    maxHeight: '90%',
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.3)',
+  },
+  scannerModalMobile: {
+    maxWidth: '100%',
+  },
+  scannerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(16, 185, 129, 0.2)',
+  },
+  scannerTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  scannerTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  scannerBody: {
+    padding: 24,
+  },
+  scannerContent: {
+    gap: 24,
+  },
+  scannerSubtitle: {
+    fontSize: 15,
+    color: '#94A3B8',
+    lineHeight: 24,
+  },
+  qrSampleGrid: {
+    gap: 16,
+  },
+  qrSampleCard: {
+    backgroundColor: 'rgba(30, 30, 60, 0.5)',
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.2)',
+  },
+  qrSampleHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    marginBottom: 16,
+  },
+  qrCodeVisual: {
+    width: 60,
+    height: 60,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 6,
+  },
+  qrCodePattern: {
+    flex: 1,
+  },
+  qrCodeRow: {
+    flexDirection: 'row',
+    flex: 1,
+  },
+  qrCodeCell: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  qrCodeCellFilled: {
+    backgroundColor: '#1a1a2e',
+  },
+  qrSampleInfo: {
+    flex: 1,
+  },
+  qrSampleCountry: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#fff',
+    marginBottom: 4,
+  },
+  qrSampleMerchant: {
+    fontSize: 14,
+    color: '#94A3B8',
+  },
+  qrSampleAmount: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#10B981',
+    marginTop: 4,
+  },
+  qrSampleScanBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#10B981',
+    paddingVertical: 12,
+    borderRadius: 10,
+  },
+  qrSampleScanText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  
+  // Scanning Phase
+  scanningPhase: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  scannerAnimation: {
+    marginBottom: 32,
+  },
+  scannerFrame: {
+    width: 200,
+    height: 200,
+    position: 'relative',
+  },
+  scannerCorner: {
+    position: 'absolute',
+    width: 50,
+    height: 50,
+    borderColor: '#10B981',
+    borderTopWidth: 4,
+    borderLeftWidth: 4,
+    top: 0,
+    left: 0,
+  },
+  scannerCornerTR: {
+    top: 0,
+    left: 'auto' as any,
+    right: 0,
+    borderLeftWidth: 0,
+    borderRightWidth: 4,
+  },
+  scannerCornerBL: {
+    top: 'auto' as any,
+    bottom: 0,
+    borderTopWidth: 0,
+    borderBottomWidth: 4,
+  },
+  scannerCornerBR: {
+    top: 'auto' as any,
+    left: 'auto' as any,
+    bottom: 0,
+    right: 0,
+    borderTopWidth: 0,
+    borderLeftWidth: 0,
+    borderBottomWidth: 4,
+    borderRightWidth: 4,
+  },
+  scannerBeam: {
+    position: 'absolute',
+    left: 10,
+    right: 10,
+    top: '40%',
+    height: 3,
+    backgroundColor: '#10B981',
+  },
+  scanningText: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#fff',
+    marginBottom: 8,
+  },
+  scanningSubtext: {
+    fontSize: 16,
+    color: '#94A3B8',
+  },
+  
+  // Verifying Phase
+  verifyingPhase: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  verifyingIcon: {
+    marginBottom: 24,
+  },
+  verifyingText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#fff',
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  verifyingProgress: {
+    width: '100%',
+    height: 8,
+    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    borderRadius: 4,
+    overflow: 'hidden',
+    marginBottom: 32,
+  },
+  verifyingProgressFill: {
+    width: '66%',
+    height: '100%',
+    backgroundColor: '#8B5CF6',
+  },
+  verifyingSteps: {
+    gap: 12,
+    width: '100%',
+  },
+  verifyingStepDone: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 12,
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    borderRadius: 10,
+  },
+  verifyingStepActive: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 12,
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.3)',
+  },
+  verifyingStepText: {
+    fontSize: 14,
+    color: '#E2E8F0',
+  },
+  
+  // Result Phase
+  resultPhase: {
+    paddingVertical: 20,
+  },
+  resultSuccess: {
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  resultIconBg: {
+    marginBottom: 16,
+  },
+  resultTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#10B981',
+    marginBottom: 16,
+  },
+  resultEntries: {
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 16,
+    alignItems: 'center',
+  },
+  resultEntriesNumber: {
+    fontSize: 48,
+    fontWeight: '800',
+    color: '#10B981',
+  },
+  resultEntriesLabel: {
+    fontSize: 14,
+    color: '#94A3B8',
+    marginTop: 4,
+  },
+  resultDetails: {
+    backgroundColor: 'rgba(30, 30, 60, 0.5)',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 24,
+  },
+  resultDetailsTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+    marginBottom: 16,
+  },
+  resultRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(139, 92, 246, 0.1)',
+  },
+  resultLabel: {
+    fontSize: 14,
+    color: '#64748B',
+  },
+  resultValue: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#E2E8F0',
+  },
+  resultStatusBadge: {
+    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  resultStatusText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#10B981',
+  },
+  scanAgainButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    backgroundColor: '#8B5CF6',
+    paddingVertical: 16,
+    borderRadius: 12,
+  },
+  scanAgainText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  
+  // API Playground Modal
   apiPlaygroundModal: {
     backgroundColor: '#0f0f1f',
     borderRadius: 20,
