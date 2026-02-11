@@ -2334,6 +2334,10 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: 4,
   },
+  qrSampleFlag: {
+    fontSize: 24,
+    marginRight: 8,
+  },
   qrSampleMerchant: {
     fontSize: 14,
     color: '#94A3B8',
