@@ -917,7 +917,10 @@ export default function LandingPage() {
                             </View>
                           </View>
                           <View style={styles.qrSampleInfo}>
-                            <Text style={styles.qrSampleCountry}>{qr.country}</Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                              <Text style={styles.qrSampleFlag}>{qr.flag}</Text>
+                              <Text style={styles.qrSampleCountry}>{qr.country}</Text>
+                            </View>
                             <Text style={styles.qrSampleMerchant}>{qr.merchant}</Text>
                             <Text style={styles.qrSampleAmount}>{qr.amount}</Text>
                           </View>
