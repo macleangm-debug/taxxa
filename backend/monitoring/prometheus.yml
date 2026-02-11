@@ -1,0 +1,44 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # API Instances
+  - job_name: 'taxxa-api'
+    static_configs:
+      - targets:
+        - 'api-1:8001'
+        - 'api-2:8001'
+        - 'api-3:8001'
+        - 'api-4:8001'
+        - 'api-5:8001'
+        - 'api-6:8001'
+        - 'api-7:8001'
+        - 'api-8:8001'
+    metrics_path: '/api/metrics'
+    scrape_timeout: 10s
+
+  # Nginx
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx:80']
+    metrics_path: '/nginx_status'
+
+  # Redis
+  - job_name: 'redis'
+    static_configs:
+      - targets:
+        - 'redis-1:6379'
+        - 'redis-2:6379'
+        - 'redis-3:6379'
+        - 'redis-4:6379'
+        - 'redis-5:6379'
+        - 'redis-6:6379'
+
+  # MongoDB
+  - job_name: 'mongodb'
+    static_configs:
+      - targets:
+        - 'mongo-primary:27017'
+        - 'mongo-secondary-1:27017'
+        - 'mongo-secondary-2:27017'
