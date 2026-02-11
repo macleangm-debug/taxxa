@@ -4012,6 +4012,11 @@ from routers.scan_v3 import router as scan_v3_router, set_database as set_scan_v
 set_scan_v3_db(db)
 app.include_router(scan_v3_router)
 
+# Distributed Scan Router (v4) - Multi-instance deployment
+from routers.scan_v4 import router as scan_v4_router, set_dependencies as set_scan_v4_deps
+set_scan_v4_deps(db, distributed_cache, distributed_processor)
+app.include_router(scan_v4_router)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
