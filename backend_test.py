@@ -390,15 +390,16 @@ class UltraOptimizedAPITester:
             print(f"   ❌ Could not retrieve V3 performance targets")
 
     def run_all_tests(self):
-        """Run all high-performance system tests"""
-        print(f"🚀 Starting High-Performance Scalability Tests...")
+        """Run all ultra-optimization system tests"""
+        print(f"🚀 Starting Ultra-Optimization Tests...")
         
         try:
             self.test_health_endpoints()
-            self.test_performance_monitoring()
-            self.test_high_performance_scan_system()
-            self.test_system_initialization()
-            self.test_capacity_calculations()
+            self.test_optimization_components()
+            self.test_v3_scan_system()
+            self.test_database_optimization_stats()
+            self.test_backend_initialization()
+            self.test_performance_targets()
             
         except KeyboardInterrupt:
             print(f"\n⚠️  Tests interrupted by user")
