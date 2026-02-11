@@ -473,12 +473,13 @@ class UltraOptimizedAPITester:
 def main():
     """Main test execution"""
     print("=" * 60)
-    print("🏭 HIGH-PERFORMANCE SCALABILITY API TESTS")
-    print("   Testing 1M+ scans/minute system components")
+    print("🔥 ULTRA-OPTIMIZED BACKEND API TESTS")
+    print("   Testing code-level optimizations for maximum single-instance performance")
+    print("   Target: 50,000+ scans/minute with <5ms latency")
     print("=" * 60)
     
     # Initialize tester
-    tester = HighPerformanceAPITester()
+    tester = UltraOptimizedAPITester()
     
     # Run all tests
     exit_code = tester.run_all_tests()
