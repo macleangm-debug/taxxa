@@ -1,90 +1,87 @@
 # TAXXA - Tax Compliance Incentive Platform
 
 ## Original Problem Statement
-Build a web version of TAXXA - a Tax Compliance Incentive Platform (lottery system) that incentivizes citizens to request receipts by scanning QR codes to enter prize draws.
+Build and enhance the TAXXA mobile application - a tax compliance incentive platform where users scan receipts to earn entries for prize draws. The user requested:
+1. Restore the original dark-themed React Native mobile app from the `conflict_110226_1902` branch
+2. Add gamification features: Streaks, Badges, Leaderboard, Analytics, i18n
 
-## Features Implemented
+## What's Been Implemented
 
-### Core Features
-1. **Analytics Dashboard** - User activity charts, scan trends, win probability
-2. **Gamification System**
-   - Streaks with multipliers (3-day: 1.1x, 7-day: 1.2x)
-   - Badge system (11 badges: First Scan, Streak milestones, Referral badges)
-   - Leaderboard rankings
-3. **Social Features** - Share on Twitter, Facebook, WhatsApp
-4. **Multi-language Support** - Full i18n framework (English, Swahili, French)
-5. **Advanced Prize System** - Weekly draws with tiered prizes, entry multipliers
+### Phase 1: App Migration (Completed - Feb 16, 2026)
+- Switched from reference React web app to user's original React Native/Expo app
+- Restored dark enterprise landing page at root URL
+- Set up symlinks for backend and frontend directories
+- Configured environment variables and MongoDB connection
 
-### User Flows
-- Landing page with value proposition
-- Registration with phone OTP verification
-- Login with JWT authentication
-- Dashboard with stats, streak, upcoming draws
-- Receipt scanner (test mode with QR generation)
-- Draws page with active/upcoming/completed tabs
-- Leaderboard with rankings
-- Referral system with shareable codes
-- Profile with badges, history, settings
+### Phase 2: Gamification Backend (Completed - Feb 16, 2026)
+- Created `/app/taxxa_temp/backend/routers/gamification.py` with:
+  - **Streaks System**: Daily streak tracking with multipliers (1x to 3x)
+  - **Badges**: 12 badge definitions with progress tracking
+  - **Leaderboard**: Rankings by daily/weekly/monthly/all-time periods
+  - **Challenges**: Daily and weekly challenges with rewards
+  - **Analytics**: User stats, scan history, rank percentile
+  - **i18n**: Multi-language support (English, Swahili, French)
+  - **Social Sharing**: Generate shareable content for WhatsApp/Twitter/Facebook
+- Added database indexes for new collections (streaks, badges, share_tokens)
 
-## Architecture
+### Phase 3: Gamification Frontend (Completed - Feb 16, 2026)
+- Created `/app/taxxa_temp/frontend/app/(tabs)/leaderboard.tsx`:
+  - Period selector (Today, This Week, This Month, All Time)
+  - Current user rank card with percentile
+  - Leaderboard entries with rank badges, streak, badges count
+- Updated `/app/taxxa_temp/frontend/app/(tabs)/index.tsx`:
+  - Streak card with flame icon and multiplier display
+  - Badges preview section with View All link
+  - Integration with gamificationAPI
+- Updated `/app/taxxa_temp/frontend/app/(tabs)/_layout.tsx`:
+  - Added "Ranks" tab with podium icon
+- Updated `/app/taxxa_temp/frontend/src/utils/api.ts`:
+  - Added gamificationAPI with all endpoint methods
 
-### Tech Stack
-- **Frontend**: React 18, Tailwind CSS, i18next, Recharts
-- **Backend**: FastAPI, Motor (MongoDB async driver)
-- **Database**: MongoDB
-- **Auth**: JWT with bcrypt password hashing
+## API Endpoints
 
-### API Endpoints
-- Auth: /api/auth/register, /api/auth/verify-otp, /api/auth/create-password, /api/auth/login
-- Scan: /api/scan, /api/scan/history
-- Draws: /api/draws, /api/draws/active
-- User: /api/user/stats, /api/user/profile
-- Gamification: /api/badges, /api/streaks, /api/leaderboard
-- Referral: /api/referral/stats, /api/referral/list
-- Social: /api/social/share-token, /api/challenges
-- Analytics: /api/analytics/overview
+### Gamification Endpoints (require JWT auth)
+- `GET /api/gamification/streaks` - Get user streak info
+- `POST /api/gamification/streaks/update` - Update streak after scan
+- `GET /api/gamification/badges` - Get all badges with user's progress
+- `GET /api/gamification/leaderboard?period={daily|weekly|monthly|all}` - Get rankings
+- `GET /api/gamification/challenges` - Get active challenges
+- `GET /api/gamification/analytics` - Get user analytics
+- `POST /api/gamification/share/generate?platform={whatsapp|twitter|facebook}` - Generate share content
 
-## What's Been Implemented (Jan 2026)
-- [x] Full React web application with responsive design
-- [x] Phone OTP registration flow
-- [x] JWT authentication
-- [x] Receipt scanning with mock revenue authority
-- [x] Streak system with multipliers (1.1x-1.2x)
-- [x] Badge awarding system
-- [x] Leaderboard
-- [x] Referral system
-- [x] i18n framework (EN/SW/FR)
-- [x] Social sharing (Twitter/Facebook/WhatsApp)
-- [x] Analytics dashboard with charts
+### i18n Endpoints (public)
+- `GET /api/gamification/languages` - Get supported languages
+- `GET /api/gamification/translations/{lang}` - Get translations for language
 
-## Backlog
+## Database Collections
+- `users` - User profiles with total_scans, total_entries
+- `scans` - Receipt scan records
+- `draws` - Prize draw definitions
+- `streaks` - User streak tracking
+- `badges` - User earned badges
+- `share_tokens` - Social sharing tokens
 
-### P0 (Critical)
-- [ ] Payment integration for prize disbursement (M-Pesa, etc.)
+## Tech Stack
+- **Frontend**: React Native, Expo, TypeScript, expo-router
+- **Backend**: FastAPI, Python, MongoDB, Motor
+- **Styling**: Dark theme (#0F172A background, #3B82F6 accent)
 
-### P1 (High Priority)
-- [ ] Real QR code camera scanning (currently test mode only)
-- [ ] Push notifications for draw reminders
-- [ ] Admin dashboard for tax authority
-- [ ] Real Revenue Authority API integration
+## Upcoming Tasks (P1)
+- Payment integration preparation
+- Push notification enhancements
+- Admin dashboard for gamification management
 
-### P2 (Medium Priority)
-- [ ] Instant win scratch cards
-- [ ] Challenge friends feature
-- [ ] More badge types
-- [ ] SMS notifications
+## Future Tasks (P2)
+- Streak returns/rewards configuration
+- Referral bonus impact on winning chances
+- Multi-country currency support enhancements
 
-### P3 (Low Priority)
-- [ ] Dark mode theme
-- [ ] PWA offline support
-- [ ] Export scan history
+## Testing Status
+- Backend: 22/22 tests passed (100%)
+- Frontend: All tabs and UI elements functional (100%)
+- Test report: `/app/test_reports/iteration_2.json`
 
-## User Personas
-1. **Primary**: Citizens (18-55) who shop regularly and want to win prizes
-2. **Secondary**: Tax Authority administrators managing draws
-3. **Tertiary**: Merchants seeing their receipt stats
-
-## Next Tasks
-1. Set up payment integration (M-Pesa) for prize disbursement
-2. Implement real QR camera scanning
-3. Add admin dashboard
+## Credentials for Testing
+- Phone: +1234567890
+- Password: Test123!
+- API URL: https://referral-hub-51.preview.emergentagent.com
