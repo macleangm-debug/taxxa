@@ -124,6 +124,30 @@ Build and enhance the TAXXA mobile application - a tax compliance incentive plat
 - ✅ Streak reminder notifications
 - ✅ Confetti animations for successful scans (Phase 8 - Feb 16, 2026)
 - ✅ Live Draw Animation with countdown and winner reveal (Phase 8 - Feb 16, 2026)
+- ✅ Raffle Ticket System (Phase 9 - Feb 16, 2026)
+
+### Raffle Ticket System (Phase 9 - Feb 16, 2026)
+- **Ticket Generation**: Each scan generates unique tickets (TXA-XXXXXX format)
+  - $50 = 1 ticket, $100 = 2 tickets, $200 = 4 tickets (based on amount)
+  - Tickets stored in `tickets` collection with user_id, draw_id, status
+- **My Tickets Page**: New tab showing user's tickets grouped by draw
+  - Stats banner: Total Tickets, Active Draws count
+  - Expandable draw cards showing individual ticket numbers
+  - Purple badge styling for ticket numbers
+- **Ticket API Endpoints**:
+  - `GET /api/tickets/my-tickets` - User's tickets grouped by draw
+  - `GET /api/tickets/for-draw/{draw_id}` - Detailed tickets for specific draw
+  - `GET /api/tickets/check/{ticket_number}` - Check if ticket is a winner
+- **Draw Execution**:
+  - `POST /api/draws/{draw_id}/execute` - Admin executes draw (random winner selection)
+  - `GET /api/draws/{draw_id}/winners` - Get winners for completed draw
+  - Winners selected using random.sample() from all active tickets
+  - Winning tickets marked with status "winner" and prize_info
+- **LiveDrawAnimation Updates**: Winner reveal shows ticket numbers (TXA-XXXXXX)
+- **Alignment Benefits**:
+  - Tangibility: Users own concrete ticket numbers
+  - Transparency: Winning ticket numbers can be verified
+  - Trust: Mirrors real lottery systems people understand
 
 ### Confetti Animations (Phase 8 - Feb 16, 2026)
 - **ConfettiCelebration**: Falling confetti from top with customizable colors, duration, piece count
