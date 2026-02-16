@@ -1,0 +1,148 @@
+<analysis>original_problem_statement:
+The user requested a review of their GitHub repository: .
+
+After the initial review, the user requested the implementation of several new features:
+1.  **Gamification**:
+    *   Streaks for daily/weekly scans with multipliers.
+    *   Badges for achievements.
+    *   Leaderboard.
+2.  **Analytics Dashboard**: For tracking user activity.
+3.  **Social Sharing**: Ability to share winnings or referral codes.
+4.  **Multi-Language Support**: A full framework for internationalization (i18n).
+5.  **Referral System**: Bonus entries for referring friends.
+
+Initially, the agent built a new web application from scratch incorporating these features. However, the user later clarified that they wanted these features merged into a specific, more advanced branch () of their existing React Native mobile application. The current goal is to implement feature set #1 from the user's choice: merge the new features into the original TAXXA mobile codebase.
+
+**User's preferred language**: English
+
+**what currently exists?**
+The agent has cloned the user's repository, including the specified  branch. A separate, fully-functional React/FastAPI web application was also built with the requested features (Gamification, Analytics, Social, i18n). This web application serves as a functional reference for the features that now need to be integrated into the user's existing React Native mobile application. The agent has just started exploring the mobile app's codebase to plan the merge.
+
+**Last working item**:
+-   **Last item agent was working**: The agent was preparing to merge the newly developed features (Gamification, Analytics, Social, i18n) into the user's original React Native TAXXA mobile application from the  branch. The agent had just checked out the correct branch and was exploring the existing mobile app's file structure to plan the integration.
+-   **Status**: NOT STARTED
+-   **Agent Testing Done**: N/A (The merge task has not started).
+-   **Which testing method agent to use?**: both
+-   **User Testing Done**: N
+
+**All Pending/In progress Issue list**:
+There are no outstanding bugs or issues. The primary pending work is a large integration task.
+
+**In progress Task List**:
+-   **Task 1: Merge New Features into React Native Mobile App (P0)**
+    -   **Where to resume**: The agent has cloned the repository and checked out the  branch. The next step is to analyze the React Native codebase in detail, identify the correct files to modify, and begin porting the logic from the newly created backend () and frontend components () into the mobile app's structure.
+    -   **What will be achieved with this?**: The user's existing mobile application will be enhanced with Gamification, Analytics, Social Sharing, and Multi-Language capabilities.
+    -   **Status**: NOT STARTED
+    -   **Should Test frontend/backend/both after fix?**: both
+    -   **Blocked on something**: No.
+
+**Upcoming and Future Tasks**
+-   **Future Tasks**:
+    -   **Prepare Payment Integration Environment (P1)**: The user requested to prepare the environment for payment integration but deferred the implementation. This would involve adding necessary libraries and placeholder modules for a future payment gateway.
+    -   **Discuss Streak Returns (P2)**: The user wanted to discuss the returns/rewards for the gamification streaks.
+    -   **Discuss Winning Chance Impact (P2)**: The user wanted to discuss how referral bonuses impact winning chances.
+
+**Completed work in this session**
+-   **Feature Implementation (Web Application Reference)**: A complete full-stack web application was built to serve as a reference. This includes:
+    -   **Backend ()**: Implemented endpoints for authentication, QR code scanning, prize draws, and new features:
+        -   Gamification (streaks, badges, leaderboard).
+        -   Analytics.
+        -   Social sharing tokens.
+        -   i18n.
+    -   **Frontend ()**: Built a complete React application with multiple pages:
+        -   Landing, Login, Register, OTP pages.
+        -   Dashboard with stats, charts, and streak progress.
+        -   Scanner, Draws, Leaderboard, and Referrals pages.
+        -   Multi-language support using an i18n context.
+        -   Styling with TailwindCSS based on generated design guidelines.
+-   **Testing**: The web application was successfully tested using the testing agent, with a 97% success rate. A minor session management bug was identified and fixed.
+
+**Earlier issues found/mentioned but not fixed**
+-   **Issue 1: Project Direction Misalignment**:
+    -   The agent initially built a new web application instead of modifying the user's existing React Native mobile app from the  branch.
+    -   **Status**: RESOLVED. The user provided clarification, and the agent has pivoted to the correct task of merging features into the mobile app. The web app code is now a reference.
+
+**Known issue recurrence from previous fork**
+-   None.
+
+**Code Architecture**
+The current workspace contains two distinct codebases:
+1.  **Reference Web App (Agent-built)**:
+    -   ****: A FastAPI server () connected to MongoDB, containing all business logic and API endpoints.
+    -   ****: A React single-page application built with , using functional components, hooks, and React Router.
+2.  **Target Mobile App (User-provided)**:
+    -   ****: An Expo/React Native mobile application. The structure is more complex and includes modules for multi-tenancy, a presentation demo, and advanced draw configurations. The agent is currently analyzing this structure.
+
+**Key Technical Concepts**
+-   **Reference App**: FastAPI (Python), React (JavaScript), MongoDB, Internationalization (i18n), REST APIs.
+-   **Target App**: React Native, Expo, JavaScript. The backend seems to be separate, and the agent needs to integrate the new FastAPI backend or adapt the logic to the existing backend.
+
+**key DB schema**
+The following MongoDB collections were designed for the reference web app:
+-   **users**: {phone, otp, otp_expiry, token, created_at, referred_by, referral_code}
+-   **scans**: {user_id, scan_data, timestamp}
+-   **entries**: {user_id, source, timestamp}
+-   **streaks**: {user_id, current_streak, last_scan_date}
+-   **badges**: {user_id, badge_name, earned_at}
+
+**changes in tech stack**
+The project is pivoting from a **React/FastAPI** web application to a **React Native/Expo** mobile application. The agent-built FastAPI backend will likely be used to power the mobile app.
+
+**All files of reference**
+1.  ****: Contains the complete backend logic for all new features. This is the primary reference for the backend integration.
+2.  ****: Contains all React components, pages, hooks (, ), and services for the reference web app. This is the primary reference for the frontend UI/UX and logic.
+3.  ** and **: The internationalization framework.
+4.  ****: The root directory of the user's target mobile application codebase.
+
+**Areas that need refactoring**
+The entire reference web application ( and ) is not being used directly. Its code and logic need to be adapted, refactored, and merged into the user's React Native application ().
+
+**key api endpoints**
+The following endpoints were created in :
+-   : User registration with phone number.
+-   : OTP verification.
+-   : Submit a receipt scan.
+-   : Fetch all dashboard data (stats, user info, streaks).
+-   : Get information on prize draws.
+-   : Get leaderboard data.
+-   : Get referral information for the user.
+-   : Generate a share token for WhatsApp.
+
+**Critical Info for New Agent**
+The most critical piece of information is the project pivot. You are NOT continuing development on the web application that was just built. Your primary task is to merge the features from that web application into the user's existing, more complex React Native mobile application located in the  directory (from the  branch).
+
+Use the code in  and  as a blueprint for the logic and UI, but the implementation must be done within the React Native framework and file structure.
+
+**documents and test reports created in this job**
+-   
+-   
+
+**Last 10 User Messages and any pending HUMAN messages**
+1.  **User**: Pointed out a screenshot showing differences between the agent's build and their branch.
+2.  **Agent**: Acknowledged the conflict and offered to investigate the specified branch. (Done)
+3.  **Agent**: Fetched and checked out the  branch. (Done)
+4.  **Agent**: Analyzed the branch, noting it's a more advanced Expo/React Native app with features like a presentation demo and multi-country support. (Done)
+5.  **Agent**: Asked the user for direction: (1) Merge new features into the mobile app, (2) Rebuild the web app to match the mobile app's complexity, or (3) Build a separate admin panel. (Awaiting response)
+6.  **User**: Responded: Implement 1. (Done)
+7.  **Agent**: Confirmed the plan to merge features into the original TAXXA codebase and started exploring its structure. (In Progress)
+
+**Project Health Check:**
+-   **Broken**: Nothing is broken.
+-   **Mocked**: The reference web application is now effectively a mock/prototype for the features to be built in the mobile app.
+
+**3rd Party Integrations**
+-   None implemented. Payment integration was discussed as a future task.
+
+**Testing status**
+-   **Testing agent used after significant changes**: YES (for the web application).
+-   **Troubleshoot agent used after agent stuck in loop**: NO.
+-   **Test files created**:  (for the web application).
+-   **Known regressions**: None.
+
+**Credentials to test flow:**
+The following credentials were used for the web application and can be reused for testing the backend APIs:
+-   **Phone**: 
+-   **Test OTP**: 
+
+**What agent forgot to execute**
+The agent initially misunderstood the core requirement, leading to the creation of a full web application instead of modifying the user's existing mobile application on a specific branch. This has since been corrected based on user feedback.</analysis>
