@@ -1,64 +1,59 @@
 # TAXXA - Tax Compliance Incentive Platform
 
 ## Original Problem Statement
-Build and enhance the TAXXA mobile application - a tax compliance incentive platform where users scan receipts to earn entries for prize draws. The user requested:
-1. Restore the original dark-themed React Native mobile app from the `conflict_110226_1902` branch
-2. Add gamification features: Streaks, Badges, Leaderboard, Analytics, i18n
-3. Admin dashboard for gamification management
-4. Multi-country currency auto-detection from phone number
-5. Push notification improvements using Expo Push Notifications
+Build and enhance the TAXXA mobile application - a tax compliance incentive platform where users scan receipts to earn entries for prize draws.
 
-## What's Been Implemented
+## Full Feature List Implemented
 
-### Phase 1: App Migration (Completed - Feb 16, 2026)
-- Switched from reference React web app to user's original React Native/Expo app
-- Restored dark enterprise landing page at root URL
-- Set up symlinks for backend and frontend directories
+### Core Features (Original)
+- User registration/authentication with phone number + OTP
+- Receipt scanning via QR codes
+- Prize draw entry system
+- Referral system with bonus entries
+- Admin dashboard
 
-### Phase 2: Gamification Backend (Completed - Feb 16, 2026)
-- Created `/app/taxxa_temp/backend/routers/gamification.py` with:
-  - Streaks System (1x to 3x multipliers)
-  - Badges (12 badge definitions)
-  - Leaderboard rankings
-  - Challenges (daily/weekly)
-  - Analytics, i18n, Social Sharing
+### Gamification System (Phase 2 - Feb 16, 2026)
+- **Streaks**: Daily streak tracking with multipliers (1x to 3x)
+- **Badges**: 12 badge definitions with progress tracking
+- **Leaderboard**: Rankings by daily/weekly/monthly/all-time periods
+- **Challenges**: Daily and weekly challenges with rewards
+- **Analytics**: User stats, scan history, rank percentile
+- **i18n**: Multi-language support (English, Swahili, French)
+- **Social Sharing**: Generate shareable content for WhatsApp/Twitter/Facebook
 
-### Phase 3: Gamification Frontend (Completed - Feb 16, 2026)
-- Leaderboard tab with period selector
-- Streak card and badges preview on dashboard
+### Admin Gamification Dashboard (Phase 4 - Feb 16, 2026)
+- Overview with stats (active streaks, badges earned, longest streak)
+- Badge management with enable/disable toggles
+- Streak leaderboard with user rankings
+- Challenge management
 
-### Phase 4: Admin Gamification Dashboard (Completed - Feb 16, 2026)
-- Created `/app/taxxa_temp/backend/routers/admin_gamification.py`:
-  - GET /api/admin/gamification/overview - Statistics overview
-  - GET /api/admin/gamification/badges - Badge management with toggle
-  - GET /api/admin/gamification/streaks - Streak leaderboard
-  - GET /api/admin/gamification/challenges - Challenge management
-  - PUT /api/admin/gamification/badges/{id} - Enable/disable badges
-- Created `/app/taxxa_temp/frontend/app/admin/gamification.tsx`:
-  - Overview tab with stats cards
-  - Badges tab with enable/disable toggles
-  - Streaks tab with full leaderboard
-- Updated AdminSidebar with Gamification menu item
+### Multi-Country Currency (Phase 5 - Feb 16, 2026)
+- Auto-detects currency from phone number country code
+- 40+ countries supported
+- Currency stored on user profile
+- Prize amounts displayed in local currency
 
-### Phase 5: Multi-Country Currency (Completed - Feb 16, 2026)
-- Created `/app/taxxa_temp/backend/services/currency_service.py`:
-  - Auto-detects currency from phone number country code
-  - Supports 40+ countries/currencies
-  - GET /api/currencies/supported - List all supported currencies
-  - GET /api/user/currency - Get user's auto-detected currency
-- Currency stored on user profile during registration
+### Push Notification Service (Phase 6 - Feb 16, 2026)
+- Expo Push Notifications (industry standard)
+- Notification types: badge_earned, streak_reminder, streak_lost, leaderboard_change, challenge_complete, draw_result
+- Token management and preference settings
 
-### Phase 6: Push Notification Service (Completed - Feb 16, 2026)
-- Created `/app/taxxa_temp/backend/services/push_notification_service.py`:
-  - Expo Push Notifications (industry standard)
-  - Notification types: badge_earned, streak_reminder, streak_lost, leaderboard_change, challenge_complete, draw_result, referral_bonus
-- API Endpoints:
-  - POST /api/user/push-token - Register Expo push token
-  - DELETE /api/user/push-token - Remove push token
-  - GET /api/user/notification-preferences - Get preferences
-  - PUT /api/user/notification-preferences - Update preferences
+### Real-Time Leaderboard (Phase 7 - Feb 16, 2026)
+- WebSocket endpoint at `/api/ws/leaderboard`
+- Real-time updates when users scan receipts
+- LIVE/OFFLINE indicator on frontend
+- Auto-reconnect with fallback to REST API
+- Period switching (daily/weekly/monthly/all)
 
-## API Endpoints Summary
+### Streak Reminder Notifications (Phase 7 - Feb 16, 2026)
+- Background service runs on backend startup
+- Checks for users whose streaks are about to expire
+- Sends push notifications at 6 PM, 8 PM, 10 PM
+- Customized messages based on streak length
+- Respects user notification preferences
+- Records reminders sent to avoid duplicates
+
+## API Endpoints
 
 ### User Gamification
 - `GET /api/gamification/streaks` - User streak info
@@ -86,33 +81,50 @@ Build and enhance the TAXXA mobile application - a tax compliance incentive plat
 - `GET /api/user/notification-preferences` - Get prefs
 - `PUT /api/user/notification-preferences` - Update prefs
 
+### WebSocket
+- `WS /api/ws/leaderboard` - Real-time leaderboard updates
+
 ## Tech Stack
 - **Frontend**: React Native, Expo, TypeScript
-- **Backend**: FastAPI, Python, MongoDB
+- **Backend**: FastAPI, Python, MongoDB, Motor
+- **WebSocket**: FastAPI WebSocket
 - **Push Notifications**: Expo Push Notifications
 - **Styling**: Dark theme (#0F172A)
 
 ## Testing Status
-- Backend: 37/37 tests passed (100%)
-- Test reports: `/app/test_reports/iteration_2.json`, `/app/test_reports/iteration_3.json`
+- Backend: 50+ tests passed (100%)
+- Test reports: `/app/test_reports/iteration_*.json`
 
-## Supported Currencies (Auto-detected)
-- Africa: TZS, KES, UGX, RWF, BIF, ZAR, NGN, GHS, EGP, MAD
-- Europe: GBP, EUR, CHF, SEK, NOK, DKK, PLN
-- Americas: USD, MXN, BRL, ARS, COP, CLP
-- Asia: INR, CNY, JPY, KRW, SGD, MYR, IDR, THB, VND, PHP
-- Middle East: AED, SAR, ILS, TRY
-- Oceania: AUD, NZD
+## Files Created/Modified
+
+### Backend Services
+- `/app/taxxa_temp/backend/services/websocket_service.py` - WebSocket manager
+- `/app/taxxa_temp/backend/services/streak_reminder_service.py` - Background reminder task
+- `/app/taxxa_temp/backend/services/currency_service.py` - Currency auto-detection
+- `/app/taxxa_temp/backend/services/push_notification_service.py` - Push notifications
+
+### Backend Routers
+- `/app/taxxa_temp/backend/routers/gamification.py` - User gamification endpoints
+- `/app/taxxa_temp/backend/routers/admin_gamification.py` - Admin endpoints
+
+### Frontend Hooks
+- `/app/taxxa_temp/frontend/src/hooks/useRealtimeLeaderboard.ts` - WebSocket hook
+
+### Frontend Pages
+- `/app/taxxa_temp/frontend/app/(tabs)/leaderboard.tsx` - Real-time leaderboard
+- `/app/taxxa_temp/frontend/app/admin/gamification.tsx` - Admin dashboard
 
 ## Completed Tasks
 - ✅ Restore dark-themed mobile app
-- ✅ Gamification backend (streaks, badges, leaderboard)
-- ✅ Gamification frontend (dashboard, leaderboard tab)
+- ✅ Gamification backend & frontend
 - ✅ Admin gamification dashboard
 - ✅ Multi-country currency auto-detection
 - ✅ Push notification service
+- ✅ Real-time leaderboard via WebSocket
+- ✅ Streak reminder notifications
 
-## Future Tasks
-- Payment integration preparation
-- Real-time leaderboard updates via WebSocket
-- Advanced analytics dashboard
+## Future Enhancements
+- Payment integration
+- WebSocket proxy configuration for K8s ingress
+- Advanced analytics with charts
+- A/B testing for gamification rewards
