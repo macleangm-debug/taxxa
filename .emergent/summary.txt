@@ -1,148 +1,213 @@
-<analysis>original_problem_statement:
-The user requested a review of their GitHub repository: .
+<analysis>**original_problem_statement:**
+The user initially requested a review of their GitHub repository and the addition of several new features to it: Gamification (streaks, badges, leaderboard), an Analytics Dashboard, Social Sharing, Multi-Language Support, and a Referral System.
 
-After the initial review, the user requested the implementation of several new features:
-1.  **Gamification**:
-    *   Streaks for daily/weekly scans with multipliers.
-    *   Badges for achievements.
-    *   Leaderboard.
-2.  **Analytics Dashboard**: For tracking user activity.
-3.  **Social Sharing**: Ability to share winnings or referral codes.
-4.  **Multi-Language Support**: A full framework for internationalization (i18n).
-5.  **Referral System**: Bonus entries for referring friends.
+After an initial misunderstanding where a new web app was built, the user clarified the goal: to merge these new features into their existing, more advanced React Native mobile application from the  branch.
 
-Initially, the agent built a new web application from scratch incorporating these features. However, the user later clarified that they wanted these features merged into a specific, more advanced branch () of their existing React Native mobile application. The current goal is to implement feature set #1 from the user's choice: merge the new features into the original TAXXA mobile codebase.
+The agent has since pivoted to this task, successfully setting up the user's original mobile app environment and progressively integrating the requested features into it. Subsequent user requests included adding an admin page for gamification, currency auto-detection, push notifications, a real-time leaderboard, and confetti animations.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The agent has cloned the user's repository, including the specified  branch. A separate, fully-functional React/FastAPI web application was also built with the requested features (Gamification, Analytics, Social, i18n). This web application serves as a functional reference for the features that now need to be integrated into the user's existing React Native mobile application. The agent has just started exploring the mobile app's codebase to plan the merge.
+The development environment is now correctly configured to run the user's original React Native/Expo mobile application, which has a dark theme. The application code is located in .
+
+The following features have been successfully integrated into the mobile app's backend and frontend:
+- **Gamification**: Backend endpoints and frontend UI for streaks, badges, and a leaderboard are implemented.
+- **Admin Management**: An admin page for managing gamification settings has been added.
+- **Currency Detection**: The backend auto-detects user currency based on their phone number's country code during registration.
+- **Push Notifications**: A service for sending push notifications via Expo has been set up on the backend.
+- **Real-Time Leaderboard**: The leaderboard page updates in real-time using a WebSocket connection. A background service for sending streak reminders has also been implemented.
+- **Confetti Animation**: A reusable confetti component has been created.
 
 **Last working item**:
--   **Last item agent was working**: The agent was preparing to merge the newly developed features (Gamification, Analytics, Social, i18n) into the user's original React Native TAXXA mobile application from the  branch. The agent had just checked out the correct branch and was exploring the existing mobile app's file structure to plan the integration.
--   **Status**: NOT STARTED
--   **Agent Testing Done**: N/A (The merge task has not started).
+-   **Last item agent was working**: Implementing confetti animations for two key events: (1) a successful QR code scan, and (2) winning a prize draw. The agent also created a  component and added a Watch Draw button to the draws screen. The implementation involved creating new components and adding the necessary logic and styles.
+-   **Status**: IN PROGRESS
+-   **Agent Testing Done**: N
 -   **Which testing method agent to use?**: both
 -   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
-There are no outstanding bugs or issues. The primary pending work is a large integration task.
+-   **Issue 1: WebSocket connection shows OFFLINE in web preview (P2)**
+    -   **Description**: The real-time leaderboard displays an OFFLINE status in the web preview. This is a known environmental limitation because the Kubernetes ingress proxy does not support WebSocket connections by default.
+    -   **Attempted fixes**: The agent confirmed the backend WebSocket endpoint works correctly and updated the frontend to use the correct path ().
+    -   **Next debug checklist**: No action is required from the agent. The feature is implemented correctly and is expected to work in a native mobile build or with a correctly configured production ingress. This is not a code bug.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is an environment issue, not a code issue. No fix is needed from the agent.
+    -   **Status**: BLOCKED (by environment limitations)
+    -   **Is recurring issue?**: Y
+    -   **Should Test frontend/backend/both after fix?**: NA
 
 **In progress Task List**:
--   **Task 1: Merge New Features into React Native Mobile App (P0)**
-    -   **Where to resume**: The agent has cloned the repository and checked out the  branch. The next step is to analyze the React Native codebase in detail, identify the correct files to modify, and begin porting the logic from the newly created backend () and frontend components () into the mobile app's structure.
-    -   **What will be achieved with this?**: The user's existing mobile application will be enhanced with Gamification, Analytics, Social Sharing, and Multi-Language capabilities.
-    -   **Status**: NOT STARTED
+-   **Task 1: Complete and Test Confetti & Live Draw Animations (P0)**
+    -   **Where to resume**: The agent just finished adding the necessary CSS styles for the new animation components to . The next step is to rebuild the frontend () and test the visual feedback on the Scanner and Draws pages.
+    -   **What will be achieved with this?**: The application will provide engaging visual feedback (confetti) to users upon successful scans and winning a draw, fulfilling a user request.
+    -   **Status**: IN PROGRESS
     -   **Should Test frontend/backend/both after fix?**: both
     -   **Blocked on something**: No.
 
 **Upcoming and Future Tasks**
+-   **Upcoming Tasks**:
+    -   **Build Full Analytics Dashboard (P1)**: Implement a comprehensive frontend dashboard for analytics, using the existing backend endpoint as a data source.
+    -   **Enhance Social Sharing (P1)**: Integrate the token-based social sharing system from the reference backend to enable better tracking of referrals.
+    -   **Implement Multi-Language Support (i18n) (P1)**: Integrate a full internationalization framework into the React Native app.
 -   **Future Tasks**:
-    -   **Prepare Payment Integration Environment (P1)**: The user requested to prepare the environment for payment integration but deferred the implementation. This would involve adding necessary libraries and placeholder modules for a future payment gateway.
-    -   **Discuss Streak Returns (P2)**: The user wanted to discuss the returns/rewards for the gamification streaks.
-    -   **Discuss Winning Chance Impact (P2)**: The user wanted to discuss how referral bonuses impact winning chances.
+    -   **Prepare Payment Integration Environment (P2)**: Set up the project with necessary libraries and placeholder modules for a future payment gateway.
+    -   **Finalize Gamification Logic (P2)**: Have a discussion with the user to define the specific rewards for streaks and how referral bonuses should impact a user's chances of winning.
 
 **Completed work in this session**
--   **Feature Implementation (Web Application Reference)**: A complete full-stack web application was built to serve as a reference. This includes:
-    -   **Backend ()**: Implemented endpoints for authentication, QR code scanning, prize draws, and new features:
-        -   Gamification (streaks, badges, leaderboard).
-        -   Analytics.
-        -   Social sharing tokens.
-        -   i18n.
-    -   **Frontend ()**: Built a complete React application with multiple pages:
-        -   Landing, Login, Register, OTP pages.
-        -   Dashboard with stats, charts, and streak progress.
-        -   Scanner, Draws, Leaderboard, and Referrals pages.
-        -   Multi-language support using an i18n context.
-        -   Styling with TailwindCSS based on generated design guidelines.
--   **Testing**: The web application was successfully tested using the testing agent, with a 97% success rate. A minor session management bug was identified and fixed.
+-   **Environment Setup**:
+    -   Successfully switched the running application from the temporary web app to the user's original dark-themed React Native/Expo mobile app.
+    -   Restored the user's original enterprise landing page as the default home page.
+-   **Backend Features ()**:
+    -   Integrated Gamification endpoints ().
+    -   Implemented multi-country currency auto-detection ().
+    -   Created an admin module for gamification ().
+    -   Set up a push notification service for Expo ().
+    -   Implemented a real-time leaderboard via WebSockets ().
+    -   Created a background service for sending streak-based push notifications ().
+-   **Frontend Features ()**:
+    -   Added gamification UI (streaks, badges) to the user dashboard.
+    -   Created a real-time Leaderboard screen ().
+    -   Built an Admin Gamification management page ().
+-   **Testing**:
+    -   Successfully ran the testing agent to validate the backend gamification, admin, currency, and WebSocket features. All tests passed.
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1: Project Direction Misalignment**:
-    -   The agent initially built a new web application instead of modifying the user's existing React Native mobile app from the  branch.
-    -   **Status**: RESOLVED. The user provided clarification, and the agent has pivoted to the correct task of merging features into the mobile app. The web app code is now a reference.
+-   None. The major issue of project misalignment was resolved early on.
 
 **Known issue recurrence from previous fork**
 -   None.
 
 **Code Architecture**
-The current workspace contains two distinct codebases:
-1.  **Reference Web App (Agent-built)**:
-    -   ****: A FastAPI server () connected to MongoDB, containing all business logic and API endpoints.
-    -   ****: A React single-page application built with , using functional components, hooks, and React Router.
-2.  **Target Mobile App (User-provided)**:
-    -   ****: An Expo/React Native mobile application. The structure is more complex and includes modules for multi-tenancy, a presentation demo, and advanced draw configurations. The agent is currently analyzing this structure.
+
 
 **Key Technical Concepts**
--   **Reference App**: FastAPI (Python), React (JavaScript), MongoDB, Internationalization (i18n), REST APIs.
--   **Target App**: React Native, Expo, JavaScript. The backend seems to be separate, and the agent needs to integrate the new FastAPI backend or adapt the logic to the existing backend.
+-   **Frontend**: React Native, Expo (with static web builds), TypeScript, Zustand (state management), File-based Routing.
+-   **Backend**: FastAPI (Python), MongoDB, WebSockets, APScheduler (for background tasks).
+-   **Platform**: The application runs within a supervisor-managed environment. Frontend changes require a static build ().
 
 **key DB schema**
-The following MongoDB collections were designed for the reference web app:
--   **users**: {phone, otp, otp_expiry, token, created_at, referred_by, referral_code}
--   **scans**: {user_id, scan_data, timestamp}
--   **entries**: {user_id, source, timestamp}
--   **streaks**: {user_id, current_streak, last_scan_date}
--   **badges**: {user_id, badge_name, earned_at}
+-   **New Collections**:
+    -   : {user_id, current_streak, last_scan_date}
+    -   : {user_id, badge_name, earned_at}
+    -   : {user_id, score, timestamp}
+    -   : {name, description, goal, reward}
+    -   : {user_id, challenge_id, progress, completed_at}
+-   **Modified Collections**:
+    -   : Added a  field.
 
 **changes in tech stack**
-The project is pivoting from a **React/FastAPI** web application to a **React Native/Expo** mobile application. The agent-built FastAPI backend will likely be used to power the mobile app.
+-   The project has fully pivoted from a standard React web app to a React Native/Expo application that is being developed and tested via its web build capabilities.
 
 **All files of reference**
-1.  ****: Contains the complete backend logic for all new features. This is the primary reference for the backend integration.
-2.  ****: Contains all React components, pages, hooks (, ), and services for the reference web app. This is the primary reference for the frontend UI/UX and logic.
-3.  ** and **: The internationalization framework.
-4.  ****: The root directory of the user's target mobile application codebase.
+-   **Codebase Root**: 
+-   **Backend Entrypoint**: 
+-   **Frontend Entrypoint**: 
+-   **Last Modified Frontend Files**:
+    -    (Scanner screen)
+    -    (Draws screen)
+    -   
+    -   
+    -    (Shared styles)
 
-**Areas that need refactoring**
-The entire reference web application ( and ) is not being used directly. Its code and logic need to be adapted, refactored, and merged into the user's React Native application ().
+**Areas that need refactoring**:
+-   None at the moment. The agent has been organizing new code into appropriate modules and services.
 
 **key api endpoints**
-The following endpoints were created in :
--   : User registration with phone number.
--   : OTP verification.
--   : Submit a receipt scan.
--   : Fetch all dashboard data (stats, user info, streaks).
--   : Get information on prize draws.
--   : Get leaderboard data.
--   : Get referral information for the user.
--   : Generate a share token for WhatsApp.
+-   : GET user's current streak.
+-   : GET user's earned badges.
+-   : GET leaderboard data.
+-   : GET user's detected currency.
+-   : GET summary for the admin dashboard.
+-   : WebSocket endpoint for real-time leaderboard updates.
 
 **Critical Info for New Agent**
-The most critical piece of information is the project pivot. You are NOT continuing development on the web application that was just built. Your primary task is to merge the features from that web application into the user's existing, more complex React Native mobile application located in the  directory (from the  branch).
-
-Use the code in  and  as a blueprint for the logic and UI, but the implementation must be done within the React Native framework and file structure.
+-   **Code Location**: All development must happen inside the  directory. The root  and  directories are managed by symlinks and build artifacts to align with the platform's constraints and should not be edited directly.
+-   **Frontend Workflow**: After making any changes to the frontend code in , you must run  from within that directory to create a new static web build. Then, restart the frontend service.
+-   **WebSocket Limitation**: Do not spend time trying to fix the WebSocket connection in the web preview. It is a known limitation of the environment's ingress. The backend implementation is correct and has passed tests.
 
 **documents and test reports created in this job**
 -   
--   
+-    (Real-time leaderboard test)
+-    (Admin gamification & currency test)
+-    (Initial gamification test)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Pointed out a screenshot showing differences between the agent's build and their branch.
-2.  **Agent**: Acknowledged the conflict and offered to investigate the specified branch. (Done)
-3.  **Agent**: Fetched and checked out the  branch. (Done)
-4.  **Agent**: Analyzed the branch, noting it's a more advanced Expo/React Native app with features like a presentation demo and multi-country support. (Done)
-5.  **Agent**: Asked the user for direction: (1) Merge new features into the mobile app, (2) Rebuild the web app to match the mobile app's complexity, or (3) Build a separate admin panel. (Awaiting response)
-6.  **User**: Responded: Implement 1. (Done)
-7.  **Agent**: Confirmed the plan to merge features into the original TAXXA codebase and started exploring its structure. (In Progress)
+1.  **User**: Implement Real Time Leaderboard. (Done)
+2.  **User**: Implement the potential enhancement too (Streak Reminders). (Done)
+3.  **Agent**: Proposed plan for real-time leaderboard and streak reminders. (Done)
+4.  **Agent**: Showed screenshot of leaderboard with OFFLINE indicator, explaining the environment limitation. (Done)
+5.  **Agent**: Ran testing agent, which passed and fixed minor WebSocket bugs. (Done)
+6.  **Agent**: Finished task, updated PRD, suggested confetti animations. (Done)
+7.  **User**: Animation when user scans a valid QR - confetti. And live draw animation - confetti. (In Progress)
+8.  **Agent**: Started implementing confetti and live draw animations. (In Progress)
 
 **Project Health Check:**
--   **Broken**: Nothing is broken.
--   **Mocked**: The reference web application is now effectively a mock/prototype for the features to be built in the mobile app.
+-   **Broken**: Nothing is broken. The WebSocket feature is limited by the environment but is not considered broken code.
+-   **Mocked**: The Watch Draw button is currently a demo to trigger the live animation, as a full live draw backend mechanism is not yet in place.
 
 **3rd Party Integrations**
--   None implemented. Payment integration was discussed as a future task.
+-   **Expo Push Notifications**: The backend service is set up to send notifications through Expo's services.
+-   **phonenumbers**: Used on the backend for parsing phone numbers to detect country and currency.
 
 **Testing status**
--   **Testing agent used after significant changes**: YES (for the web application).
+-   **Testing agent used after significant changes**: YES. The agent was last used to test the WebSocket and background scheduler implementation, where it found and fixed two bugs.
 -   **Troubleshoot agent used after agent stuck in loop**: NO.
--   **Test files created**:  (for the web application).
+-   **Test files created**: Test reports are in . No new ============================= test session starts ==============================
+platform linux -- Python 3.11.14, pytest-9.0.2, pluggy-1.6.0
+rootdir: /app
+plugins: anyio-4.12.1
+collected 102 items
+
+backend/tests/test_gamification.py ......................                [ 21%]
+backend/tests/test_new_features.py ...............                       [ 36%]
+backend/tests/test_websocket_streak.py ..s...........                    [ 50%]
+taxxa_temp/backend/tests/test_gamification.py ......................     [ 71%]
+taxxa_temp/backend/tests/test_new_features.py ...............            [ 86%]
+taxxa_temp/backend/tests/test_websocket_streak.py ..s...........         [100%]
+
+=============================== warnings summary ===============================
+backend/tests/test_gamification.py::TestAuthFlow::test_register_user
+  /root/.venv/lib/python3.11/site-packages/_pytest/python.py:170: PytestReturnNotNoneWarning: Test functions should return None, but backend/tests/test_gamification.py::TestAuthFlow::test_register_user returned <class 'dict'>.
+  Did you mean to use `assert` instead of `return`?
+  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.
+    warnings.warn(
+
+backend/tests/test_gamification.py::TestAuthFlow::test_full_registration_flow
+  /root/.venv/lib/python3.11/site-packages/_pytest/python.py:170: PytestReturnNotNoneWarning: Test functions should return None, but backend/tests/test_gamification.py::TestAuthFlow::test_full_registration_flow returned <class 'dict'>.
+  Did you mean to use `assert` instead of `return`?
+  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.
+    warnings.warn(
+
+backend/tests/test_gamification.py::TestAuthFlow::test_login_flow
+  /root/.venv/lib/python3.11/site-packages/_pytest/python.py:170: PytestReturnNotNoneWarning: Test functions should return None, but backend/tests/test_gamification.py::TestAuthFlow::test_login_flow returned <class 'str'>.
+  Did you mean to use `assert` instead of `return`?
+  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.
+    warnings.warn(
+
+taxxa_temp/backend/tests/test_gamification.py::TestAuthFlow::test_register_user
+  /root/.venv/lib/python3.11/site-packages/_pytest/python.py:170: PytestReturnNotNoneWarning: Test functions should return None, but taxxa_temp/backend/tests/test_gamification.py::TestAuthFlow::test_register_user returned <class 'dict'>.
+  Did you mean to use `assert` instead of `return`?
+  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.
+    warnings.warn(
+
+taxxa_temp/backend/tests/test_gamification.py::TestAuthFlow::test_full_registration_flow
+  /root/.venv/lib/python3.11/site-packages/_pytest/python.py:170: PytestReturnNotNoneWarning: Test functions should return None, but taxxa_temp/backend/tests/test_gamification.py::TestAuthFlow::test_full_registration_flow returned <class 'dict'>.
+  Did you mean to use `assert` instead of `return`?
+  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.
+    warnings.warn(
+
+taxxa_temp/backend/tests/test_gamification.py::TestAuthFlow::test_login_flow
+  /root/.venv/lib/python3.11/site-packages/_pytest/python.py:170: PytestReturnNotNoneWarning: Test functions should return None, but taxxa_temp/backend/tests/test_gamification.py::TestAuthFlow::test_login_flow returned <class 'str'>.
+  Did you mean to use `assert` instead of `return`?
+  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+============ 100 passed, 2 skipped, 6 warnings in 85.35s (0:01:25) ============= files were created.
 -   **Known regressions**: None.
 
 **Credentials to test flow:**
-The following credentials were used for the web application and can be reused for testing the backend APIs:
--   **Phone**: 
--   **Test OTP**: 
+-   **User Phone**:  (or any other valid number)
+-   **Test OTP**:  (if prompted, otherwise registration flow creates a new user)
 
 **What agent forgot to execute**
-The agent initially misunderstood the core requirement, leading to the creation of a full web application instead of modifying the user's existing mobile application on a specific branch. This has since been corrected based on user feedback.</analysis>
+-   The agent has been diligent in following user requests since the initial project pivot. No outstanding forgotten tasks have been identified.</analysis>
