@@ -93,7 +93,7 @@ export const AuthProvider = ({ children }) => {
       user,
       token,
       loading,
-      isAuthenticated: !!token,
+      isAuthenticated: !!token && !!user,
       login,
       register,
       verifyOtp,
