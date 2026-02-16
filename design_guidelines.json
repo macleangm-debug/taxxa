@@ -1,0 +1,177 @@
+{
+  "identity": {
+    "name": "TAXXA",
+    "persona": "The Civic Winner",
+    "tone": "Trustworthy, Exciting, Rewarding, Official",
+    "description": "A government-backed lottery platform that feels like a high-end fintech game. It balances the seriousness of tax compliance with the dopamine of winning.",
+    "emotional_archetype": "Archetype 6: Vibrant Play (Gamified) + Archetype 4: Swiss High-Contrast (Trust)",
+    "design_principles": [
+      "Fusion: Government Official x Casino Excitement",
+      "Emotion First: Scanning a receipt should feel like buying a winning ticket",
+      "Content is King: The 'Next Draw' countdown is the heartbeat of the app",
+      "Negative Space: Don't clutter. Let the prize money breathe",
+      "Contrast: High contrast for accessibility and excitement (Dark 'Winning' sections vs Light 'Dashboard')"
+    ]
+  },
+  "typography": {
+    "headings": {
+      "family": "Outfit, sans-serif",
+      "weights": ["600", "700"],
+      "usage": "Use for all major headings. Tight tracking (-0.02em).",
+      "fallback": "sans-serif"
+    },
+    "body": {
+      "family": "Public Sans, sans-serif",
+      "weights": ["400", "500"],
+      "usage": "Use for all UI text, labels, and data. Excellent legibility.",
+      "fallback": "sans-serif"
+    },
+    "mono": {
+      "family": "JetBrains Mono, monospace",
+      "weights": ["500"],
+      "usage": "Use for ticket numbers, receipt IDs, and countdown timers."
+    },
+    "scale": {
+      "h1": "text-4xl md:text-5xl font-bold tracking-tight",
+      "h2": "text-3xl md:text-4xl font-bold tracking-tight",
+      "h3": "text-2xl font-semibold",
+      "h4": "text-xl font-semibold",
+      "body-lg": "text-lg leading-relaxed",
+      "body-base": "text-base leading-relaxed",
+      "caption": "text-sm text-muted-foreground uppercase tracking-wider"
+    }
+  },
+  "colors": {
+    "palette": {
+      "primary": {
+        "DEFAULT": "#059669",
+        "foreground": "#FFFFFF",
+        "description": "Emerald-600. Represents Growth, Money, and Tanzania Green."
+      },
+      "secondary": {
+        "DEFAULT": "#F59E0B",
+        "foreground": "#000000",
+        "description": "Amber-500. Represents Gold, Prizes, and Winning."
+      },
+      "accent": {
+        "DEFAULT": "#2563EB",
+        "foreground": "#FFFFFF",
+        "description": "Royal Blue-600. Represents Official Government Trust."
+      },
+      "background": "#F8FAFC",
+      "card": "#FFFFFF",
+      "text": "#0F172A",
+      "muted": "#64748B",
+      "border": "#E2E8F0"
+    },
+    "gradients": {
+      "gold_rush": "bg-gradient-to-br from-amber-400 to-yellow-600",
+      "official_blue": "bg-gradient-to-br from-blue-600 to-slate-900",
+      "emerald_city": "bg-gradient-to-br from-emerald-500 to-teal-700"
+    },
+    "usage_rules": [
+      "Do NOT use gradients for text.",
+      "Use 'Gold Rush' gradient ONLY for winning tickets/prizes.",
+      "Use 'Emerald City' for success states and primary CTAs.",
+      "Backgrounds should be solid #F8FAFC or White with subtle noise texture."
+    ]
+  },
+  "visual_enhancers": {
+    "shadows": {
+      "card": "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)",
+      "floating": "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+      "glow": "0 0 15px rgba(245, 158, 11, 0.5)"
+    },
+    "borders": {
+      "subtle": "1px solid #E2E8F0",
+      "ticket": "2px dashed #CBD5E1"
+    },
+    "radius": {
+      "default": "rounded-xl",
+      "card": "rounded-2xl",
+      "button": "rounded-full"
+    },
+    "textures": [
+      "Noise overlay (opacity 0.03) on all solid backgrounds to prevent digital flatness.",
+      "Guilloche pattern (faint) on 'Official' documents/receipt backgrounds."
+    ]
+  },
+  "layout_strategy": {
+    "type": "Bento Grid",
+    "container": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
+    "spacing": "Generous. Use gap-6 or gap-8.",
+    "grid_cols": "grid-cols-1 md:grid-cols-12",
+    "sections": {
+      "hero": "col-span-full md:col-span-8 row-span-2",
+      "stats": "col-span-full md:col-span-4",
+      "actions": "col-span-full md:col-span-4",
+      "winners": "col-span-full"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-primary text-white hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5",
+      "secondary": "bg-white text-primary border-2 border-primary hover:bg-primary/5 transition-all",
+      "gold": "bg-gradient-to-r from-amber-400 to-amber-500 text-black font-bold shadow-glow hover:shadow-gold/50 transition-all scale-100 hover:scale-105"
+    },
+    "cards": {
+      "default": "bg-white border border-border shadow-card rounded-2xl p-6",
+      "ticket": "bg-white border-2 border-dashed border-gray-300 relative rounded-lg p-6 mask-ticket",
+      "dark_highlight": "bg-slate-900 text-white rounded-2xl p-6 relative overflow-hidden"
+    },
+    "scanner_fab": {
+      "style": "fixed bottom-6 left-1/2 -translate-x-1/2 w-16 h-16 bg-primary rounded-full shadow-2xl flex items-center justify-center z-50 border-4 border-white hover:scale-110 transition-transform cursor-pointer",
+      "icon": "QrCode"
+    }
+  },
+  "motion": {
+    "transitions": "transition-all duration-300 ease-out",
+    "hover_lift": "hover:-translate-y-1 hover:shadow-lg",
+    "page_transition": "animate-in fade-in slide-in-from-bottom-4 duration-500",
+    "ticket_reveal": "animate-in zoom-in duration-500 delay-100",
+    "confetti": "Use 'canvas-confetti' library for win states."
+  },
+  "images": {
+    "assets": [
+      {
+        "category": "Hero/Marketing",
+        "url": "https://images.unsplash.com/photo-1620236200181-1651bc3c70c6?crop=entropy&cs=srgb&fm=jpg&ixlib=rb-4.1.0&q=85",
+        "description": "Happy user checking phone (Use for landing page hero or success modal)",
+        "alt": "Happy citizen winning lottery"
+      },
+      {
+        "category": "Scanning Context",
+        "url": "https://images.unsplash.com/photo-1569908420024-c8f709b75700?crop=entropy&cs=srgb&fm=jpg&ixlib=rb-4.1.0&q=85",
+        "description": "Context shot for scanning (Use for 'How it works' or scanner onboarding)",
+        "alt": "Scanning QR code"
+      },
+      {
+        "category": "Celebration",
+        "url": "https://images.unsplash.com/photo-1746189907392-c0f3a373d901?crop=entropy&cs=srgb&fm=jpg&ixlib=rb-4.1.0&q=85",
+        "description": "Man celebrating win (Use for testimonials or 'Recent Winners' section)",
+        "alt": "Winner celebration"
+      }
+    ],
+    "icons": {
+      "library": "lucide-react",
+      "preferred": ["QrCode", "Ticket", "Trophy", "TrendingUp", "History", "Users", "ShieldCheck", "Zap"]
+    }
+  },
+  "universal_guidelines": [
+    "NEVER use generic gradients for text.",
+    "Use 'Outfit' font for all headings (h1-h3).",
+    "Use 'Public Sans' for body text.",
+    "The Scanner button must be the most prominent element on mobile.",
+    "Use 'sonner' for all toast notifications.",
+    "All interactive elements must have a hover state.",
+    "Ensure high contrast for accessibility (WCAG AA compliant).",
+    "Use a subtle noise texture on the background to avoid 'digital flatness'."
+  ],
+  "instructions_to_main_agent": {
+    "setup": "Install fonts 'Outfit' and 'Public Sans' via Google Fonts or Fontsource. Install 'canvas-confetti' for celebrations.",
+    "theming": "Update tailwind.config.js with the custom color palette provided.",
+    "components": "Prioritize building the 'TicketCard' and 'ScannerFAB' components as they are core to the experience.",
+    "layout": "Use the 'Bento Grid' strategy for the dashboard. It shouldn't look like a spreadsheet.",
+    "interactions": "Add micro-interactions. When a user scans, vibrate (if possible) or show a visual pulse."
+  }
+}
