@@ -216,9 +216,10 @@ Build and enhance the TAXXA mobile application - a tax compliance incentive plat
   - Navigation back to government landing page
 
 ## Future Enhancements
-- Full Analytics Dashboard with charts
-- Enhanced Social Sharing with referral tracking
-- Multi-Language Support (i18n framework)
-- Payment integration
+- TRA/EFD API Integration (blocked on API docs/credentials) - **P0**
+- Full Analytics Dashboard with charts - **P1**
+- Enhanced Social Sharing with referral tracking - **P1**
+- Multi-Language Support (i18n framework) - **P1**
+- Payment integration - **P2**
 - WebSocket proxy configuration for K8s ingress
 - A/B testing for gamification rewards
