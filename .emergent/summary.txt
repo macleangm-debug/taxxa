@@ -1,68 +1,287 @@
 <analysis>**original_problem_statement:**
 The user's primary goal is to build the TAXXA application, a system designed to incentivize tax compliance by rewarding users with raffle entries for scanning official EFD (Electronic Fiscal Device) receipts.
 
-Initial feature requests included Gamification, Analytics, Social Sharing, and Multi-Language support for an existing React Native mobile application. The project has since evolved significantly based on user feedback, with major work completed on:
-- **Gamification**: Streaks, badges, and a real-time leaderboard.
-- **Raffle System**: A sophisticated and secure raffle system where users are assigned a permanent ticket number, and each valid receipt scan earns them entries into a draw. The number of entries can be boosted by gamification multipliers (e.g., streaks).
-- **Security**: Key security measures have been implemented, including cryptographically secure draws, immutable audit trails for entries, and API rate limiting.
+Key features implemented include a secure raffle system, gamification (streaks, badges), a real-time leaderboard, a superadmin analytics dashboard, and social sharing capabilities.
 
-The most recent request is to pivot the application's landing page to target government agencies as the primary client, while moving the user-facing demo to a separate page.
+The most recent work involved a pivot to redesign the application's landing page to target government agencies, while moving the user-facing demo to a separate page. Following that, the agent implemented a comprehensive analytics dashboard, enhanced social sharing backend logic, and laid the foundation for multi-language support (i18n).
 
 **User's preferred language**: English
 
 **what currently exists?**
-The project is a React Native/Expo mobile application located in . It has a FastAPI backend and a React Native (TypeScript) frontend.
-
+The project is a React Native/Expo mobile application located in  with a FastAPI backend and a React Native (TypeScript) frontend.
 - **Backend**:
-    - A secure, entry-based raffle system is in place. Users have one permanent ticket number per draw, and each scan adds entries.
-    - Gamification logic (streaks, badges) is integrated to provide multipliers for raffle entries.
-    - Security services for rate limiting, cryptographic random number generation for draws, and an immutable audit trail for all entries are implemented.
-    - Endpoints exist for gamification, user stats, admin functions, and the new raffle ticket system.
+    - Secure raffle system with permanent user ticket numbers per draw.
+    - Gamification logic (streaks, badges) that provides multipliers.
+    - Security services for rate limiting, cryptographic draws, and immutable audit trails.
+    - Comprehensive analytics endpoints for a superadmin dashboard.
+    - Endpoints for an enhanced social sharing system (referrals, achievements).
 - **Frontend**:
-    - The UI supports all implemented features, including a My Tickets page where users can see their permanent ticket number and the number of entries they've accumulated for active and past draws.
-    - The main navigation has been updated to include a Tickets tab.
-    - Confetti and live draw animations provide visual feedback for key user actions.
-    - The landing page is the original enterprise version, which is the subject of the current task.
+    - A government-focused landing page at the root ().
+    - A separate interactive Experience Taxxa demo page ().
+    - A comprehensive, multi-tab analytics dashboard for superadmins.
+    - A foundational i18n system () with provider, context, and initial translation files (EN, SW, FR).
+    - A new Settings page with a language selector UI.
+    - An improved UX for the receipt scan result modal, showing the ticket number and a share button.
 
 **Last working item**:
--   **Last item agent was working**: The user requested a redesign of the main landing page to focus on government clients and to move the Experience Taxxa app demo to a separate page. The agent had just started investigating the relevant frontend files ( and ).
+-   **Last item agent was working**: The agent had just finished implementing a batch of features: creating a settings page with a language selector, applying the i18n provider, and improving the scan result UX. The agent was attempting to test these frontend changes but was unable to log in using the screenshot tool.
 -   **Status**: IN PROGRESS
 -   **Agent Testing Done**: N
--   **Which testing method agent to use?**: frontend testing agent
+-   **Which testing method agent to use?**: frontend testing agent (The agent should first resolve the login issue and then use the testing agent to verify the new Settings page, language selector functionality, and the updated scan result modal).
 -   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: WebSocket connection shows OFFLINE in web preview (P2)**
+-   **Issue 1: Unable to login via screenshot tool (P0)**
+    -   **Description**: The agent was repeatedly unable to log into the application using the  to test new frontend features. This is a critical blocker for any further UI verification. The password hashing logic was problematic earlier in the session, which might be a related clue.
+    -   **Status**: BLOCKED
+    -   **Is recurring issue?**: Y
+-   **Issue 2: WebSocket connection shows OFFLINE in web preview (P2)**
     -   **Description**: The real-time leaderboard shows an OFFLINE status in the web preview due to an environmental limitation with the Kubernetes ingress proxy not supporting WebSockets.
     -   **Status**: BLOCKED (by environment). This is not a code bug, and no action is required.
     -   **Is recurring issue?**: Y
 
-**In progress Task List**:
--   **Task 1: Redesign Landing Page for Government Clients (P0)**
-    -   **Where to resume**: The agent has identified the current landing page files ( and ). The next step is to plan and execute the redesign, which involves creating a new page for the app demo and updating the main landing page content to be government-focused.
-    -   **What will be achieved with this?**: The application's main entry point will be tailored to its primary target audience (governments), improving its value proposition and marketing focus.
-    -   **Status**: IN PROGRESS
+**Issues Detail**:
+-   **Issue 1: Unable to login via screenshot tool**
+    -   **Attempted fixes**: The agent tried different selectors and restarted the backend, suspecting a caching issue. It also verified the password locally, which succeeded, indicating the issue might be in the interaction between the test tool and the application or an environment-specific problem with the remote endpoint.
+    -   **Next debug checklist**:
+        1.  **View **: Check  to confirm the  attributes for the phone input, password input, and login button.
+        2.  **Retry with correct selectors**: Use the screenshot tool again with the confirmed s.
+        3.  **Use Testing Agent**: If manual login fails, invoke the  and instruct it to specifically test the login flow.
+        4.  **Check Backend Logs**: ==> /var/log/supervisor/backend.err.log <==
+2026-02-17 09:31:33,639 - services.streak_reminder_service - INFO - ✅ Streak reminder service started
+2026-02-17 09:31:33,639 - server - INFO - ✅ Streak reminder service started
+2026-02-17 09:31:33,639 - server - INFO - ✅ TAXXA API Server ready for requests
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-02-17 09:33:29,154 - server - INFO - Shutting down TAXXA API Server...
+2026-02-17 09:33:29,154 - services.streak_reminder_service - INFO - Streak reminder service stopped
+2026-02-17 09:33:29,155 - server - INFO - Server shutdown complete
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2327]
+INFO:     Stopping reloader process [1217]
+INFO:     Will watch for changes in these directories: ['/app/taxxa_temp/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [2545] using WatchFiles
+INFO:     Started server process [2547]
+INFO:     Waiting for application startup.
+2026-02-17 09:33:31,853 - server - INFO - 🚀 Starting TAXXA API Server...
+2026-02-17 09:33:31,855 - services.cache_service - WARNING - ⚠️ Redis not available, running without cache: Error Multiple exceptions: [Errno 111] Connect call failed ('127.0.0.1', 6379), [Errno 99] Cannot assign requested address connecting to localhost:6379.
+2026-02-17 09:33:31,855 - services.rate_limiter - WARNING - ⚠️ Rate limiter using memory backend: Error Multiple exceptions: [Errno 111] Connect call failed ('127.0.0.1', 6379), [Errno 99] Cannot assign requested address connecting to localhost:6379.
+2026-02-17 09:33:31,857 - server - INFO - ✅ MongoDB connection verified
+2026-02-17 09:33:31,863 - server - INFO - ✅ Database indexes ensured
+2026-02-17 09:33:31,863 - services.streak_reminder_service - INFO - ✅ Streak reminder service started
+2026-02-17 09:33:31,863 - server - INFO - ✅ Streak reminder service started
+2026-02-17 09:33:31,863 - server - INFO - ✅ TAXXA API Server ready for requests
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-02-17 09:35:49,148 - server - INFO - Shutting down TAXXA API Server...
+2026-02-17 09:35:49,148 - services.streak_reminder_service - INFO - Streak reminder service stopped
+2026-02-17 09:35:49,149 - server - INFO - Server shutdown complete
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2547]
+INFO:     Stopping reloader process [2545]
+INFO:     Will watch for changes in these directories: ['/app/taxxa_temp/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [3417] using WatchFiles
+INFO:     Started server process [3419]
+INFO:     Waiting for application startup.
+2026-02-17 09:35:50,299 - server - INFO - 🚀 Starting TAXXA API Server...
+2026-02-17 09:35:50,300 - services.cache_service - WARNING - ⚠️ Redis not available, running without cache: Error Multiple exceptions: [Errno 111] Connect call failed ('127.0.0.1', 6379), [Errno 99] Cannot assign requested address connecting to localhost:6379.
+2026-02-17 09:35:50,301 - services.rate_limiter - WARNING - ⚠️ Rate limiter using memory backend: Error Multiple exceptions: [Errno 111] Connect call failed ('127.0.0.1', 6379), [Errno 99] Cannot assign requested address connecting to localhost:6379.
+2026-02-17 09:35:50,303 - server - INFO - ✅ MongoDB connection verified
+2026-02-17 09:35:50,309 - server - INFO - ✅ Database indexes ensured
+2026-02-17 09:35:50,309 - services.streak_reminder_service - INFO - ✅ Streak reminder service started
+2026-02-17 09:35:50,309 - server - INFO - ✅ Streak reminder service started
+2026-02-17 09:35:50,309 - server - INFO - ✅ TAXXA API Server ready for requests
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-02-17 09:36:13,192 - server - INFO - Shutting down TAXXA API Server...
+2026-02-17 09:36:13,192 - services.streak_reminder_service - INFO - Streak reminder service stopped
+2026-02-17 09:36:13,193 - server - INFO - Server shutdown complete
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3419]
+INFO:     Started server process [3572]
+INFO:     Waiting for application startup.
+2026-02-17 09:36:13,932 - server - INFO - 🚀 Starting TAXXA API Server...
+2026-02-17 09:36:13,933 - services.cache_service - WARNING - ⚠️ Redis not available, running without cache: Error Multiple exceptions: [Errno 111] Connect call failed ('127.0.0.1', 6379), [Errno 99] Cannot assign requested address connecting to localhost:6379.
+2026-02-17 09:36:13,934 - services.rate_limiter - WARNING - ⚠️ Rate limiter using memory backend: Error Multiple exceptions: [Errno 111] Connect call failed ('127.0.0.1', 6379), [Errno 99] Cannot assign requested address connecting to localhost:6379.
+2026-02-17 09:36:13,936 - server - INFO - ✅ MongoDB connection verified
+2026-02-17 09:36:13,942 - server - INFO - ✅ Database indexes ensured
+2026-02-17 09:36:13,942 - services.streak_reminder_service - INFO - ✅ Streak reminder service started
+2026-02-17 09:36:13,942 - server - INFO - ✅ Streak reminder service started
+2026-02-17 09:36:13,942 - server - INFO - ✅ TAXXA API Server ready for requests
+INFO:     Application startup complete.
+2026-02-17 09:36:21,173 - server - WARNING - Login failed: Password mismatch for user +1234567890
+/root/.venv/lib/python3.11/site-packages/jwt/api_jwt.py:153: InsecureKeyLengthWarning: The HMAC key is 23 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+  return self._jws.encode(
+/root/.venv/lib/python3.11/site-packages/jwt/api_jwt.py:371: InsecureKeyLengthWarning: The HMAC key is 23 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+  decoded = self.decode_complete(
+INFO:     Will watch for changes in these directories: ['/app/taxxa_temp/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [43] using WatchFiles
+INFO:     Started server process [87]
+INFO:     Waiting for application startup.
+2026-02-17 10:42:49,319 - server - INFO - 🚀 Starting TAXXA API Server...
+2026-02-17 10:42:49,321 - services.cache_service - WARNING - ⚠️ Redis not available, running without cache: Error Multiple exceptions: [Errno 111] Connect call failed ('127.0.0.1', 6379), [Errno 99] Cannot assign requested address connecting to localhost:6379.
+2026-02-17 10:42:49,321 - services.rate_limiter - WARNING - ⚠️ Rate limiter using memory backend: Error Multiple exceptions: [Errno 111] Connect call failed ('127.0.0.1', 6379), [Errno 99] Cannot assign requested address connecting to localhost:6379.
+2026-02-17 10:42:49,324 - server - INFO - ✅ MongoDB connection verified
+2026-02-17 10:42:49,330 - server - INFO - ✅ Database indexes ensured
+2026-02-17 10:42:49,330 - services.streak_reminder_service - INFO - ✅ Streak reminder service started
+2026-02-17 10:42:49,330 - server - INFO - ✅ Streak reminder service started
+2026-02-17 10:42:49,330 - server - INFO - ✅ TAXXA API Server ready for requests
+INFO:     Application startup complete.
+INFO:     Will watch for changes in these directories: ['/app/taxxa_temp/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [42] using WatchFiles
+INFO:     Started server process [76]
+INFO:     Waiting for application startup.
+2026-02-17 11:11:14,559 - server - INFO - 🚀 Starting TAXXA API Server...
+2026-02-17 11:11:14,561 - services.cache_service - WARNING - ⚠️ Redis not available, running without cache: Error Multiple exceptions: [Errno 111] Connect call failed ('127.0.0.1', 6379), [Errno 99] Cannot assign requested address connecting to localhost:6379.
+2026-02-17 11:11:14,561 - services.rate_limiter - WARNING - ⚠️ Rate limiter using memory backend: Error Multiple exceptions: [Errno 111] Connect call failed ('127.0.0.1', 6379), [Errno 99] Cannot assign requested address connecting to localhost:6379.
+2026-02-17 11:11:14,564 - server - INFO - ✅ MongoDB connection verified
+2026-02-17 11:11:14,580 - server - INFO - ✅ Database indexes ensured
+2026-02-17 11:11:14,581 - services.streak_reminder_service - INFO - ✅ Streak reminder service started
+2026-02-17 11:11:14,581 - server - INFO - ✅ Streak reminder service started
+2026-02-17 11:11:14,581 - server - INFO - ✅ TAXXA API Server ready for requests
+INFO:     Application startup complete.
+
+==> /var/log/supervisor/backend.out.log <==
+INFO:     10.64.130.236:32976 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     10.64.132.102:60880 - "GET /api/tickets/my-tickets HTTP/1.1" 200 OK
+INFO:     10.64.130.236:32976 - "GET /api/tickets/for-draw/6993402fc4a9a49150bc4939 HTTP/1.1" 200 OK
+INFO:     10.64.132.102:60880 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     10.64.130.236:32976 - "GET /api/tickets/for-draw/invalid_draw_id HTTP/1.1" 400 Bad Request
+INFO:     10.64.130.236:32976 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     10.64.132.102:60880 - "GET /api/tickets/my-tickets HTTP/1.1" 200 OK
+INFO:     10.64.129.135:47668 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     10.64.129.135:47668 - "GET /api/tickets/check/TXA-ZZZZZ9 HTTP/1.1" 404 Not Found
+INFO:     10.64.132.102:60880 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     10.64.130.236:32976 - "GET /api/test/generate-qr?merchant_name=TicketTest1771310996&amount=150 HTTP/1.1" 200 OK
+INFO:     10.64.132.102:60880 - "POST /api/scan HTTP/1.1" 200 OK
+INFO:     10.64.132.201:39106 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     10.64.129.137:56210 - "GET /api/draws HTTP/1.1" 200 OK
+INFO:     10.64.132.201:39106 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     10.64.129.135:47668 - "GET /api/draws HTTP/1.1" 200 OK
+INFO:     10.64.129.137:56210 - "GET /api/draws/6993402fc4a9a49150bc4939/winners HTTP/1.1" 400 Bad Request
+INFO:     10.64.129.135:47668 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     10.64.132.201:39106 - "GET /api/draws HTTP/1.1" 200 OK
+INFO:     10.64.129.135:47668 - "POST /api/draws/6993402fc4a9a49150bc4939/execute HTTP/1.1" 403 Forbidden
+INFO:     10.64.129.137:56210 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     10.64.132.201:39106 - "GET /api/user/stats HTTP/1.1" 200 OK
+INFO:     10.64.132.201:39106 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     10.64.129.135:47668 - "GET /api/draws HTTP/1.1" 200 OK
+INFO:     10.64.129.137:56210 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     10.64.129.135:47668 - "GET /api/draws/active HTTP/1.1" 200 OK
+INFO:     10.64.130.236:32976 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     10.64.130.236:32976 - "GET /api/ws/leaderboard?period=weekly HTTP/1.1" 404 Not Found
+INFO:     10.64.129.137:56210 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     10.64.131.185:33012 - "POST /api/admin/login HTTP/1.1" 200 OK
+INFO:     10.64.129.137:56210 - "GET /api/admin/gamification/streaks HTTP/1.1" 200 OK
+INFO:     10.64.130.236:32976 - "POST /api/auth/register HTTP/1.1" 200 OK
+INFO:     10.64.129.137:56210 - "POST /api/auth/verify-otp HTTP/1.1" 200 OK
+INFO:     10.64.131.185:33012 - "POST /api/auth/create-password HTTP/1.1" 200 OK
+INFO:     10.64.132.102:60880 - "POST /api/user/push-token HTTP/1.1" 400 Bad Request
+INFO:     10.64.129.137:56210 - "POST /api/auth/register HTTP/1.1" 200 OK
+INFO:     10.64.131.185:33012 - "POST /api/auth/verify-otp HTTP/1.1" 200 OK
+INFO:     10.64.130.236:32976 - "POST /api/auth/create-password HTTP/1.1" 200 OK
+INFO:     10.64.131.185:33012 - "POST /api/user/push-token HTTP/1.1" 200 OK
+INFO:     10.64.132.201:39106 - "POST /api/auth/register HTTP/1.1" 200 OK
+INFO:     10.64.132.102:60880 - "POST /api/auth/verify-otp HTTP/1.1" 200 OK
+INFO:     10.64.132.201:39106 - "POST /api/auth/create-password HTTP/1.1" 200 OK
+INFO:     10.64.132.201:39106 - "GET /api/user/notification-preferences HTTP/1.1" 200 OK
+INFO:     10.64.132.102:60880 - "POST /api/auth/register HTTP/1.1" 400 Bad Request
+INFO:     10.64.132.201:39106 - "POST /api/auth/register HTTP/1.1" 400 Bad Request
+INFO:     10.64.129.137:56210 - "POST /api/auth/register HTTP/1.1" 200 OK
+INFO:     10.64.129.135:47668 - "POST /api/auth/verify-otp HTTP/1.1" 200 OK
+INFO:     10.64.132.102:60880 - "POST /api/auth/create-password HTTP/1.1" 200 OK
+INFO:     10.64.131.185:33012 - "GET /api/gamification/leaderboard?period=weekly&limit=10 HTTP/1.1" 200 OK
+INFO:     10.64.132.102:60880 - "POST /api/auth/register HTTP/1.1" 200 OK
+INFO:     10.64.129.135:47668 - "POST /api/auth/verify-otp HTTP/1.1" 200 OK
+INFO:     10.64.131.185:33012 - "POST /api/auth/create-password HTTP/1.1" 200 OK
+INFO:     10.64.129.137:56210 - "GET /api/test/generate-qr?merchant_id=MER-001&amount=150 HTTP/1.1" 200 OK
+INFO:     10.64.129.135:47668 - "POST /api/scan HTTP/1.1" 200 OK
+INFO:     10.64.129.137:56210 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     10.64.130.236:32976 - "POST /api/auth/register HTTP/1.1" 200 OK
+INFO:     10.64.129.137:56210 - "POST /api/auth/verify-otp HTTP/1.1" 200 OK
+INFO:     10.64.130.236:32976 - "POST /api/auth/create-password HTTP/1.1" 200 OK
+INFO:     10.64.132.102:60880 - "GET /api/gamification/leaderboard?period=weekly HTTP/1.1" 200 OK
+INFO:     10.208.169.220:54118 - "POST /api/admin/login HTTP/1.1" 422 Unprocessable Entity
+INFO:     10.208.166.2:56352 - "POST /api/admin/login HTTP/1.1" 422 Unprocessable Entity
+INFO:     10.208.166.2:56364 - "POST /api/admin/login HTTP/1.1" 401 Unauthorized
+INFO:     10.208.166.2:57314 - "POST /api/admin/login HTTP/1.1" 401 Unauthorized
+INFO:     10.208.128.130:36170 - "POST /api/admin/login HTTP/1.1" 401 Unauthorized
+INFO:     10.208.166.2:49530 - "POST /api/admin/login HTTP/1.1" 200 OK
+INFO:     10.208.169.220:56008 - "GET /api/admin/analytics/comprehensive HTTP/1.1" 200 OK
+INFO:     10.208.128.130:58776 - "POST /api/admin/login HTTP/1.1" 200 OK
+INFO:     10.208.128.130:58776 - "GET /api/admin/countries HTTP/1.1" 200 OK
+INFO:     10.208.128.130:58776 - "GET /api/admin/countries HTTP/1.1" 200 OK
+INFO:     10.208.128.130:58776 - "GET /api/admin/dashboard HTTP/1.1" 200 OK
+INFO:     10.208.128.130:58776 - "GET /api/admin/dashboard HTTP/1.1" 200 OK
+INFO:     10.208.166.2:49270 - "POST /api/admin/login HTTP/1.1" 200 OK
+INFO:     10.208.169.220:49392 - "GET /api/admin/countries HTTP/1.1" 200 OK
+INFO:     10.208.166.2:49270 - "GET /api/admin/dashboard HTTP/1.1" 200 OK
+INFO:     10.208.154.130:45624 - "GET /api/admin/countries HTTP/1.1" 200 OK
+INFO:     10.208.166.2:49270 - "GET /api/admin/dashboard HTTP/1.1" 200 OK
+INFO:     10.208.154.130:45624 - "GET /api/admin/analytics/comprehensive HTTP/1.1" 200 OK
+INFO:     10.208.169.220:49392 - "GET /api/admin/analytics/realtime HTTP/1.1" 200 OK
+INFO:     10.208.128.130:46104 - "GET /api/admin/analytics/comprehensive HTTP/1.1" 401 Unauthorized
+INFO:     10.208.128.130:46104 - "GET /api/admin/analytics/realtime HTTP/1.1" 401 Unauthorized
+INFO:     10.208.166.2:49350 - "POST /api/auth/send-otp HTTP/1.1" 404 Not Found
+INFO:     10.208.169.220:35538 - "POST /api/auth/verify-otp HTTP/1.1" 400 Bad Request
+INFO:     10.208.128.130:58838 - "POST /api/auth/send-otp HTTP/1.1" 404 Not Found
+INFO:     10.208.166.2:49358 - "POST /api/auth/verify-otp HTTP/1.1" 400 Bad Request
+INFO:     10.208.166.2:33452 - "POST /api/auth/register HTTP/1.1" 400 Bad Request
+INFO:     10.208.128.130:48148 - "POST /api/auth/verify-otp HTTP/1.1" 400 Bad Request
+INFO:     10.208.128.130:48160 - "POST /api/auth/login HTTP/1.1" 401 Unauthorized
+INFO:     10.208.166.2:58766 - "POST /api/auth/login HTTP/1.1" 401 Unauthorized
+INFO:     10.208.154.130:57100 - "POST /api/auth/login HTTP/1.1" 401 Unauthorized
+INFO:     10.208.169.220:43578 - "GET /api/gamification/referral/stats HTTP/1.1" 403 Forbidden
+INFO:     10.208.166.2:57964 - "POST /api/auth/login HTTP/1.1" 401 Unauthorized
+INFO:     10.208.154.130:56862 - "POST /api/auth/login HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:58662 - "POST /api/auth/login HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:43754 - "POST /api/auth/login HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:40378 - "POST /api/auth/login HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:46328 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     10.208.128.130:60530 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     10.208.128.130:60530 - "GET /api/gamification/referral/stats HTTP/1.1" 200 OK
+INFO:     10.208.128.130:55428 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     10.208.128.130:55428 - "GET /api/gamification/share/stats HTTP/1.1" 200 OK during a login attempt to see if any errors are being logged on the server.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is a critical blocker. Fixing it will unblock all frontend testing and allow verification of the recently implemented i18n and UX features.
+    -   **Status**: BLOCKED
+    -   **Is recurring issue?**: Y
     -   **Should Test frontend/backend/both after fix?**: frontend
-    -   **Blocked on something**: No.
+    -   **Blocked on other issue**: This issue is blocking other tasks.
+
+**In progress Task List**:
+-   **Task 1: Test and Verify i18n and Scan Result UX (P0)**
+    -   **Where to resume**: The code for the i18n framework, settings page, and improved scan result UX has been written. The next step is to resolve the login blocker (Issue 1) and then proceed with testing.
+    -   **What will be achieved with this?**: This will validate the successful implementation of the multi-language support foundation and the user-requested improvement to the scan result modal.
+    -   **Status**: BLOCKED
+    -   **Should Test frontend/backend/both after fix?**: frontend
+    -   **Blocked on something**: **Issue 1: Unable to login via screenshot tool**.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks**:
-    -   **Implement TRA/EFD API Integration (P0 - Security Critical)**: Integrate with a real-world tax authority API (e.g., Tanzania Revenue Authority) to validate receipts. This is the most critical step for making the system production-ready and secure against fraud. This is blocked pending API documentation and credentials.
-    -   **Build Full Analytics Dashboard (P1)**: Implement a comprehensive frontend dashboard for analytics.
-    -   **Enhance Social Sharing (P1)**: Integrate a token-based social sharing system for referrals.
-    -   **Implement Multi-Language Support (i18n) (P1)**: Add an internationalization framework to the app.
+    -   **Implement TRA/EFD API Integration (P0 - Security Critical)**: Integrate with a real-world tax authority API to validate receipts. This is the most critical step for making the system production-ready and secure against fraud. This is blocked pending API documentation and credentials.
+    -   **Apply i18n to All Frontend Components (P1)**: The foundation is laid, but translations need to be applied across the entire user interface.
 -   **Future Tasks**:
     -   **Prepare Payment Integration Environment (P2)**.
     -   **Finalize Gamification Rewards (P2)**: Define specific rewards for streaks and referral bonuses.
-    -   **UX Improvement for Scan Result (P2)**: Update the scan result modal to show the user's permanent ticket number and entries earned, not just a generic message.
 
 **Completed work in this session**
--   **Secure Raffle System Implementation**:
-    -   Redesigned the raffle system based on user feedback to be more fair and secure.
-    -   **Backend**: Implemented a system where each user is assigned one permanent ticket number per draw. Each receipt scan adds entries to that ticket, with the  rule. Gamification streaks provide multipliers on entries earned.
-    -   **Security**: Implemented a  that adds API rate limiting, uses the  module for cryptographically secure draw execution, and creates an immutable audit trail for all entries.
-    -   **Frontend**: Created a My Tickets page showing the user's permanent ticket number and accumulated entries for each draw. Replaced the History tab with Tickets in the main navigation.
--   **Testing**: Used the testing agent to perform a thorough validation of the entire new secure raffle ticket system, including backend logic, security features, and frontend UI. All tests passed.
+- **Government-Focused Landing Page**: Redesigned  to target government clients and moved the interactive demo to a new  page.
+- **Landing Page UI Fixes**: Fixed an issue where country codes and flags were not rendering correctly by replacing them with styled badges.
+- **Superadmin Analytics Dashboard**: Implemented a comprehensive, multi-tab analytics dashboard () with corresponding backend endpoints ().
+- **Enhanced Social Sharing Backend**: Added new backend endpoints for a referral system and sharing achievements (, ).
+- **Multi-Language (i18n) Foundation**:
+    - Set up  with an , context, and hook.
+    - Created translation files for English, Swahili, and French.
+    - Created a new Settings page with a language selector UI.
+- **Scan Result UX Improvement**: Enhanced the scan result modal to prominently display the user's ticket number and add a Share button.
 
 **Earlier issues found/mentioned but not fixed**
 -   None.
@@ -74,28 +293,29 @@ The project is a React Native/Expo mobile application located in . It has a Fast
 
 
 **Key Technical Concepts**
--   **Frontend**: React Native, Expo, TypeScript, Zustand.
+-   **Frontend**: React Native, Expo, TypeScript, Zustand, ****.
 -   **Backend**: FastAPI (Python), MongoDB, WebSockets, APScheduler.
--   **Security**: Cryptographic randomness ( module), Hash Chains for immutability, API Rate Limiting.
+-   **Security**: Cryptographic randomness ( module), Hash Chains, API Rate Limiting.
 
 **key DB schema**
--   **New Collections**:
-    -   : {user_id, draw_id, ticket_number, entries, created_at, updated_at}
-    -   : {user_id, action, timestamp, details, ip_address}
-    -   : {identifier, timestamp}
-    -   : {entry_id, user_id, receipt_id, draw_id, timestamp, previous_hash, current_hash}
--   **Removed Collections**: The previous  collection was replaced by the more robust  and audit collections.
+-   No new collections were added. The  model was updated to include referral tracking fields.
 
 **changes in tech stack**
--   No changes to the core technologies. A dependency for rate limiting (e.g., ) was added to the backend.
+-   Added  and  to the frontend for internationalization.
 
 **All files of reference**
 -   **Codebase Root**: 
--   **Key Backend Files**:
+-   **Modified/Created Backend**:
+    -   
+-   **Modified/Created Frontend**:
     -   
     -   
     -   
--   **Key Frontend Files**:
+    -   
+    -   
+    -   
+    -   
+    -   
     -   
     -   
     -   
@@ -104,43 +324,39 @@ The project is a React Native/Expo mobile application located in . It has a Fast
 -   None identified.
 
 **key api endpoints**
--   : Now uses the  system and returns the user's permanent ticket number, entries earned, and total entries.
--   : Retrieves ticket and entry data for the logged-in user, grouped by draw.
+-   : Retrieves all data for the superadmin dashboard.
+-   : Gets referral statistics for the logged-in user.
+-   : Generates a shareable link for an achievement.
 
 **Critical Info for New Agent**
--   **Raffle System Logic**: The core logic is now **1 permanent ticket per user, per draw**, with entries accumulating on each scan. Entries reset after each draw concludes. Do not revert to the multiple ticket numbers model.
--   **Security is a Core Feature**: The  is central to the application's integrity. The biggest remaining security vulnerability is the mocked receipt validation, which must eventually be replaced by a real TRA/EFD API integration.
--   **Frontend Workflow**: Remember to run  from  and restart the frontend service after making any UI changes.
--   **Current Task**: The immediate priority is to redesign the landing page (, ) to target government clients and move the app demo to a new, separate page.
+-   **Login is Blocked**: The immediate priority is to solve the login issue described in All Pending/In progress Issue list. You will not be able to test any frontend changes until this is resolved. Follow the debugging checklist provided for that issue.
+-   **i18n is Foundational**: The i18n system is set up, but translations have only been applied to a few components. A major upcoming task is to wrap all user-facing strings in the translation function .
+-   **Receipt Validation is Mocked**: Remember that the core receipt validation is still mocked. The most important long-term feature is the integration with a real tax authority API (TRA/EFD).
 
 **documents and test reports created in this job**
 -   
--   
--   
--    (Updated with all new features)
+-    (Updated)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Confirmed the logic of 1 permanent ticket per user, with entries resetting after each draw.
-2.  **User**: Asked about security against hacking and tampering.
-3.  **Agent**: Detailed current vulnerabilities and proposed a 4-point security implementation plan.
-4.  **User**: Proceed with 1,2,3 and 4 simultaneously (approving the security implementation).
-5.  **Agent**: Implemented the secure raffle system and all security features.
-6.  **Agent**: Used the testing agent to verify the new system.
-7.  **Agent**: Finished the task and updated the PRD.
-8.  **User**: Questioned the logic of earning tickets based on receipt amount, clarifying the mission is to reward tax compliance, not spending.
-9.  **User**: Agreed with the agent's proposal for a 1 scan = 1 ticket system to ensure fairness and encourage behavior change.
-10. **User**: Can we make the landipage focus more on Governments who is our target clients and also have the Experience Taxxa Before You Deploy on a different page - **This is the current, active request.**
+1.  **User**: Asks to implement the Full Analytics Dashboard for the Superadmin account.
+2.  **User**: Provides choices for Social Sharing enhancements (all of the above) and Multi-Language Support (all of the above).
+3.  **User**: Selects  for the UX scan result improvement.
+4.  **Agent**: Acknowledges and starts implementing the features.
+5.  **User**: Clarifies UX improvement request: Apply i18n to all frontend components, Create language selector in app settings, UX improvements for scan result.
+6.  **Agent**: Acknowledges and starts implementing the i18n features and UX improvement.
+- All subsequent messages are the agent's internal monologue and tool interactions while implementing and attempting to test the features, culminating in the login failure. No further user messages are pending.
 
 **Project Health Check:**
--   **Broken**: None. The WebSocket issue is a known environmental limitation.
--   **Mocked**: Receipt validation is still mocked. This is the most significant dependency for the application to be considered production-ready.
+-   **Broken**: The login flow when using automated testing tools (). This is a P0 blocker.
+-   **Mocked**: Receipt validation logic. This is the main dependency for the app to be production-ready.
 
 **3rd Party Integrations**
 -   **Expo Push Notifications**: Backend service is configured.
 -   **phonenumbers**: Used for phone number parsing on the backend.
+-   **react-i18next / i18next**: Used for multi-language support on the frontend.
 
 **Testing status**
--   **Testing agent used after significant changes**: YES. The agent was used successfully to validate the entire secure raffle ticket system redesign.
+-   **Testing agent used after significant changes**: YES. The agent was used to validate the landing page redesign. The latest features (Analytics, i18n, UX) have not been tested by the agent due to the login blocker.
 -   **Troubleshoot agent used after agent stuck in loop**: NO.
 -   **Test files created**: No new ============================= test session starts ==============================
 platform linux -- Python 3.11.14, pytest-9.0.2, pluggy-1.6.0
@@ -152,12 +368,12 @@ backend/tests/test_gamification.py ......................                [ 14%]
 backend/tests/test_new_features.py ...............                       [ 23%]
 backend/tests/test_security.py ............                              [ 31%]
 backend/tests/test_tickets.py ..F.F..........                            [ 41%]
-backend/tests/test_websocket_streak.py ..s.....s....F                    [ 50%]
+backend/tests/test_websocket_streak.py ..s...........                    [ 50%]
 taxxa_temp/backend/tests/test_gamification.py ......................     [ 64%]
 taxxa_temp/backend/tests/test_new_features.py ...............            [ 73%]
 taxxa_temp/backend/tests/test_security.py EEEEEEEEEEEE                   [ 81%]
 taxxa_temp/backend/tests/test_tickets.py ..F.F..........                 [ 91%]
-taxxa_temp/backend/tests/test_websocket_streak.py ..s.....ss....         [100%]
+taxxa_temp/backend/tests/test_websocket_streak.py ..s...s.ss....         [100%]
 
 ==================================== ERRORS ====================================
 ____ ERROR at setup of TestScanRateLimiting.test_scan_stats_endpoint_exists ____
@@ -259,7 +475,7 @@ E       fixture 'authenticated_client' not found
 =================================== FAILURES ===================================
 ________ TestTicketEndpoints.test_get_my_tickets_has_correct_structure _________
 
-self = <test_tickets.TestTicketEndpoints object at 0xfa436fce5450>
+self = <test_tickets.TestTicketEndpoints object at 0xf9c405c7ce90>
 
     def test_get_my_tickets_has_correct_structure(self):
         """My tickets response has correct data structure"""
@@ -280,7 +496,7 @@ E           assert 'tickets' in {'created_at': '2026-02-16T19:37:55.625000', 'dr
 backend/tests/test_tickets.py:82: AssertionError
 ________________ TestTicketEndpoints.test_get_tickets_for_draw _________________
 
-self = <test_tickets.TestTicketEndpoints object at 0xfa436fce4f10>
+self = <test_tickets.TestTicketEndpoints object at 0xf9c405c7cbd0>
 
     def test_get_tickets_for_draw(self):
         """GET /api/tickets/for-draw/{draw_id} returns ticket details"""
@@ -306,658 +522,9 @@ self = <test_tickets.TestTicketEndpoints object at 0xfa436fce4f10>
 E           AssertionError: assert 'tickets' in {'draw_date': '2026-02-18T16:05:03.334559', 'draw_id': '6993402fc4a9a49150bc4939', 'draw_type': 'weekly', 'prize_pool': 15000, ...}
 
 backend/tests/test_tickets.py:132: AssertionError
-___________ TestLiveOfflineIndicator.test_leaderboard_has_timestamp ____________
-
-self = <HTTPSConnection(host='gov-compliance-hub-1.preview.emergentagent.com', port=443) at 0xfa437032c190>
-
-    def _new_conn(self) -> socket.socket:
-        """Establish a socket connection and set nodelay settings on it.
-    
-        :return: New socket connection.
-        """
-        try:
->           sock = connection.create_connection(
-                (self._dns_host, self.port),
-                self.timeout,
-                source_address=self.source_address,
-                socket_options=self.socket_options,
-            )
-
-/root/.venv/lib/python3.11/site-packages/urllib3/connection.py:204: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-/root/.venv/lib/python3.11/site-packages/urllib3/util/connection.py:85: in create_connection
-    raise err
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-address = ('gov-compliance-hub-1.preview.emergentagent.com', 443), timeout = 10
-source_address = None, socket_options = [(6, 1, 1)]
-
-    def create_connection(
-        address: tuple[str, int],
-        timeout: _TYPE_TIMEOUT = _DEFAULT_TIMEOUT,
-        source_address: tuple[str, int] | None = None,
-        socket_options: _TYPE_SOCKET_OPTIONS | None = None,
-    ) -> socket.socket:
-        """Connect to *address* and return the socket object.
-    
-        Convenience function.  Connect to *address* (a 2-tuple ``(host,
-        port)``) and return the socket object.  Passing the optional
-        *timeout* parameter will set the timeout on the socket instance
-        before attempting to connect.  If no *timeout* is supplied, the
-        global default timeout setting returned by :func:`socket.getdefaulttimeout`
-        is used.  If *source_address* is set it must be a tuple of (host, port)
-        for the socket to bind as a source address before making the connection.
-        An host of '' or port 0 tells the OS to use the default.
-        """
-    
-        host, port = address
-        if host.startswith("["):
-            host = host.strip("[]")
-        err = None
-    
-        # Using the value from allowed_gai_family() in the context of getaddrinfo lets
-        # us select whether to work with IPv4 DNS records, IPv6 records, or both.
-        # The original create_connection function always returns all records.
-        family = allowed_gai_family()
-    
-        try:
-            host.encode("idna")
-        except UnicodeError:
-            raise LocationParseError(f"'{host}', label empty or too long") from None
-    
-        for res in socket.getaddrinfo(host, port, family, socket.SOCK_STREAM):
-            af, socktype, proto, canonname, sa = res
-            sock = None
-            try:
-                sock = socket.socket(af, socktype, proto)
-    
-                # If provided, set socket level options before connecting.
-                _set_socket_options(sock, socket_options)
-    
-                if timeout is not _DEFAULT_TIMEOUT:
-                    sock.settimeout(timeout)
-                if source_address:
-                    sock.bind(source_address)
->               sock.connect(sa)
-E               TimeoutError: timed out
-
-/root/.venv/lib/python3.11/site-packages/urllib3/util/connection.py:73: TimeoutError
-
-The above exception was the direct cause of the following exception:
-
-self = <urllib3.connectionpool.HTTPSConnectionPool object at 0xfa437032c590>
-method = 'POST', url = '/api/auth/verify-otp'
-body = b'{"phone_number": "+1065848321", "otp": "943278"}'
-headers = {'User-Agent': 'python-requests/2.32.5', 'Accept-Encoding': 'gzip, deflate', 'Accept': '*/*', 'Connection': 'keep-alive', 'Content-Length': '48', 'Content-Type': 'application/json'}
-retries = Retry(total=0, connect=None, read=False, redirect=None, status=None)
-redirect = False, assert_same_host = False
-timeout = Timeout(connect=10, read=10, total=None), pool_timeout = None
-release_conn = False, chunked = False, body_pos = None, preload_content = False
-decode_content = False, response_kw = {}
-parsed_url = Url(scheme=None, auth=None, host=None, port=None, path='/api/auth/verify-otp', query=None, fragment=None)
-destination_scheme = None, conn = None, release_this_conn = True
-http_tunnel_required = False, err = None, clean_exit = False
-
-    def urlopen(  # type: ignore[override]
-        self,
-        method: str,
-        url: str,
-        body: _TYPE_BODY | None = None,
-        headers: typing.Mapping[str, str] | None = None,
-        retries: Retry | bool | int | None = None,
-        redirect: bool = True,
-        assert_same_host: bool = True,
-        timeout: _TYPE_TIMEOUT = _DEFAULT_TIMEOUT,
-        pool_timeout: int | None = None,
-        release_conn: bool | None = None,
-        chunked: bool = False,
-        body_pos: _TYPE_BODY_POSITION | None = None,
-        preload_content: bool = True,
-        decode_content: bool = True,
-        **response_kw: typing.Any,
-    ) -> BaseHTTPResponse:
-        """
-        Get a connection from the pool and perform an HTTP request. This is the
-        lowest level call for making a request, so you'll need to specify all
-        the raw details.
-    
-        .. note::
-    
-           More commonly, it's appropriate to use a convenience method
-           such as :meth:`request`.
-    
-        .. note::
-    
-           `release_conn` will only behave as expected if
-           `preload_content=False` because we want to make
-           `preload_content=False` the default behaviour someday soon without
-           breaking backwards compatibility.
-    
-        :param method:
-            HTTP request method (such as GET, POST, PUT, etc.)
-    
-        :param url:
-            The URL to perform the request on.
-    
-        :param body:
-            Data to send in the request body, either :class:`str`, :class:`bytes`,
-            an iterable of :class:`str`/:class:`bytes`, or a file-like object.
-    
-        :param headers:
-            Dictionary of custom headers to send, such as User-Agent,
-            If-None-Match, etc. If None, pool headers are used. If provided,
-            these headers completely replace any pool-specific headers.
-    
-        :param retries:
-            Configure the number of retries to allow before raising a
-            :class:`~urllib3.exceptions.MaxRetryError` exception.
-    
-            If ``None`` (default) will retry 3 times, see ``Retry.DEFAULT``. Pass a
-            :class:`~urllib3.util.retry.Retry` object for fine-grained control
-            over different types of retries.
-            Pass an integer number to retry connection errors that many times,
-            but no other types of errors. Pass zero to never retry.
-    
-            If ``False``, then retries are disabled and any exception is raised
-            immediately. Also, instead of raising a MaxRetryError on redirects,
-            the redirect response will be returned.
-    
-        :type retries: :class:`~urllib3.util.retry.Retry`, False, or an int.
-    
-        :param redirect:
-            If True, automatically handle redirects (status codes 301, 302,
-            303, 307, 308). Each redirect counts as a retry. Disabling retries
-            will disable redirect, too.
-    
-        :param assert_same_host:
-            If ``True``, will make sure that the host of the pool requests is
-            consistent else will raise HostChangedError. When ``False``, you can
-            use the pool on an HTTP proxy and request foreign hosts.
-    
-        :param timeout:
-            If specified, overrides the default timeout for this one
-            request. It may be a float (in seconds) or an instance of
-            :class:`urllib3.util.Timeout`.
-    
-        :param pool_timeout:
-            If set and the pool is set to block=True, then this method will
-            block for ``pool_timeout`` seconds and raise EmptyPoolError if no
-            connection is available within the time period.
-    
-        :param bool preload_content:
-            If True, the response's body will be preloaded into memory.
-    
-        :param bool decode_content:
-            If True, will attempt to decode the body based on the
-            'content-encoding' header.
-    
-        :param release_conn:
-            If False, then the urlopen call will not release the connection
-            back into the pool once a response is received (but will release if
-            you read the entire contents of the response such as when
-            `preload_content=True`). This is useful if you're not preloading
-            the response's content immediately. You will need to call
-            ``r.release_conn()`` on the response ``r`` to return the connection
-            back into the pool. If None, it takes the value of ``preload_content``
-            which defaults to ``True``.
-    
-        :param bool chunked:
-            If True, urllib3 will send the body using chunked transfer
-            encoding. Otherwise, urllib3 will send the body using the standard
-            content-length form. Defaults to False.
-    
-        :param int body_pos:
-            Position to seek to in file-like body in the event of a retry or
-            redirect. Typically this won't need to be set because urllib3 will
-            auto-populate the value when needed.
-        """
-        parsed_url = parse_url(url)
-        destination_scheme = parsed_url.scheme
-    
-        if headers is None:
-            headers = self.headers
-    
-        if not isinstance(retries, Retry):
-            retries = Retry.from_int(retries, redirect=redirect, default=self.retries)
-    
-        if release_conn is None:
-            release_conn = preload_content
-    
-        # Check host
-        if assert_same_host and not self.is_same_host(url):
-            raise HostChangedError(self, url, retries)
-    
-        # Ensure that the URL we're connecting to is properly encoded
-        if url.startswith("/"):
-            url = to_str(_encode_target(url))
-        else:
-            url = to_str(parsed_url.url)
-    
-        conn = None
-    
-        # Track whether `conn` needs to be released before
-        # returning/raising/recursing. Update this variable if necessary, and
-        # leave `release_conn` constant throughout the function. That way, if
-        # the function recurses, the original value of `release_conn` will be
-        # passed down into the recursive call, and its value will be respected.
-        #
-        # See issue #651 [1] for details.
-        #
-        # [1] <https://github.com/urllib3/urllib3/issues/651>
-        release_this_conn = release_conn
-    
-        http_tunnel_required = connection_requires_http_tunnel(
-            self.proxy, self.proxy_config, destination_scheme
-        )
-    
-        # Merge the proxy headers. Only done when not using HTTP CONNECT. We
-        # have to copy the headers dict so we can safely change it without those
-        # changes being reflected in anyone else's copy.
-        if not http_tunnel_required:
-            headers = headers.copy()  # type: ignore[attr-defined]
-            headers.update(self.proxy_headers)  # type: ignore[union-attr]
-    
-        # Must keep the exception bound to a separate variable or else Python 3
-        # complains about UnboundLocalError.
-        err = None
-    
-        # Keep track of whether we cleanly exited the except block. This
-        # ensures we do proper cleanup in finally.
-        clean_exit = False
-    
-        # Rewind body position, if needed. Record current position
-        # for future rewinds in the event of a redirect/retry.
-        body_pos = set_file_position(body, body_pos)
-    
-        try:
-            # Request a connection from the queue.
-            timeout_obj = self._get_timeout(timeout)
-            conn = self._get_conn(timeout=pool_timeout)
-    
-            conn.timeout = timeout_obj.connect_timeout  # type: ignore[assignment]
-    
-            # Is this a closed/new connection that requires CONNECT tunnelling?
-            if self.proxy is not None and http_tunnel_required and conn.is_closed:
-                try:
-                    self._prepare_proxy(conn)
-                except (BaseSSLError, OSError, SocketTimeout) as e:
-                    self._raise_timeout(
-                        err=e, url=self.proxy.url, timeout_value=conn.timeout
-                    )
-                    raise
-    
-            # If we're going to release the connection in ``finally:``, then
-            # the response doesn't need to know about the connection. Otherwise
-            # it will also try to release it and we'll have a double-release
-            # mess.
-            response_conn = conn if not release_conn else None
-    
-            # Make the request on the HTTPConnection object
->           response = self._make_request(
-                conn,
-                method,
-                url,
-                timeout=timeout_obj,
-                body=body,
-                headers=headers,
-                chunked=chunked,
-                retries=retries,
-                response_conn=response_conn,
-                preload_content=preload_content,
-                decode_content=decode_content,
-                **response_kw,
-            )
-
-/root/.venv/lib/python3.11/site-packages/urllib3/connectionpool.py:787: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-/root/.venv/lib/python3.11/site-packages/urllib3/connectionpool.py:488: in _make_request
-    raise new_e
-/root/.venv/lib/python3.11/site-packages/urllib3/connectionpool.py:464: in _make_request
-    self._validate_conn(conn)
-/root/.venv/lib/python3.11/site-packages/urllib3/connectionpool.py:1093: in _validate_conn
-    conn.connect()
-/root/.venv/lib/python3.11/site-packages/urllib3/connection.py:759: in connect
-    self.sock = sock = self._new_conn()
-                       ^^^^^^^^^^^^^^^^
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-self = <HTTPSConnection(host='gov-compliance-hub-1.preview.emergentagent.com', port=443) at 0xfa437032c190>
-
-    def _new_conn(self) -> socket.socket:
-        """Establish a socket connection and set nodelay settings on it.
-    
-        :return: New socket connection.
-        """
-        try:
-            sock = connection.create_connection(
-                (self._dns_host, self.port),
-                self.timeout,
-                source_address=self.source_address,
-                socket_options=self.socket_options,
-            )
-        except socket.gaierror as e:
-            raise NameResolutionError(self.host, self, e) from e
-        except SocketTimeout as e:
->           raise ConnectTimeoutError(
-                self,
-                f"Connection to {self.host} timed out. (connect timeout={self.timeout})",
-            ) from e
-E           urllib3.exceptions.ConnectTimeoutError: (<HTTPSConnection(host='gov-compliance-hub-1.preview.emergentagent.com', port=443) at 0xfa437032c190>, 'Connection to gov-compliance-hub-1.preview.emergentagent.com timed out. (connect timeout=10)')
-
-/root/.venv/lib/python3.11/site-packages/urllib3/connection.py:213: ConnectTimeoutError
-
-The above exception was the direct cause of the following exception:
-
-self = <requests.adapters.HTTPAdapter object at 0xfa436ffd5910>
-request = <PreparedRequest [POST]>, stream = False
-timeout = Timeout(connect=10, read=10, total=None), verify = True, cert = None
-proxies = OrderedDict()
-
-    def send(
-        self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None
-    ):
-        """Sends PreparedRequest object. Returns Response object.
-    
-        :param request: The :class:`PreparedRequest <PreparedRequest>` being sent.
-        :param stream: (optional) Whether to stream the request content.
-        :param timeout: (optional) How long to wait for the server to send
-            data before giving up, as a float, or a :ref:`(connect timeout,
-            read timeout) <timeouts>` tuple.
-        :type timeout: float or tuple or urllib3 Timeout object
-        :param verify: (optional) Either a boolean, in which case it controls whether
-            we verify the server's TLS certificate, or a string, in which case it
-            must be a path to a CA bundle to use
-        :param cert: (optional) Any user-provided SSL certificate to be trusted.
-        :param proxies: (optional) The proxies dictionary to apply to the request.
-        :rtype: requests.Response
-        """
-    
-        try:
-            conn = self.get_connection_with_tls_context(
-                request, verify, proxies=proxies, cert=cert
-            )
-        except LocationValueError as e:
-            raise InvalidURL(e, request=request)
-    
-        self.cert_verify(conn, request.url, verify, cert)
-        url = self.request_url(request, proxies)
-        self.add_headers(
-            request,
-            stream=stream,
-            timeout=timeout,
-            verify=verify,
-            cert=cert,
-            proxies=proxies,
-        )
-    
-        chunked = not (request.body is None or "Content-Length" in request.headers)
-    
-        if isinstance(timeout, tuple):
-            try:
-                connect, read = timeout
-                timeout = TimeoutSauce(connect=connect, read=read)
-            except ValueError:
-                raise ValueError(
-                    f"Invalid timeout {timeout}. Pass a (connect, read) timeout tuple, "
-                    f"or a single float to set both timeouts to the same value."
-                )
-        elif isinstance(timeout, TimeoutSauce):
-            pass
-        else:
-            timeout = TimeoutSauce(connect=timeout, read=timeout)
-    
-        try:
->           resp = conn.urlopen(
-                method=request.method,
-                url=url,
-                body=request.body,
-                headers=request.headers,
-                redirect=False,
-                assert_same_host=False,
-                preload_content=False,
-                decode_content=False,
-                retries=self.max_retries,
-                timeout=timeout,
-                chunked=chunked,
-            )
-
-/root/.venv/lib/python3.11/site-packages/requests/adapters.py:644: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-/root/.venv/lib/python3.11/site-packages/urllib3/connectionpool.py:841: in urlopen
-    retries = retries.increment(
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-self = Retry(total=0, connect=None, read=False, redirect=None, status=None)
-method = 'POST', url = '/api/auth/verify-otp', response = None
-error = ConnectTimeoutError(<HTTPSConnection(host='gov-compliance-hub-1.preview.emergentagent.com', port=443) at 0xfa437032c190>, 'Connection to gov-compliance-hub-1.preview.emergentagent.com timed out. (connect timeout=10)')
-_pool = <urllib3.connectionpool.HTTPSConnectionPool object at 0xfa437032c590>
-_stacktrace = <traceback object at 0xfa437032ecc0>
-
-    def increment(
-        self,
-        method: str | None = None,
-        url: str | None = None,
-        response: BaseHTTPResponse | None = None,
-        error: Exception | None = None,
-        _pool: ConnectionPool | None = None,
-        _stacktrace: TracebackType | None = None,
-    ) -> Self:
-        """Return a new Retry object with incremented retry counters.
-    
-        :param response: A response object, or None, if the server did not
-            return a response.
-        :type response: :class:`~urllib3.response.BaseHTTPResponse`
-        :param Exception error: An error encountered during the request, or
-            None if the response was received successfully.
-    
-        :return: A new ``Retry`` object.
-        """
-        if self.total is False and error:
-            # Disabled, indicate to re-raise the error.
-            raise reraise(type(error), error, _stacktrace)
-    
-        total = self.total
-        if total is not None:
-            total -= 1
-    
-        connect = self.connect
-        read = self.read
-        redirect = self.redirect
-        status_count = self.status
-        other = self.other
-        cause = "unknown"
-        status = None
-        redirect_location = None
-    
-        if error and self._is_connection_error(error):
-            # Connect retry?
-            if connect is False:
-                raise reraise(type(error), error, _stacktrace)
-            elif connect is not None:
-                connect -= 1
-    
-        elif error and self._is_read_error(error):
-            # Read retry?
-            if read is False or method is None or not self._is_method_retryable(method):
-                raise reraise(type(error), error, _stacktrace)
-            elif read is not None:
-                read -= 1
-    
-        elif error:
-            # Other retry?
-            if other is not None:
-                other -= 1
-    
-        elif response and response.get_redirect_location():
-            # Redirect retry?
-            if redirect is not None:
-                redirect -= 1
-            cause = "too many redirects"
-            response_redirect_location = response.get_redirect_location()
-            if response_redirect_location:
-                redirect_location = response_redirect_location
-            status = response.status
-    
-        else:
-            # Incrementing because of a server error like a 500 in
-            # status_forcelist and the given method is in the allowed_methods
-            cause = ResponseError.GENERIC_ERROR
-            if response and response.status:
-                if status_count is not None:
-                    status_count -= 1
-                cause = ResponseError.SPECIFIC_ERROR.format(status_code=response.status)
-                status = response.status
-    
-        history = self.history + (
-            RequestHistory(method, url, error, status, redirect_location),
-        )
-    
-        new_retry = self.new(
-            total=total,
-            connect=connect,
-            read=read,
-            redirect=redirect,
-            status=status_count,
-            other=other,
-            history=history,
-        )
-    
-        if new_retry.is_exhausted():
-            reason = error or ResponseError(cause)
->           raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E           urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='gov-compliance-hub-1.preview.emergentagent.com', port=443): Max retries exceeded with url: /api/auth/verify-otp (Caused by ConnectTimeoutError(<HTTPSConnection(host='gov-compliance-hub-1.preview.emergentagent.com', port=443) at 0xfa437032c190>, 'Connection to gov-compliance-hub-1.preview.emergentagent.com timed out. (connect timeout=10)'))
-
-/root/.venv/lib/python3.11/site-packages/urllib3/util/retry.py:535: MaxRetryError
-
-During handling of the above exception, another exception occurred:
-
-self = <test_websocket_streak.TestLiveOfflineIndicator object at 0xfa437030cd50>
-
-    def test_leaderboard_has_timestamp(self):
-        """Test that leaderboard responses include timestamp for live indicator"""
-        # Get auth token
-        phone = f"+1{datetime.utcnow().strftime('%H%S%M')}321"
-    
-        # Register
-        reg_response = requests.post(f"{BASE_URL}/api/auth/register", json={
-            "phone_number": phone
-        }, timeout=10)
-    
-        if reg_response.status_code != 200:
-            pytest.skip("Could not register test user")
-    
-        otp = reg_response.json().get("otp_for_testing")
-    
-        # Verify OTP
->       requests.post(f"{BASE_URL}/api/auth/verify-otp", json={
-            "phone_number": phone,
-            "otp": otp
-        }, timeout=10)
-
-backend/tests/test_websocket_streak.py:397: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
-    return request("post", url, data=data, json=json, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
-    return session.request(method=method, url=url, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:589: in request
-    resp = self.send(prep, **send_kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:703: in send
-    r = adapter.send(request, **kwargs)
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-self = <requests.adapters.HTTPAdapter object at 0xfa436ffd5910>
-request = <PreparedRequest [POST]>, stream = False
-timeout = Timeout(connect=10, read=10, total=None), verify = True, cert = None
-proxies = OrderedDict()
-
-    def send(
-        self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None
-    ):
-        """Sends PreparedRequest object. Returns Response object.
-    
-        :param request: The :class:`PreparedRequest <PreparedRequest>` being sent.
-        :param stream: (optional) Whether to stream the request content.
-        :param timeout: (optional) How long to wait for the server to send
-            data before giving up, as a float, or a :ref:`(connect timeout,
-            read timeout) <timeouts>` tuple.
-        :type timeout: float or tuple or urllib3 Timeout object
-        :param verify: (optional) Either a boolean, in which case it controls whether
-            we verify the server's TLS certificate, or a string, in which case it
-            must be a path to a CA bundle to use
-        :param cert: (optional) Any user-provided SSL certificate to be trusted.
-        :param proxies: (optional) The proxies dictionary to apply to the request.
-        :rtype: requests.Response
-        """
-    
-        try:
-            conn = self.get_connection_with_tls_context(
-                request, verify, proxies=proxies, cert=cert
-            )
-        except LocationValueError as e:
-            raise InvalidURL(e, request=request)
-    
-        self.cert_verify(conn, request.url, verify, cert)
-        url = self.request_url(request, proxies)
-        self.add_headers(
-            request,
-            stream=stream,
-            timeout=timeout,
-            verify=verify,
-            cert=cert,
-            proxies=proxies,
-        )
-    
-        chunked = not (request.body is None or "Content-Length" in request.headers)
-    
-        if isinstance(timeout, tuple):
-            try:
-                connect, read = timeout
-                timeout = TimeoutSauce(connect=connect, read=read)
-            except ValueError:
-                raise ValueError(
-                    f"Invalid timeout {timeout}. Pass a (connect, read) timeout tuple, "
-                    f"or a single float to set both timeouts to the same value."
-                )
-        elif isinstance(timeout, TimeoutSauce):
-            pass
-        else:
-            timeout = TimeoutSauce(connect=timeout, read=timeout)
-    
-        try:
-            resp = conn.urlopen(
-                method=request.method,
-                url=url,
-                body=request.body,
-                headers=request.headers,
-                redirect=False,
-                assert_same_host=False,
-                preload_content=False,
-                decode_content=False,
-                retries=self.max_retries,
-                timeout=timeout,
-                chunked=chunked,
-            )
-    
-        except (ProtocolError, OSError) as err:
-            raise ConnectionError(err, request=request)
-    
-        except MaxRetryError as e:
-            if isinstance(e.reason, ConnectTimeoutError):
-                # TODO: Remove this in 3.0.0: see #2811
-                if not isinstance(e.reason, NewConnectionError):
->                   raise ConnectTimeout(e, request=request)
-E                   requests.exceptions.ConnectTimeout: HTTPSConnectionPool(host='gov-compliance-hub-1.preview.emergentagent.com', port=443): Max retries exceeded with url: /api/auth/verify-otp (Caused by ConnectTimeoutError(<HTTPSConnection(host='gov-compliance-hub-1.preview.emergentagent.com', port=443) at 0xfa437032c190>, 'Connection to gov-compliance-hub-1.preview.emergentagent.com timed out. (connect timeout=10)'))
-
-/root/.venv/lib/python3.11/site-packages/requests/adapters.py:665: ConnectTimeout
 ________ TestTicketEndpoints.test_get_my_tickets_has_correct_structure _________
 
-self = <test_tickets.TestTicketEndpoints object at 0xfa436fe57910>
+self = <test_tickets.TestTicketEndpoints object at 0xf9c405e34cd0>
 
     def test_get_my_tickets_has_correct_structure(self):
         """My tickets response has correct data structure"""
@@ -978,7 +545,7 @@ E           assert 'tickets' in {'created_at': '2026-02-16T19:37:55.625000', 'dr
 backend/tests/test_tickets.py:82: AssertionError
 ________________ TestTicketEndpoints.test_get_tickets_for_draw _________________
 
-self = <test_tickets.TestTicketEndpoints object at 0xfa436ffabe50>
+self = <test_tickets.TestTicketEndpoints object at 0xf9c405e37810>
 
     def test_get_tickets_for_draw(self):
         """GET /api/tickets/for-draw/{draw_id} returns ticket details"""
@@ -1045,7 +612,6 @@ taxxa_temp/backend/tests/test_gamification.py::TestAuthFlow::test_login_flow
 =========================== short test summary info ============================
 FAILED backend/tests/test_tickets.py::TestTicketEndpoints::test_get_my_tickets_has_correct_structure
 FAILED backend/tests/test_tickets.py::TestTicketEndpoints::test_get_tickets_for_draw
-FAILED backend/tests/test_websocket_streak.py::TestLiveOfflineIndicator::test_leaderboard_has_timestamp
 FAILED taxxa_temp/backend/tests/test_tickets.py::TestTicketEndpoints::test_get_my_tickets_has_correct_structure
 FAILED taxxa_temp/backend/tests/test_tickets.py::TestTicketEndpoints::test_get_tickets_for_draw
 ERROR taxxa_temp/backend/tests/test_security.py::TestScanRateLimiting::test_scan_stats_endpoint_exists
@@ -1060,12 +626,15 @@ ERROR taxxa_temp/backend/tests/test_security.py::TestDrawExecution::test_complet
 ERROR taxxa_temp/backend/tests/test_security.py::TestMyTicketsPage::test_my_tickets_returns_ticket_and_entries
 ERROR taxxa_temp/backend/tests/test_security.py::TestMultiplierOnScan::test_scan_response_includes_multiplier
 ERROR taxxa_temp/backend/tests/test_security.py::TestRateLimitingBehavior::test_rate_limit_updates_after_scan
-== 5 failed, 134 passed, 5 skipped, 6 warnings, 12 errors in 97.17s (0:01:37) == files. Test reports are in .
--   **Known regressions**: None.
+= 4 failed, 135 passed, 5 skipped, 6 warnings, 12 errors in 104.27s (0:01:44) == files. Test reports are in .
+-   **Known regressions**: The login flow appears to have regressed or is incompatible with testing tools.
 
 **Credentials to test flow:**
--   **User Phone**:  (or any valid number)
+-   **User Phone**:  (or another from the DB)
+-   **Password**: 
+-   **Admin User**: 
+-   **Admin Password**: 
 -   **Test OTP**: 
 
 **What agent forgot to execute**
--   The critical **TRA/EFD API integration** for real receipt validation has been discussed but not implemented, as it's blocked pending external dependencies (API docs/keys). This remains the most important upcoming task for the application's viability.</analysis>
+- The agent successfully set up the i18n framework and applied it to a few key areas but did not complete the user's request to Apply i18n to all frontend components. This remains a pending task.</analysis>
