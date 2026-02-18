@@ -102,6 +102,53 @@ Build and enhance the TAXXA mobile application - a tax compliance incentive plat
 - **Share Button**: Easy social sharing of scan results
 - **Multi-step Processing**: Visual flow showing Decode → Validate → Submit
 
+### Language Auto-Detection (Phase 14 - Feb 18, 2026)
+- **Phone-Based Detection**: Auto-detect language from phone number country code
+- **Country Mappings**:
+  - East Africa (+255 Tanzania, +254 Kenya) → Swahili
+  - French-speaking Africa (+33 France, +221 Senegal, +225 Côte d'Ivoire) → French
+  - English-speaking (+234 Nigeria, +233 Ghana, +44 UK, +1 US) → English
+- **API Endpoints**:
+  - `GET /api/languages/detect/{phone}` - Detect language from phone
+  - `GET /api/languages/supported` - List supported languages
+  - `GET /api/user/language` - Get user's language preference
+  - `PUT /api/user/language` - Update language preference
+- **Auto-Registration**: New users get language auto-set based on phone
+
+### Fraud Detection System (Phase 14 - Feb 18, 2026)
+- **Campaign Settings per Country**: Configurable fraud rules by country
+  - Tanzania (TZ), Kenya (KE), Nigeria (NG), Uganda (UG), Rwanda (RW), DEFAULT
+- **Rate Limiting Rules**:
+  - `max_receipts_per_hour`: 5 (configurable)
+  - `max_receipts_per_day`: 15 (configurable)
+  - `min_time_between_scans_minutes`: 5 min cooldown
+  - `merchant_cooldown_minutes`: 30 min per merchant
+- **Transaction Amount Rules**:
+  - `min_receipt_amount`: Minimum amount to earn entries (e.g., 500 TZS)
+  - `max_entries_per_receipt`: Cap entries per receipt (10)
+  - `entry_amount_threshold`: Bonus entry threshold (e.g., 10,000 TZS)
+- **Pattern Detection**:
+  - `merchant_concentration_threshold`: Flag >80% receipts from same merchant
+  - `same_amount_threshold`: Flag N identical amounts in 24h
+- **Violation Types**:
+  - `velocity_hourly/daily` - Too many scans
+  - `micro_transaction` - Amount below minimum
+  - `duplicate_receipt` - Same receipt scanned twice
+  - `merchant_concentration` - Too many from same merchant
+  - `same_amount_pattern` - Suspicious identical amounts
+  - `rapid_succession` - Scans too close together
+- **Severity Levels**: LOW (warning), MEDIUM (flag), HIGH (auto-suspend), CRITICAL
+- **Penalty System**:
+  - `violations_before_suspension`: 3 (auto-suspend 24h)
+  - `violations_before_ban`: 10 (permanent ban)
+- **Admin Review**: Flagged users list for manual review
+- **API Endpoints**:
+  - `GET /api/admin/campaigns/settings` - All campaign settings
+  - `GET/PUT /api/admin/campaigns/settings/{country}` - Country settings
+  - `GET /api/admin/campaigns/violation-types` - All violation types
+  - `GET /api/admin/campaigns/flagged-users` - Users needing review
+  - `POST /api/admin/campaigns/review/{user_id}` - Review flagged user
+
 ## API Endpoints
 
 ### User Gamification
