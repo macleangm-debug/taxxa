@@ -1,0 +1,129 @@
+{
+  "summary": "Backend-only testing of Language Detection and Fraud Detection/Campaign Settings APIs. All 29 tests passed (100% success rate). New features verified: (1) Language auto-detection from phone country code (+255=Swahili/Tanzania, +33=French/France, etc.), (2) Campaign settings per country with configurable fraud rules (rate limits, min amounts, violation thresholds), (3) Violation types and severity levels, (4) Flagged users endpoint for manual review.",
+  
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  
+  "passed_tests": {
+    "language_detection_api": [
+      "/api/languages/detect/{phone_number} - Tanzania (+255) returns Swahili",
+      "/api/languages/detect/{phone_number} - Kenya (+254) returns Swahili",
+      "/api/languages/detect/{phone_number} - France (+33) returns French",
+      "/api/languages/detect/{phone_number} - UK (+44) returns English",
+      "/api/languages/detect/{phone_number} - US (+1) returns English",
+      "/api/languages/detect/{phone_number} - Nigeria (+234) returns English",
+      "/api/languages/detect/{phone_number} - Senegal (+221) returns French",
+      "/api/languages/detect/{phone_number} - Unknown country defaults to English",
+      "/api/languages/detect/{phone_number} - Works without + prefix"
+    ],
+    "supported_languages_api": [
+      "/api/languages/supported - Returns en, sw, fr with name, native_name, flag"
+    ],
+    "user_language_preference_api": [
+      "GET /api/user/language - Returns user's current language preference",
+      "PUT /api/user/language - Updates to Swahili",
+      "PUT /api/user/language - Updates to French",
+      "PUT /api/user/language - Updates to English",
+      "PUT /api/user/language - Rejects invalid language code (400)",
+      "GET /api/user/language - Requires auth (401)"
+    ],
+    "admin_campaign_settings_api": [
+      "POST /api/admin/login - Admin login works with correct credentials",
+      "POST /api/admin/login - Invalid credentials rejected (401)",
+      "GET /api/admin/campaigns/settings - Returns all country settings (5 countries)",
+      "GET /api/admin/campaigns/settings/TZ - Tanzania settings with TZS currency",
+      "GET /api/admin/campaigns/settings/KE - Kenya settings",
+      "GET /api/admin/campaigns/settings/DEFAULT - Default settings",
+      "PUT /api/admin/campaigns/settings/TZ - Updates settings successfully",
+      "GET /api/admin/campaigns/settings - Requires auth (403)"
+    ],
+    "violation_types_api": [
+      "/api/admin/campaigns/violation-types - Returns 9 violation types",
+      "/api/admin/campaigns/violation-types - Returns 4 severity levels",
+      "/api/admin/campaigns/violation-types - Returns 4 user statuses"
+    ],
+    "flagged_users_api": [
+      "GET /api/admin/campaigns/flagged-users - Returns list with count",
+      "GET /api/admin/campaigns/flagged-users - Requires auth (403)"
+    ],
+    "integration_tests": [
+      "Full language detection flow for multiple countries",
+      "Admin full workflow: login -> settings -> update"
+    ]
+  },
+  
+  "test_report_links": [
+    "/app/taxxa_temp/backend/tests/test_language_fraud_detection.py",
+    "/app/test_reports/pytest/language_fraud_results.xml"
+  ],
+  
+  "action_items": [],
+  
+  "critical_code_review_comments": [
+    "Language detection service well-implemented with comprehensive country code mapping for East Africa, French-speaking Africa, English-speaking Africa, Europe, Americas, Asia",
+    "Fraud detection service has proper configurable per-country campaign settings (rate limits, min amounts, violations thresholds)",
+    "Violation types enum covers key fraud patterns: velocity_hourly, velocity_daily, micro_transaction, duplicate_receipt, merchant_concentration, same_amount_pattern, rapid_succession",
+    "Severity levels properly mapped: LOW=warning, MEDIUM=flag, HIGH=auto-suspend, CRITICAL=immediate action",
+    "User fraud statuses: clean, flagged, suspended, banned with proper state transitions",
+    "Admin campaign settings endpoint properly protected with admin auth",
+    "Violation-types endpoint is public (no auth required) - this may be intentional for frontend reference"
+  ],
+  
+  "updated_files": [
+    "/app/taxxa_temp/backend/tests/test_language_fraud_detection.py"
+  ],
+  
+  "success_rate": {
+    "backend": "100% (29/29 tests passed)",
+    "frontend": "N/A (backend only testing)"
+  },
+  
+  "test_credentials": {
+    "admin_username": "admin",
+    "admin_password": "taxdraw_admin_2024",
+    "test_user_phone": "0712345678",
+    "test_user_password": "TestPass123!"
+  },
+  
+  "seed_data_creation": "No new seed data created",
+  
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  
+  "context_for_next_testing_agent": "All language detection and fraud/campaign settings APIs tested and working. Language detection maps phone country codes to languages: Tanzania/Kenya=Swahili, France/Senegal=French, Nigeria/UK/US=English. Campaign settings configurable per country (TZ, KE, NG, UG, RW, DEFAULT) with fraud rules. Violation-types endpoint is public. Receipt validation still MOCKED (no real TRA/EFD API).",
+  
+  "mocked_apis": {
+    "receipt_validation": "Receipt validation is MOCKED - MockRevenueAuthorityAPI in server.py",
+    "fraud_detection_actions": "Auto-suspend/flag/ban actions are implemented but no real fraud violations to trigger (would need to test with actual rapid submissions)"
+  },
+  
+  "api_response_samples": {
+    "language_detect_tanzania": {
+      "language": "sw",
+      "name": "Swahili",
+      "native_name": "Kiswahili",
+      "flag": "🇹🇿",
+      "detected_from": "phone_country_code",
+      "country": "Tanzania",
+      "country_code": "TZ"
+    },
+    "campaign_settings_tz": {
+      "country_code": "TZ",
+      "country_name": "Tanzania",
+      "currency_code": "TZS",
+      "max_receipts_per_hour": 5,
+      "max_receipts_per_day": 20,
+      "min_receipt_amount": 1000,
+      "violations_before_suspension": 3,
+      "violations_before_ban": 10
+    }
+  }
+}
